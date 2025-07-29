@@ -30,7 +30,7 @@ public class Account {
     @Column(name = "provider_id")
     private String providerId;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "hashed_password")

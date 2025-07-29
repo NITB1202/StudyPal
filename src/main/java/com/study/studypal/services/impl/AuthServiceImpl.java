@@ -1,44 +1,212 @@
 package com.study.studypal.services.impl;
 
+import com.study.studypal.dtos.Auth.internal.OAuthUserInfoDto;
 import com.study.studypal.dtos.Auth.request.*;
 import com.study.studypal.dtos.Auth.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.dtos.Auth.response.LoginResponseDto;
 import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.entities.Account;
+import com.study.studypal.enums.VerificationType;
+import com.study.studypal.exceptions.BusinessException;
+import com.study.studypal.exceptions.UnauthorizedException;
+import com.study.studypal.services.AccountService;
 import com.study.studypal.services.AuthService;
+import com.study.studypal.services.CodeService;
+import com.study.studypal.services.MailService;
+import com.study.studypal.utils.JwtUtils;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private final AccountService accountService;
+    private final MailService mailService;
+    private final CodeService codeService;
+
+    private final RedisTemplate<String, Object> redis;
+
+    private static final int TTLDays= 7;
+
     @Override
     public LoginResponseDto loginWithCredentials(LoginWithCredentialsRequestDto request) {
-        return null;
+        Account account = accountService.getAccountByEmailAndPassword(request.getEmail(), request.getPassword());
+        return saveUserSession(account);
     }
 
     @Override
     public LoginResponseDto loginWithProvider(LoginWithProviderRequestDto request) {
-        return null;
+        OAuthUserInfoDto userInfo = null;
+
+        switch(request.getProvider()) {
+            case GOOGLE -> userInfo = getUserInfoWithGoogle(request.getAccessToken());
+        }
+
+        if(userInfo == null) {
+            throw new BusinessException("Invalid access token.");
+        }
+
+        if(!accountService.isAccountRegistered(request.getProvider(), userInfo.getId())) {
+            accountService.registerWithProvider(request.getProvider(), userInfo.getId(), userInfo.getEmail());
+        }
+
+        Account account = accountService.getAccountByProviderId(request.getProvider(), userInfo.getId());
+
+        return saveUserSession(account);
+    }
+
+    private OAuthUserInfoDto getUserInfoWithGoogle(String accessToken) {
+        String googleAPIUrl ="https://www.googleapis.com/oauth2/v3/userinfo";
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        var response = restTemplate.exchange(
+                googleAPIUrl,
+                HttpMethod.GET,
+                entity,
+                Map.class
+        );
+
+        Map userInfo = response.getBody();
+
+        return OAuthUserInfoDto.builder()
+                .id((String)userInfo.get("id"))
+                .email((String)userInfo.get("email"))
+                .name((String)userInfo.get("name"))
+                .picture((String)userInfo.get("picture"))
+                .build();
+    }
+
+    private LoginResponseDto saveUserSession(Account account) {
+        //Generate tokens
+        String accessToken = JwtUtils.generateAccessToken(account.getUserId(), account.getRole());
+        String refreshToken = JwtUtils.generateRefreshToken(account.getId());
+
+        //Save user's session
+        redis.opsForValue().set("auth:" + account.getUserId(),
+                Map.of("accessToken", accessToken, "refreshToken", refreshToken),
+                Duration.ofDays(TTLDays));
+
+        return LoginResponseDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    @Override
+    public ActionResponseDto logout(UUID userId) {
+        redis.delete("auth:" + userId);
+
+        return ActionResponseDto.builder()
+                .success(true)
+                .message("Successfully logged out.")
+                .build();
     }
 
     @Override
     public ActionResponseDto validateRegisterInfo(ValidateRegisterInfoRequestDto request) {
-        return null;
+        ActionResponseDto validateResponse = accountService.validateAccount(request.getEmail(), request.getPassword());
+
+        if(validateResponse.isSuccess()) {
+            String verificationCode = codeService.generateCode(request.getEmail(), VerificationType.REGISTER);
+            mailService.sendVerificationEmail(request.getEmail(), verificationCode);
+        }
+
+        return validateResponse;
     }
 
     @Override
     public ActionResponseDto registerWithCredentials(RegisterWithCredentialsRequestDto request) {
-        return null;
+        ActionResponseDto validateResponse = accountService.validateAccount(request.getEmail(), request.getPassword());
+
+        if(!validateResponse.isSuccess()) {
+            return validateResponse;
+        }
+
+        if(codeService.verifyCode(request.getEmail(), request.getVerificationCode(), VerificationType.REGISTER)) {
+            accountService.registerWithCredentials(request.getEmail(), request.getPassword());
+
+            return ActionResponseDto.builder()
+                    .success(true)
+                    .message("Successfully registered.")
+                    .build();
+        }
+        else {
+
+            return ActionResponseDto.builder()
+                    .success(false)
+                    .message("Invalid verification code.")
+                    .build();
+        }
     }
 
     @Override
     public ActionResponseDto sendResetPasswordCode(String email) {
-        return null;
+        ActionResponseDto validateResponse = accountService.isAccountRegistered(email);
+
+        if(validateResponse.isSuccess()) {
+            codeService.generateCode(email, VerificationType.RESET_PASSWORD);
+        }
+
+        return validateResponse;
     }
 
     @Override
     public ActionResponseDto resetPassword(ResetPasswordRequestDto request) {
-        return null;
+        if(codeService.verifyCode(request.getEmail(), request.getVerificationCode(), VerificationType.RESET_PASSWORD)){
+            return accountService.resetPassword(request.getEmail(), request.getNewPassword());
+        }
+        else{
+            return ActionResponseDto.builder()
+                    .success(false)
+                    .message("Invalid verification code.")
+                    .build();
+        }
     }
 
     @Override
     public GenerateAccessTokenResponseDto generateAccessToken(String refreshToken) {
-        return null;
+        UUID accountId = JwtUtils.extractId(refreshToken);
+        Account account = accountService.getAccountById(accountId);
+
+        String key = "auth:" + account.getUserId();
+
+        Map<String, String> tokens = (Map<String, String>) redis.opsForValue().get(key);
+
+        if (tokens != null && tokens.get("refreshToken").equals(refreshToken)) {
+            Long ttlMillis = redis.getExpire(key, TimeUnit.MILLISECONDS);
+
+            if (ttlMillis == null || ttlMillis <= 0) {
+                throw new UnauthorizedException("Refresh token expired.");
+            }
+
+            String newAccessToken = JwtUtils.generateAccessToken(account.getUserId(), account.getRole());
+            tokens.put("accessToken", newAccessToken);
+
+            redis.opsForValue().set(key, tokens, ttlMillis, TimeUnit.MILLISECONDS);
+
+            return GenerateAccessTokenResponseDto.builder()
+                    .accessToken(newAccessToken)
+                    .build();
+
+        } else {
+            throw new UnauthorizedException("Invalid refresh token");
+        }
     }
 }
