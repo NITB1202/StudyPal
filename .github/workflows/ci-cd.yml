@@ -47,6 +47,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "docker-compose.staging.yml"
           target: "/root/StudyPal/docker-compose.yml"
+          strip_components: 0
 
       - name: SSH into VPS and deploy
         uses: appleboy/ssh-action@master
