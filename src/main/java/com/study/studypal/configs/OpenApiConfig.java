@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "StudyPal API",
                 version = "1.0",
-                description = "API documentation for the self-study mobile application using WebFlux & gRPC"
+                description = "API documentation for the self-study mobile application."
         ),
         security = @SecurityRequirement(name = "bearerAuth")
 )

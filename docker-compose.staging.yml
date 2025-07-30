@@ -1,0 +1,76 @@
+name: studypal_staging
+
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    container_name: postgres-studypal-staging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    command: >
+      postgres -c shared_buffers=256MB
+               -c work_mem=4MB
+               -c max_connections=20
+    networks:
+      - network-studypal-staging
+
+  redis:
+    image: redis:7.2
+    restart: unless-stopped
+    container_name: redis-studypal-staging
+    command: ["redis-server", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis-data-staging:/data
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 150M
+    networks:
+      - network-studypal-staging
+
+  app:
+    build: .
+    restart: unless-stopped
+    container_name: studypal-app-staging
+    environment:
+      SPRING_PROFILES_ACTIVE: staging
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
+      JAVA_OPTS: "-Xms128m -Xmx512m"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 700M
+    networks:
+      - network-studypal-staging
+
+volumes:
+  postgres-data:
+  redis-data-staging:
+
+networks:
+  network-studypal-staging:
+    driver: bridge

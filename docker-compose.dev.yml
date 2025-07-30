@@ -1,35 +1,20 @@
-services:
-  studyPal-db:
-    image: postgres:15
-    restart: unless-stopped
-    container_name: studyPal-db
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - studyPal-db-data:/var/lib/postgresql/data
-      - ./src/main/resources/database:/docker-entrypoint-initdb.d
-    networks:
-      - backend
+name: studypal_dev
 
+services:
   redis:
     image: redis:7.2
     restart: unless-stopped
-    container_name: redis
+    container_name: redis-studypal-dev
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
-      - redis-data:/data
+      - redis-data-dev:/data
     networks:
-      - backend
+      - network-studypal-dev
 
 volumes:
-  studyPal-db-data:
-  redis-data:
+  redis-data-dev:
 
 networks:
-  backend:
+  network-studypal-dev:
     driver: bridge
