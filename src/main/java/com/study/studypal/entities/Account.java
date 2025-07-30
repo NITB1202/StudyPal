@@ -1,10 +1,13 @@
 package com.study.studypal.entities;
 
+import com.study.studypal.converters.AuthProviderListConverter;
 import com.study.studypal.enums.AccountRole;
 import com.study.studypal.enums.AuthProvider;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,17 +23,14 @@ public class Account {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, unique = true)
     private UUID userId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "provider", nullable = false)
-    private AuthProvider provider;
+    @Convert(converter = AuthProviderListConverter.class)
+    @Column(name = "providers", nullable = false)
+    private List<AuthProvider> providers;
 
-    @Column(name = "provider_id")
-    private String providerId;
-
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "hashed_password")
@@ -39,4 +39,7 @@ public class Account {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private AccountRole role;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
 }

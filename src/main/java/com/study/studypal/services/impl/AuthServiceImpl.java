@@ -9,10 +9,7 @@ import com.study.studypal.entities.Account;
 import com.study.studypal.enums.VerificationType;
 import com.study.studypal.exceptions.BusinessException;
 import com.study.studypal.exceptions.UnauthorizedException;
-import com.study.studypal.services.AccountService;
-import com.study.studypal.services.AuthService;
-import com.study.studypal.services.CodeService;
-import com.study.studypal.services.MailService;
+import com.study.studypal.services.*;
 import com.study.studypal.utils.JwtUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,16 +30,15 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final AccountService accountService;
+    private final UserService userService;
     private final MailService mailService;
     private final CodeService codeService;
-
     private final RedisTemplate<String, Object> redis;
-
     private static final int TTLDays= 7;
 
     @Override
     public LoginResponseDto loginWithCredentials(LoginWithCredentialsRequestDto request) {
-        Account account = accountService.getAccountByEmailAndPassword(request.getEmail(), request.getPassword());
+        Account account = accountService.loginWithCredentials(request.getEmail(), request.getPassword());
         return saveUserSession(account);
     }
 
@@ -58,11 +54,12 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("Invalid access token.");
         }
 
-        if(!accountService.isAccountRegistered(request.getProvider(), userInfo.getId())) {
-            accountService.registerWithProvider(request.getProvider(), userInfo.getId(), userInfo.getEmail());
+        if(!accountService.isEmailRegistered(userInfo.getEmail())) {
+            UUID userId = userService.createProfile(userInfo.getName(), userInfo.getPicture());
+            accountService.registerWithProvider(userId, userInfo.getEmail(), request.getProvider());
         }
 
-        Account account = accountService.getAccountByProviderId(request.getProvider(), userInfo.getId());
+        Account account = accountService.loginWithProvider(userInfo.getEmail(), request.getProvider());
 
         return saveUserSession(account);
     }
@@ -126,6 +123,9 @@ public class AuthServiceImpl implements AuthService {
         if(validateResponse.isSuccess()) {
             String verificationCode = codeService.generateCode(request.getEmail(), VerificationType.REGISTER);
             mailService.sendVerificationEmail(request.getEmail(), verificationCode);
+
+            String message = " A verification code has been sent to the registered email.";
+            validateResponse.setMessage(validateResponse.getMessage() + message);
         }
 
         return validateResponse;
@@ -140,7 +140,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if(codeService.verifyCode(request.getEmail(), request.getVerificationCode(), VerificationType.REGISTER)) {
-            accountService.registerWithCredentials(request.getEmail(), request.getPassword());
+            if(!accountService.isEmailRegistered(request.getEmail())) {
+                UUID userId = userService.createDefaultProfile(request.getName());
+                accountService.registerWithCredentials(userId, request.getEmail(), request.getPassword());
+            }
+            else {
+                accountService.linkLocalLogin(request.getEmail(), request.getPassword());
+            }
 
             return ActionResponseDto.builder()
                     .success(true)
@@ -158,13 +164,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ActionResponseDto sendResetPasswordCode(String email) {
-        ActionResponseDto validateResponse = accountService.isAccountRegistered(email);
-
-        if(validateResponse.isSuccess()) {
+        if(accountService.isEmailRegistered(email)) {
             codeService.generateCode(email, VerificationType.RESET_PASSWORD);
+
+            return ActionResponseDto.builder()
+                    .success(true)
+                    .message("A verification code has been sent to the registered email.")
+                    .build();
         }
 
-        return validateResponse;
+        return ActionResponseDto.builder()
+                .success(false)
+                .message("Email is not registered.")
+                .build();
     }
 
     @Override
