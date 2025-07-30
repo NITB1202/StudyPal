@@ -4,6 +4,7 @@ import com.study.studypal.dtos.Auth.request.*;
 import com.study.studypal.dtos.Auth.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.dtos.Auth.response.LoginResponseDto;
 import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.exceptions.ErrorResponse;
 import com.study.studypal.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;

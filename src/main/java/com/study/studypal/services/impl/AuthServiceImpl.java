@@ -168,7 +168,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ActionResponseDto sendResetPasswordCode(String email) {
         if(accountService.isEmailRegistered(email)) {
-            codeService.generateCode(email, VerificationType.RESET_PASSWORD);
+            String verificationCode = codeService.generateCode(email, VerificationType.RESET_PASSWORD);
+            mailService.sendVerificationEmail(email, verificationCode);
 
             return ActionResponseDto.builder()
                     .success(true)
