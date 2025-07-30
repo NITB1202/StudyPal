@@ -90,13 +90,17 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    private String generateSessionKey(UUID userId) {
+        return "auth:" + userId.toString();
+    }
+
     private LoginResponseDto saveUserSession(Account account) {
         //Generate tokens
         String accessToken = JwtUtils.generateAccessToken(account.getUserId(), account.getRole());
         String refreshToken = JwtUtils.generateRefreshToken(account.getId());
 
         //Save user's session
-        redis.opsForValue().set("auth:" + account.getUserId(),
+        redis.opsForValue().set(generateSessionKey(account.getUserId()),
                 Map.of("accessToken", accessToken, "refreshToken", refreshToken),
                 Duration.ofDays(TTLDays));
 
@@ -108,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ActionResponseDto logout(UUID userId) {
-        redis.delete("auth:" + userId);
+        redis.delete(generateSessionKey(userId));
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -197,7 +201,7 @@ public class AuthServiceImpl implements AuthService {
         UUID accountId = JwtUtils.extractId(refreshToken);
         Account account = accountService.getAccountById(accountId);
 
-        String key = "auth:" + account.getUserId();
+        String key = generateSessionKey(account.getUserId());
 
         Map<String, String> tokens = (Map<String, String>) redis.opsForValue().get(key);
 
