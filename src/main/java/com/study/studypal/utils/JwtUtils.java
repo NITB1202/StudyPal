@@ -2,13 +2,13 @@ package com.study.studypal.utils;
 
 import com.study.studypal.enums.AccountRole;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 
@@ -43,16 +43,20 @@ public class JwtUtils {
                 .compact();
     }
 
-    public static boolean isTokenValid(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (JwtException e) {
-            return false;
-        }
+    public static String getAccessTokenRedisKey(UUID userId) {
+        return "access_token_" + userId.toString();
+    }
+
+    public static String getRefreshTokenRedisKey(UUID accountId) {
+        return "refresh_token_" + accountId.toString();
+    }
+
+    public static Duration getAccessTokenTTL() {
+        return Duration.ofMillis(accessTokenExpirationMs);
+    }
+
+    public static Duration getRefreshTokenTTL() {
+        return Duration.ofMillis(refreshTokenExpirationMs);
     }
 
     public static UUID extractId(String token) {
@@ -61,10 +65,11 @@ public class JwtUtils {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+
         return UUID.fromString(claims.getSubject());
     }
 
-    public static AccountRole extractUserRole(String token) {
+    public static AccountRole extractAccountRole(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()

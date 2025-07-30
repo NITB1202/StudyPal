@@ -20,10 +20,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Transactional
@@ -34,7 +32,6 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final CodeService codeService;
     private final RedisTemplate<String, Object> redis;
-    private static final int TTLDays= 7;
 
     @Override
     public LoginResponseDto loginWithCredentials(LoginWithCredentialsRequestDto request) {
@@ -90,19 +87,20 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-    private String generateSessionKey(UUID userId) {
-        return "auth:" + userId.toString();
-    }
-
     private LoginResponseDto saveUserSession(Account account) {
-        //Generate tokens
         String accessToken = JwtUtils.generateAccessToken(account.getUserId(), account.getRole());
         String refreshToken = JwtUtils.generateRefreshToken(account.getId());
 
-        //Save user's session
-        redis.opsForValue().set(generateSessionKey(account.getUserId()),
-                Map.of("accessToken", accessToken, "refreshToken", refreshToken),
-                Duration.ofDays(TTLDays));
+        redis.opsForValue().set(
+                JwtUtils.getAccessTokenRedisKey(account.getUserId()),
+                accessToken,
+                JwtUtils.getAccessTokenTTL());
+
+        redis.opsForValue().set(
+                JwtUtils.getRefreshTokenRedisKey(account.getUserId()),
+                refreshToken,
+                JwtUtils.getRefreshTokenTTL()
+        );
 
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
@@ -112,7 +110,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ActionResponseDto logout(UUID userId) {
-        redis.delete(generateSessionKey(userId));
+        redis.delete(JwtUtils.getAccessTokenRedisKey(userId));
+        redis.delete(JwtUtils.getRefreshTokenRedisKey(userId));
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -201,28 +200,23 @@ public class AuthServiceImpl implements AuthService {
         UUID accountId = JwtUtils.extractId(refreshToken);
         Account account = accountService.getAccountById(accountId);
 
-        String key = generateSessionKey(account.getUserId());
+        String storedRefreshToken = (String) redis.opsForValue().get(JwtUtils.getRefreshTokenRedisKey(account.getUserId()));
 
-        Map<String, String> tokens = (Map<String, String>) redis.opsForValue().get(key);
-
-        if (tokens != null && tokens.get("refreshToken").equals(refreshToken)) {
-            Long ttlMillis = redis.getExpire(key, TimeUnit.MILLISECONDS);
-
-            if (ttlMillis == null || ttlMillis <= 0) {
-                throw new UnauthorizedException("Refresh token expired.");
-            }
-
+        if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
             String newAccessToken = JwtUtils.generateAccessToken(account.getUserId(), account.getRole());
-            tokens.put("accessToken", newAccessToken);
 
-            redis.opsForValue().set(key, tokens, ttlMillis, TimeUnit.MILLISECONDS);
+            redis.opsForValue().set(
+                    JwtUtils.getAccessTokenRedisKey(account.getUserId()),
+                    newAccessToken,
+                    JwtUtils.getAccessTokenTTL()
+            );
 
             return GenerateAccessTokenResponseDto.builder()
                     .accessToken(newAccessToken)
                     .build();
 
         } else {
-            throw new UnauthorizedException("Invalid refresh token");
+            throw new UnauthorizedException("Invalid refresh token.");
         }
     }
 }
