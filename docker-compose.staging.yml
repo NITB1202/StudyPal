@@ -41,7 +41,7 @@ services:
       - network-studypal-staging
 
   app:
-    build: .
+    image: rialfield/studypal-mobileapp:latest
     restart: unless-stopped
     container_name: studypal-app-staging
     environment:
