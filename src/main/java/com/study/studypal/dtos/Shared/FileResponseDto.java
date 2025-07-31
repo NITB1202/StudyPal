@@ -7,8 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ActionResponseDto {
-    private boolean success;
+public class FileResponseDto {
+    private String url;
 
-    private String message;
+    private long bytes;
 }
