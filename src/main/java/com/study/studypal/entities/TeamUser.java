@@ -3,9 +3,10 @@ package com.study.studypal.entities;
 import com.study.studypal.enums.TeamRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -14,15 +15,21 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table(name = "teams_users")
-@IdClass(TeamUserId.class)
 public class TeamUser {
-    @Id
-    @Column(name = "team_id", nullable = false)
-    private UUID teamId;
+    @EmbeddedId
+    private TeamUserId id;
 
-    @Id
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    @MapsId("userId")
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @MapsId("teamId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
@@ -31,4 +38,3 @@ public class TeamUser {
     @Column(name = "role", nullable = false)
     private TeamRole role;
 }
-

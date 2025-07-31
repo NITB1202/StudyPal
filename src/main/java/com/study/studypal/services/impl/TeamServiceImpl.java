@@ -7,6 +7,7 @@ import com.study.studypal.dtos.Team.response.*;
 import com.study.studypal.entities.Team;
 import com.study.studypal.entities.TeamUser;
 import com.study.studypal.entities.TeamUserId;
+import com.study.studypal.entities.User;
 import com.study.studypal.enums.TeamRole;
 import com.study.studypal.exceptions.BusinessException;
 import com.study.studypal.exceptions.NotFoundException;
@@ -16,6 +17,8 @@ import com.study.studypal.services.CodeService;
 import com.study.studypal.services.FileService;
 import com.study.studypal.services.TeamService;
 import com.study.studypal.utils.FileUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -40,14 +43,18 @@ public class TeamServiceImpl implements TeamService {
     private final CodeService codeService;
     private final FileService fileService;
     private final ModelMapper modelMapper;
+
+    @PersistenceContext
+    private final EntityManager entityManager;
     private static final String AVATAR_FOLDER = "teams";
 
     @Override
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
-            throw new BusinessException("User has already created a team with the same name.");
+            throw new BusinessException("You have already created a team with the same name.");
         }
 
+        User creator = entityManager.getReference(User.class, userId);
         int retry = 0;
 
         while(true){
@@ -59,12 +66,22 @@ public class TeamServiceImpl implements TeamService {
                         .description(request.getDescription())
                         .teamCode(randomCode)
                         .createdAt(LocalDateTime.now())
-                        .creatorId(userId)
+                        .creator(creator)
                         .totalMembers(0)
                         .avatarUrl("")
                         .build();
 
                 teamRepository.save(team);
+
+                TeamUser membership = TeamUser.builder()
+                        .id(new TeamUserId(team.getId(), userId))
+                        .team(team)
+                        .user(creator)
+                        .role(TeamRole.CREATOR)
+                        .joinedAt(LocalDateTime.now())
+                        .build();
+
+                teamUserRepository.save(membership);
 
                 return modelMapper.map(team, TeamResponseDto.class);
             }
@@ -101,7 +118,13 @@ public class TeamServiceImpl implements TeamService {
             throw new NotFoundException("Team not found.");
         }
 
-        return modelMapper.map(team, TeamProfileResponseDto.class);
+        User creator = team.getCreator();
+        TeamProfileResponseDto profile = modelMapper.map(team, TeamProfileResponseDto.class);
+
+        profile.setCreatorName(creator.getName());
+        profile.setCreatorAvatarUrl(creator.getAvatarUrl());
+
+        return profile;
     }
 
     @Override
@@ -157,21 +180,20 @@ public class TeamServiceImpl implements TeamService {
 
         validateUpdateTeamPermission(userId, teamId);
 
-        if(!request.getName().isEmpty()) {
+        if(request.getName() != null) {
+            if(request.getName().isEmpty()) {
+                throw new BusinessException("Name cannot be empty.");
+            }
+
             if(request.getName().equals(team.getName()))
                 throw new BusinessException("The new name is the same as the old one.");
 
             if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
-                throw new BusinessException("User has already created a team with the same name.");
+                throw new BusinessException("You have already created a team with the same name.");
             }
-
-            team.setName(request.getName());
         }
 
-        if(!request.getDescription().isEmpty()) {
-            team.setDescription(request.getDescription());
-        }
-
+        modelMapper.map(request, team);
         teamRepository.save(team);
 
         return modelMapper.map(team, TeamResponseDto.class);
@@ -200,12 +222,16 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    @Transactional
     public ActionResponseDto deleteTeam(UUID teamId, UUID userId) {
-        if(!teamRepository.existsById(teamId))
-            throw new NotFoundException("Team not found.");
+        Team team = teamRepository.findById(teamId).orElseThrow(
+                ()-> new NotFoundException("Team not found.")
+        );
 
         validateUpdateTeamPermission(userId, teamId);
-        teamRepository.deleteById(teamId);
+
+        fileService.deleteFile(team.getId().toString(), "image");
+        teamRepository.delete(team);
 
         return ActionResponseDto.builder()
                 .success(true)

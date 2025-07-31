@@ -16,8 +16,8 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     boolean existsByTeamCode(String teamCode);
     @Query("""
     SELECT t
-    FROM Team t JOIN TeamUser tu ON t.id = tu.teamId
-    WHERE tu.userId = :userId
+    FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
+    WHERE tu.user.id = :userId
       AND (:cursor IS NULL OR tu.joinedAt < :cursor)
     ORDER BY tu.joinedAt DESC
     """)
@@ -26,14 +26,14 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
                                             Pageable pageable);
     @Query("""
     SELECT COUNT(t)
-    FROM Team t JOIN TeamUser tu ON t.id = tu.teamId
-    WHERE tu.userId = :userId
+    FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
+    WHERE tu.user.id = :userId
     """)
     long countUserJoinedTeam(@Param("userId") UUID userId);
     @Query("""
     SELECT t
-    FROM Team t JOIN TeamUser tu ON t.id = tu.teamId
-    WHERE tu.userId = :userId
+    FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
+    WHERE tu.user.id = :userId
       AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
       AND (:cursor IS NULL OR tu.joinedAt < :cursor)
     ORDER BY tu.joinedAt DESC
@@ -44,8 +44,8 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
                                                     Pageable pageable);
     @Query("""
     SELECT COUNT(t)
-    FROM Team t JOIN TeamUser tu ON t.id = tu.teamId
-    WHERE tu.userId = :userId
+    FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
+    WHERE tu.user.id = :userId
         AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     """)
     long countUserJoinedTeamByName(@Param("userId") UUID userId,
