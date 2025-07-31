@@ -1,4 +1,4 @@
-CREATE TABLE user (
+CREATE TABLE users (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     dob DATE,
@@ -6,7 +6,7 @@ CREATE TABLE user (
     avatar_url VARCHAR(255)
 );
 
-CREATE TABLE account (
+CREATE TABLE accounts (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL UNIQUE ,
     providers VARCHAR(255) NOT NULL,

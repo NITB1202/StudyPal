@@ -1,9 +1,9 @@
-INSERT INTO user (id, dob, gender, name, avatar_url) VALUES
+INSERT INTO users (id, dob, gender, name, avatar_url) VALUES
 ('041c77e0-ae77-4005-b745-ea12dca9bec6','2003-12-04', 'UNSPECIFIED', 'Adam Lambert','https://res.cloudinary.com/drvyagz4w/image/upload/v1750258716/041c77e0-ae77-4005-b745-ea12dca9bec6.png'),
 ('618c10ee-923f-4323-b32b-086caa534b46','1998-04-30', 'MALE', 'David Becker','https://res.cloudinary.com/drvyagz4w/image/upload/v1750258714/618c10ee-923f-4323-b32b-086caa534b46.png'),
 ('9f5d79f2-83a2-411d-bb66-caeb640a62b0','2000-07-07', 'FEMALE', 'Harley Mavis','https://res.cloudinary.com/drvyagz4w/image/upload/v1750258705/9f5d79f2-83a2-411d-bb66-caeb640a62b0.png');
 
-INSERT INTO account (id, user_id, providers, email, hashed_password, role)
+INSERT INTO accounts (id, user_id, providers, email, hashed_password, role)
 VALUES
     -- password: user123
     (
