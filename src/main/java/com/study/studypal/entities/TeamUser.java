@@ -13,18 +13,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "teams_users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "team_id"})
-})
+@Table(name = "teams_users")
+@IdClass(TeamUserId.class)
 public class TeamUser {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
-    private UUID id;
-
     @Column(name = "team_id", nullable = false)
     private UUID teamId;
 
+    @Id
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
