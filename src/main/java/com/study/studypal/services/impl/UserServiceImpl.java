@@ -65,9 +65,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetailResponseDto getUserById(UUID id) {
-        User user = userRepository.findById(id).orElseThrow(
-                ()-> new NotFoundException("User with id " + id + " not found.")
+    public UserSummaryResponseDto getUserSummaryProfile(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                ()-> new NotFoundException("User with id " + userId + " not found.")
+        );
+
+        return modelMapper.map(user, UserSummaryResponseDto.class);
+    }
+
+    @Override
+    public UserDetailResponseDto getUserProfile(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                ()-> new NotFoundException("User with id " + userId + " not found.")
         );
 
         return modelMapper.map(user, UserDetailResponseDto.class);
@@ -92,9 +101,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetailResponseDto updateUser(UUID id, UpdateUserRequestDto request) {
-        User user = userRepository.findById(id).orElseThrow(
-                () -> new NotFoundException("User with id " + id + " not found.")
+    public UserDetailResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("User with id " + userId + " not found.")
         );
 
         modelMapper.map(request, user);
@@ -104,15 +113,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ActionResponseDto uploadUserAvatar(UUID id, MultipartFile file) {
+    public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
             throw new BusinessException("User's avatar must be an image.");
         }
 
         try {
-            String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, id.toString(), file.getBytes()).getUrl();
-            User user = userRepository.findById(id).orElseThrow(
-                    () -> new NotFoundException("User with id " + id + " not found.")
+            String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, userId.toString(), file.getBytes()).getUrl();
+            User user = userRepository.findById(userId).orElseThrow(
+                    () -> new NotFoundException("User with id " + userId + " not found.")
             );
 
             user.setAvatarUrl(avatarUrl);

@@ -4,6 +4,7 @@ import com.study.studypal.dtos.Shared.ActionResponseDto;
 import com.study.studypal.dtos.User.request.UpdateUserRequestDto;
 import com.study.studypal.dtos.User.response.ListUserResponseDto;
 import com.study.studypal.dtos.User.response.UserDetailResponseDto;
+import com.study.studypal.dtos.User.response.UserSummaryResponseDto;
 import com.study.studypal.exceptions.ErrorResponse;
 import com.study.studypal.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,12 +31,21 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @Operation(summary = "Get user's information.")
+    @Operation(summary = "Get user's profile.")
     @ApiResponse(responseCode = "200", description = "Get successfully.")
     @ApiResponse(responseCode = "404", description = "Not found.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<UserDetailResponseDto> getUserInfo(@AuthenticationPrincipal UUID userId) {
-        return ResponseEntity.ok(userService.getUserById(userId));
+    public ResponseEntity<UserDetailResponseDto> getUserProfile(@AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.ok(userService.getUserProfile(userId));
+    }
+
+    @GetMapping("/summary")
+    @Operation(summary = "Get user's summary profile.")
+    @ApiResponse(responseCode = "200", description = "Get successfully.")
+    @ApiResponse(responseCode = "404", description = "Not found.",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<UserSummaryResponseDto> getUserSummaryProfile(@AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.ok(userService.getUserSummaryProfile(userId));
     }
 
     @GetMapping("/search")
