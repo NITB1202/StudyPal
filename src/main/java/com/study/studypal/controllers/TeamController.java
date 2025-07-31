@@ -52,7 +52,7 @@ public class TeamController {
     }
 
     @GetMapping("/code/{teamCode}")
-    @Operation(summary = "Get team's information by team code.")
+    @Operation(summary = "Get team's profile by team code.")
     @ApiResponse(responseCode = "200", description = "Get successfully")
     @ApiResponse(responseCode = "404", description = "Not found.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -84,7 +84,7 @@ public class TeamController {
     }
 
     @PatchMapping("/{teamId}")
-    @Operation(summary = "Update team's information.")
+    @Operation(summary = "Update team's profile.")
     @ApiResponse(responseCode = "200", description = "Update successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid request body.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
