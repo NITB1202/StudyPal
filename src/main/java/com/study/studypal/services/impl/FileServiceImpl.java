@@ -9,12 +9,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
     private final Cloudinary cloudinary;
+    private final static List<String> validResourceTypes = List.of("image", "video", "raw");
 
     @Override
     public FileResponseDto uploadFile(String folderPath, String publicId, byte[] bytes) {
@@ -55,9 +57,13 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void deleteFile(String publicId) {
+    public void deleteFile(String publicId, String resourceType) {
+        if(!validResourceTypes.contains(resourceType)){
+            throw new BusinessException("Invalid resource type.");
+        }
+
         try {
-            cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "raw"));
+            cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
         }
         catch (IOException e) {
             throw new BusinessException("Error while deleting file.");

@@ -3,9 +3,10 @@ package com.study.studypal.entities;
 import com.study.studypal.enums.TeamRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -13,20 +14,22 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "teams_users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "team_id"})
-})
+@Table(name = "teams_users")
 public class TeamUser {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
-    private UUID id;
+    @EmbeddedId
+    private TeamUserId id;
 
-    @Column(name = "team_id", nullable = false)
-    private UUID teamId;
+    @MapsId("userId")
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    @MapsId("teamId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
@@ -35,4 +38,3 @@ public class TeamUser {
     @Column(name = "role", nullable = false)
     private TeamRole role;
 }
-

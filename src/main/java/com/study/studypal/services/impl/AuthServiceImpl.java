@@ -124,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
         ActionResponseDto validateResponse = accountService.validateAccount(request.getEmail(), request.getPassword());
 
         if(validateResponse.isSuccess()) {
-            String verificationCode = codeService.generateCode(request.getEmail(), VerificationType.REGISTER);
+            String verificationCode = codeService.generateVerificationCode(request.getEmail(), VerificationType.REGISTER);
             mailService.sendVerificationEmail(request.getEmail(), verificationCode);
 
             String message = " A verification code has been sent to the registered email.";
@@ -168,7 +168,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ActionResponseDto sendResetPasswordCode(String email) {
         if(accountService.isEmailRegistered(email)) {
-            String verificationCode = codeService.generateCode(email, VerificationType.RESET_PASSWORD);
+            String verificationCode = codeService.generateVerificationCode(email, VerificationType.RESET_PASSWORD);
             mailService.sendVerificationEmail(email, verificationCode);
 
             return ActionResponseDto.builder()

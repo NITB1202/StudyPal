@@ -16,7 +16,7 @@ public class CodeServiceImpl implements CodeService {
     private static final int MINUTES = 5;
 
     @Override
-    public String generateCode(String email, VerificationType type) {
+    public String generateVerificationCode(String email, VerificationType type) {
         String code = generateRandomCode();
         String key = generateKey(email, type);
 
@@ -36,6 +36,11 @@ public class CodeServiceImpl implements CodeService {
 
         redis.delete(key);
         return true;
+    }
+
+    @Override
+    public String generateTeamCode() {
+        return generateRandomCode();
     }
 
     private String generateKey(String email, VerificationType type) {

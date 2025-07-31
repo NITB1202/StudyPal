@@ -19,7 +19,6 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -85,7 +84,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ListUserResponseDto searchUsersByName(UUID userId, String keyword, UUID cursor, int size) {
         String handledKeyword = keyword.toLowerCase().trim();
-        Pageable pageable = PageRequest.of(0, size, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(0, size);
 
         List<User> users = userRepository.searchByNameWithCursor(userId, handledKeyword, cursor, pageable);
         List<UserSummaryResponseDto> summaries = modelMapper.map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType());

@@ -2,6 +2,7 @@ package com.study.studypal.dtos.Team.response;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -14,5 +15,5 @@ public class ListTeamResponseDto {
 
     private Long total;
 
-    private String nextCursor;
+    private LocalDateTime nextCursor;
 }
