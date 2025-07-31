@@ -76,12 +76,21 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
-    public TeamOverviewResponseDto getTeamOverview(UUID teamId) {
+    public TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
                 ()->new NotFoundException("Team not found.")
         );
 
-        return modelMapper.map(team, TeamOverviewResponseDto.class);
+        TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
+                ()->new NotFoundException("You are not a member of this team.")
+        );
+
+        TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
+        if(membership.getRole() == TeamRole.MEMBER){
+            overview.setTeamCode(null);
+        }
+
+        return overview;
     }
 
     @Override
@@ -106,7 +115,7 @@ public class TeamServiceImpl implements TeamService {
 
         UUID lastTeamId = teams.get(teams.size() - 1).getId();
         TeamUser membership = teamUserRepository.findById(new TeamUserId(lastTeamId, userId)).orElseThrow(
-                ()->new NotFoundException("Membership not found.")
+                ()->new NotFoundException("You are not a member of this team.")
         );
         LocalDateTime nextCursor = !teams.isEmpty() && teams.size() == size ? membership.getJoinedAt() : null;
 
@@ -129,7 +138,7 @@ public class TeamServiceImpl implements TeamService {
 
         UUID lastTeamId = teams.get(teams.size() - 1).getId();
         TeamUser membership = teamUserRepository.findById(new TeamUserId(lastTeamId, userId)).orElseThrow(
-                ()->new NotFoundException("Membership not found.")
+                ()->new NotFoundException("You are not a member of this team.")
         );
         LocalDateTime nextCursor = !teams.isEmpty() && teams.size() == size ? membership.getJoinedAt() : null;
 
@@ -233,7 +242,7 @@ public class TeamServiceImpl implements TeamService {
 
     private void validateUpdateTeamPermission(UUID userId, UUID teamId) {
         TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
-                ()->new NotFoundException("Membership not found.")
+                ()->new NotFoundException("You are not a member of this team.")
         );
 
         if(membership.getRole() != TeamRole.CREATOR) {

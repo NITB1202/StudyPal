@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public interface TeamService {
     TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request);
-    TeamOverviewResponseDto getTeamOverview(UUID teamId);
+    TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId);
     TeamProfileResponseDto getTeamProfileByTeamCode(String teamCode);
     ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size);
     ListTeamResponseDto searchUserJoinedTeamsByName(UUID userId, String keyword, LocalDateTime cursor, int size);
