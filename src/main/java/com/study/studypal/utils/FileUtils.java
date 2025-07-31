@@ -3,7 +3,6 @@ package com.study.studypal.utils;
 import org.springframework.web.multipart.MultipartFile;
 
 public class FileUtils {
-
     public static boolean isDocument(MultipartFile file) {
         String filename = file.getOriginalFilename();
         if (filename == null) {

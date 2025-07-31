@@ -74,14 +74,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ListUserResponseDto searchUserByName(String keyword, UUID cursor, int size) {
+    public ListUserResponseDto searchUsersByName(UUID userId, String keyword, UUID cursor, int size) {
         String handledKeyword = keyword.toLowerCase().trim();
         Pageable pageable = PageRequest.of(0, size, Sort.by("id").ascending());
 
-        List<User> users = userRepository.searchByNameWithCursor(handledKeyword, cursor, pageable);
+        List<User> users = userRepository.searchByNameWithCursor(userId, handledKeyword, cursor, pageable);
         List<UserSummaryResponseDto> summaries = modelMapper.map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType());
 
-        long total = userRepository.countByName(handledKeyword);
+        long total = userRepository.countByName(userId, handledKeyword);
         UUID nextCursor = !users.isEmpty() && users.size() == size ? users.get(users.size() - 1).getId() : null;
 
         return ListUserResponseDto.builder()

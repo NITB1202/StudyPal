@@ -12,7 +12,7 @@ public interface UserService {
     UUID createDefaultProfile(String name);
     UUID createProfile(String name, String avatarUrl);
     UserDetailResponseDto getUserById(UUID id);
-    ListUserResponseDto searchUserByName(String keyword, UUID cursor, int size);
+    ListUserResponseDto searchUsersByName(UUID userId, String keyword, UUID cursor, int size);
     UserDetailResponseDto updateUser(UUID id, UpdateUserRequestDto request);
     ActionResponseDto uploadUserAvatar(UUID id, MultipartFile file);
 }
