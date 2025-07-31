@@ -38,20 +38,22 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
-                            response.getWriter().write("{\"error\": \"Invalid access token.\"}");
+                            String errorMessage = authException.getMessage();
+                            response.getWriter().write("{\"error\": \"" + errorMessage + "\"}");
                         })
                 )
-                .authorizeHttpRequests(auth ->{
-                    auth.requestMatchers(
-                            "/swagger/**",
-                            "/swagger-ui/**",
-                            "/v3/api-docs/**",
-                            "/swagger-resources/**",
-                            "/webjars/**",
-                            "/h2-console/**",
-                            "/api/auth/**"
-                    ).permitAll();
-                });
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/swagger/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/h2-console/**",
+                                "/api/auth/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                );
         return http.build();
     }
 
