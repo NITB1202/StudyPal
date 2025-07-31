@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @PatchMapping
-    @Operation(summary = "Update user's information.")
+    @Operation(summary = "Update user's profile.")
     @ApiResponse(responseCode = "200", description = "Update successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid request body.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
