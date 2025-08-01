@@ -13,7 +13,7 @@ import java.util.UUID;
 public class TeamMemberResponseDto {
     private UUID userId;
 
-    private String username;
+    private String name;
 
     private String avatarUrl;
 

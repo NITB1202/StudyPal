@@ -49,6 +49,7 @@ public class TeamServiceImpl implements TeamService {
     private static final String AVATAR_FOLDER = "teams";
 
     @Override
+    @Transactional
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
             throw new BusinessException("You have already created a team with the same name.");
@@ -67,8 +68,7 @@ public class TeamServiceImpl implements TeamService {
                         .teamCode(randomCode)
                         .createdAt(LocalDateTime.now())
                         .creator(creator)
-                        .totalMembers(0)
-                        .avatarUrl("")
+                        .totalMembers(1)
                         .build();
 
                 teamRepository.save(team);
