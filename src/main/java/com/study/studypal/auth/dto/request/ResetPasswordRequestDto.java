@@ -1,4 +1,4 @@
-package com.study.studypal.dtos.Auth.request;
+package com.study.studypal.auth.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;

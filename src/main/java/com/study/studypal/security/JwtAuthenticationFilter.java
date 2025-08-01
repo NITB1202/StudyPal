@@ -1,6 +1,6 @@
 package com.study.studypal.security;
 
-import com.study.studypal.enums.AccountRole;
+import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.exceptions.UnauthorizedException;
 import com.study.studypal.utils.JwtUtils;
 import jakarta.servlet.FilterChain;

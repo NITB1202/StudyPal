@@ -1,8 +1,8 @@
-package com.study.studypal.services;
+package com.study.studypal.auth.service;
 
-import com.study.studypal.dtos.Auth.request.*;
-import com.study.studypal.dtos.Auth.response.GenerateAccessTokenResponseDto;
-import com.study.studypal.dtos.Auth.response.LoginResponseDto;
+import com.study.studypal.auth.dto.request.*;
+import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
+import com.study.studypal.auth.dto.response.LoginResponseDto;
 import com.study.studypal.dtos.Shared.ActionResponseDto;
 
 import java.util.UUID;

@@ -1,14 +1,14 @@
-package com.study.studypal.services.impl;
+package com.study.studypal.auth.service.impl;
 
 import com.study.studypal.dtos.Shared.ActionResponseDto;
-import com.study.studypal.entities.Account;
-import com.study.studypal.enums.AccountRole;
-import com.study.studypal.enums.AuthProvider;
-import com.study.studypal.enums.ExternalAuthProvider;
+import com.study.studypal.auth.entity.Account;
+import com.study.studypal.auth.enums.AccountRole;
+import com.study.studypal.auth.enums.AuthProvider;
+import com.study.studypal.auth.enums.ExternalAuthProvider;
 import com.study.studypal.exceptions.BusinessException;
 import com.study.studypal.exceptions.NotFoundException;
-import com.study.studypal.repositories.AccountRepository;
-import com.study.studypal.services.AccountService;
+import com.study.studypal.auth.repository.AccountRepository;
+import com.study.studypal.auth.service.AccountService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

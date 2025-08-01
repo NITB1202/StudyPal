@@ -1,6 +1,6 @@
-package com.study.studypal.repositories;
+package com.study.studypal.auth.repository;
 
-import com.study.studypal.entities.Account;
+import com.study.studypal.auth.entity.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

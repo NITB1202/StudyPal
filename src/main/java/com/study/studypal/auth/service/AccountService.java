@@ -1,8 +1,8 @@
-package com.study.studypal.services;
+package com.study.studypal.auth.service;
 
 import com.study.studypal.dtos.Shared.ActionResponseDto;
-import com.study.studypal.entities.Account;
-import com.study.studypal.enums.ExternalAuthProvider;
+import com.study.studypal.auth.entity.Account;
+import com.study.studypal.auth.enums.ExternalAuthProvider;
 
 import java.util.UUID;
 

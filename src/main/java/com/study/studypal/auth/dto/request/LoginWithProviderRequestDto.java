@@ -1,6 +1,6 @@
-package com.study.studypal.dtos.Auth.request;
+package com.study.studypal.auth.dto.request;
 
-import com.study.studypal.enums.ExternalAuthProvider;
+import com.study.studypal.auth.enums.ExternalAuthProvider;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

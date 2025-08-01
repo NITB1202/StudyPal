@@ -1,6 +1,6 @@
 package com.study.studypal.utils;
 
-import com.study.studypal.enums.AccountRole;
+import com.study.studypal.auth.enums.AccountRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

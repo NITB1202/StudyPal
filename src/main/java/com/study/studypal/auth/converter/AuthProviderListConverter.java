@@ -1,6 +1,6 @@
-package com.study.studypal.converters;
+package com.study.studypal.auth.converter;
 
-import com.study.studypal.enums.AuthProvider;
+import com.study.studypal.auth.enums.AuthProvider;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

@@ -1,11 +1,11 @@
-package com.study.studypal.controllers;
+package com.study.studypal.auth.controller;
 
-import com.study.studypal.dtos.Auth.request.*;
-import com.study.studypal.dtos.Auth.response.GenerateAccessTokenResponseDto;
-import com.study.studypal.dtos.Auth.response.LoginResponseDto;
+import com.study.studypal.auth.dto.request.*;
+import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
+import com.study.studypal.auth.dto.response.LoginResponseDto;
 import com.study.studypal.dtos.Shared.ActionResponseDto;
 import com.study.studypal.exceptions.ErrorResponse;
-import com.study.studypal.services.AuthService;
+import com.study.studypal.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

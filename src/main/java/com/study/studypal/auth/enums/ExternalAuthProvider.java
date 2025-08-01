@@ -1,4 +1,4 @@
-package com.study.studypal.enums;
+package com.study.studypal.auth.enums;
 
 public enum ExternalAuthProvider {
     GOOGLE

@@ -1,11 +1,13 @@
-package com.study.studypal.services.impl;
+package com.study.studypal.auth.service.impl;
 
-import com.study.studypal.dtos.Auth.internal.OAuthUserInfoDto;
-import com.study.studypal.dtos.Auth.request.*;
-import com.study.studypal.dtos.Auth.response.GenerateAccessTokenResponseDto;
-import com.study.studypal.dtos.Auth.response.LoginResponseDto;
+import com.study.studypal.auth.dto.internal.OAuthUserInfoDto;
+import com.study.studypal.auth.dto.request.*;
+import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
+import com.study.studypal.auth.dto.response.LoginResponseDto;
+import com.study.studypal.auth.service.AccountService;
+import com.study.studypal.auth.service.AuthService;
 import com.study.studypal.dtos.Shared.ActionResponseDto;
-import com.study.studypal.entities.Account;
+import com.study.studypal.auth.entity.Account;
 import com.study.studypal.enums.VerificationType;
 import com.study.studypal.exceptions.BusinessException;
 import com.study.studypal.exceptions.UnauthorizedException;

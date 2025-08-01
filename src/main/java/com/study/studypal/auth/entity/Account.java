@@ -1,8 +1,8 @@
-package com.study.studypal.entities;
+package com.study.studypal.auth.entity;
 
-import com.study.studypal.converters.AuthProviderListConverter;
-import com.study.studypal.enums.AccountRole;
-import com.study.studypal.enums.AuthProvider;
+import com.study.studypal.auth.converter.AuthProviderListConverter;
+import com.study.studypal.auth.enums.AccountRole;
+import com.study.studypal.auth.enums.AuthProvider;
 import jakarta.persistence.*;
 import lombok.*;
 
