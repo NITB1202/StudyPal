@@ -3,6 +3,7 @@ package com.study.studypal.entities;
 import com.study.studypal.enums.TeamRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -37,4 +38,13 @@ public class TeamUser {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private TeamRole role;
+
+    @Formula("""
+        CASE role
+            WHEN 'CREATOR' THEN 1
+            WHEN 'ADMIN' THEN 2
+            WHEN 'MEMBER' THEN 3
+        END
+    """)
+    private int rolePriority;
 }
