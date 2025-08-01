@@ -270,4 +270,38 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                 .message("Leave team successfully.")
                 .build();
     }
+
+    @Override
+    public void createMembership(UUID teamId, UUID userId, TeamRole role) {
+        Team team = entityManager.getReference(Team.class, teamId);
+        User user = entityManager.getReference(User.class, userId);
+
+        TeamUser membership = TeamUser.builder()
+                .id(new TeamUserId(team.getId(), userId))
+                .team(team)
+                .user(user)
+                .role(TeamRole.CREATOR)
+                .joinedAt(LocalDateTime.now())
+                .build();
+
+        teamUserRepository.save(membership);
+    }
+
+    @Override
+    public TeamUser getMemberShip(UUID teamId, UUID userId) {
+        return teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
+                ()->new NotFoundException("You are not a member of this team.")
+        );
+    }
+
+    @Override
+    public void validateUpdateTeamPermission(UUID userId, UUID teamId) {
+        TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
+                ()->new NotFoundException("You are not a member of this team.")
+        );
+
+        if(membership.getRole() != TeamRole.CREATOR) {
+            throw new BusinessException("Only creator has permission to update the team.");
+        }
+    }
 }

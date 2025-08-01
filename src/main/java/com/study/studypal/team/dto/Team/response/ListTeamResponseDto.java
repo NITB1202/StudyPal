@@ -1,5 +1,6 @@
 package com.study.studypal.team.dto.Team.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -15,5 +16,6 @@ public class ListTeamResponseDto {
 
     private Long total;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime nextCursor;
 }

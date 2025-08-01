@@ -5,14 +5,10 @@ import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.Team.response.*;
 import com.study.studypal.team.entity.Team;
-import com.study.studypal.team.entity.TeamUser;
-import com.study.studypal.team.entity.TeamUserId;
 import com.study.studypal.user.entity.User;
-import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.team.repository.TeamRepository;
-import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.team.service.TeamService;
@@ -39,7 +35,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
-    private final TeamUserRepository teamUserRepository;
     private final CodeService codeService;
     private final FileService fileService;
     private final ModelMapper modelMapper;
@@ -55,8 +50,8 @@ public class TeamServiceImpl implements TeamService {
             throw new BusinessException("You have already created a team with the same name.");
         }
 
-        User creator = entityManager.getReference(User.class, userId);
         int retry = 0;
+        User creator = entityManager.getReference(User.class, userId);
 
         while(true){
             String randomCode = codeService.generateTeamCode();
@@ -73,16 +68,6 @@ public class TeamServiceImpl implements TeamService {
 
                 teamRepository.save(team);
 
-                TeamUser membership = TeamUser.builder()
-                        .id(new TeamUserId(team.getId(), userId))
-                        .team(team)
-                        .user(creator)
-                        .role(TeamRole.CREATOR)
-                        .joinedAt(LocalDateTime.now())
-                        .build();
-
-                teamUserRepository.save(membership);
-
                 return modelMapper.map(team, TeamResponseDto.class);
             }
             catch (DataIntegrityViolationException e){
@@ -98,16 +83,7 @@ public class TeamServiceImpl implements TeamService {
                 ()->new NotFoundException("Team not found.")
         );
 
-        TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
-                ()->new NotFoundException("You are not a member of this team.")
-        );
-
-        TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
-        if(membership.getRole() == TeamRole.MEMBER){
-            overview.setTeamCode(null);
-        }
-
-        return overview;
+        return modelMapper.map(team, TeamOverviewResponseDto.class);
     }
 
     @Override
@@ -136,16 +112,9 @@ public class TeamServiceImpl implements TeamService {
 
         long total = teamRepository.countUserJoinedTeam(userId);
 
-        UUID lastTeamId = teams.get(teams.size() - 1).getId();
-        TeamUser membership = teamUserRepository.findById(new TeamUserId(lastTeamId, userId)).orElseThrow(
-                ()->new NotFoundException("You are not a member of this team.")
-        );
-        LocalDateTime nextCursor = !teams.isEmpty() && teams.size() == size ? membership.getJoinedAt() : null;
-
         return ListTeamResponseDto.builder()
                 .teams(summaries)
                 .total(total)
-                .nextCursor(nextCursor)
                 .build();
     }
 
@@ -159,16 +128,9 @@ public class TeamServiceImpl implements TeamService {
 
         long total = teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
 
-        UUID lastTeamId = teams.get(teams.size() - 1).getId();
-        TeamUser membership = teamUserRepository.findById(new TeamUserId(lastTeamId, userId)).orElseThrow(
-                ()->new NotFoundException("You are not a member of this team.")
-        );
-        LocalDateTime nextCursor = !teams.isEmpty() && teams.size() == size ? membership.getJoinedAt() : null;
-
         return ListTeamResponseDto.builder()
                 .teams(summaries)
                 .total(total)
-                .nextCursor(nextCursor)
                 .build();
     }
 
@@ -177,8 +139,6 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamId).orElseThrow(
                 () -> new NotFoundException("Team not found.")
         );
-
-        validateUpdateTeamPermission(userId, teamId);
 
         if(request.getName() != null) {
             if(request.getName().isEmpty()) {
@@ -205,8 +165,6 @@ public class TeamServiceImpl implements TeamService {
                 () -> new NotFoundException("Team not found.")
         );
 
-        validateUpdateTeamPermission(userId, teamId);
-
         String teamCode = codeService.generateTeamCode();
         while(teamRepository.existsByTeamCode(teamCode)){
             teamCode = codeService.generateTeamCode();
@@ -228,8 +186,6 @@ public class TeamServiceImpl implements TeamService {
                 ()-> new NotFoundException("Team not found.")
         );
 
-        validateUpdateTeamPermission(userId, teamId);
-
         fileService.deleteFile(team.getId().toString(), "image");
         teamRepository.delete(team);
 
@@ -244,8 +200,6 @@ public class TeamServiceImpl implements TeamService {
         if(!FileUtils.isImage(file)) {
             throw new BusinessException("Team's avatar must be an image.");
         }
-
-        validateUpdateTeamPermission(userId, teamId);
 
         try {
             String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
@@ -263,16 +217,6 @@ public class TeamServiceImpl implements TeamService {
 
         } catch (IOException e) {
             throw new BusinessException("Reading file failed.");
-        }
-    }
-
-    private void validateUpdateTeamPermission(UUID userId, UUID teamId) {
-        TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
-                ()->new NotFoundException("You are not a member of this team.")
-        );
-
-        if(membership.getRole() != TeamRole.CREATOR) {
-            throw new BusinessException("Only creator has permission to update the team.");
         }
     }
 }
