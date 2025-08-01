@@ -1,4 +1,4 @@
-package com.study.studypal.utils;
+package com.study.studypal.common.util;
 
 import com.study.studypal.auth.enums.AccountRole;
 import io.jsonwebtoken.Claims;

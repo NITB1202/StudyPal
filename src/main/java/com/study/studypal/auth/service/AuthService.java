@@ -3,7 +3,7 @@ package com.study.studypal.auth.service;
 import com.study.studypal.auth.dto.request.*;
 import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 
 import java.util.UUID;
 

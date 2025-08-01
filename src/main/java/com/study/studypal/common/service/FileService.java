@@ -1,6 +1,6 @@
-package com.study.studypal.services;
+package com.study.studypal.common.service;
 
-import com.study.studypal.dtos.Shared.FileResponseDto;
+import com.study.studypal.common.dto.FileResponseDto;
 
 public interface FileService {
     FileResponseDto uploadFile(String folderPath, String publicId, byte[] bytes);

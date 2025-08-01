@@ -1,6 +1,6 @@
 package com.study.studypal.services.impl;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.dtos.Team.request.CreateTeamRequestDto;
 import com.study.studypal.dtos.Team.request.UpdateTeamRequestDto;
 import com.study.studypal.dtos.Team.response.*;
@@ -9,14 +9,14 @@ import com.study.studypal.entities.TeamUser;
 import com.study.studypal.entities.TeamUserId;
 import com.study.studypal.entities.User;
 import com.study.studypal.enums.TeamRole;
-import com.study.studypal.exceptions.BusinessException;
-import com.study.studypal.exceptions.NotFoundException;
+import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.repositories.TeamRepository;
 import com.study.studypal.repositories.TeamUserRepository;
-import com.study.studypal.services.CodeService;
-import com.study.studypal.services.FileService;
+import com.study.studypal.common.service.CodeService;
+import com.study.studypal.common.service.FileService;
 import com.study.studypal.services.TeamService;
-import com.study.studypal.utils.FileUtils;
+import com.study.studypal.common.util.FileUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;

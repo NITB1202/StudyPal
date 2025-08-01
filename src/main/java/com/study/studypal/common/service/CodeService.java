@@ -1,6 +1,6 @@
-package com.study.studypal.services;
+package com.study.studypal.common.service;
 
-import com.study.studypal.enums.VerificationType;
+import com.study.studypal.auth.enums.VerificationType;
 
 public interface CodeService {
     String generateVerificationCode(String email, VerificationType type);

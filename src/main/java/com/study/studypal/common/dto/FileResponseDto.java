@@ -1,4 +1,4 @@
-package com.study.studypal.dtos.Shared;
+package com.study.studypal.common.dto;
 
 import lombok.*;
 

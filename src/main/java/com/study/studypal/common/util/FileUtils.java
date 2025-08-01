@@ -1,4 +1,4 @@
-package com.study.studypal.utils;
+package com.study.studypal.common.util;
 
 import org.springframework.web.multipart.MultipartFile;
 

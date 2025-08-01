@@ -1,7 +1,7 @@
-package com.study.studypal.services.impl;
+package com.study.studypal.common.service.impl;
 
-import com.study.studypal.exceptions.BusinessException;
-import com.study.studypal.services.MailService;
+import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

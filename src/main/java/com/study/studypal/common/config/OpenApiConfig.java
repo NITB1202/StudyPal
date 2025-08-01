@@ -1,4 +1,4 @@
-package com.study.studypal.configs;
+package com.study.studypal.common.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;

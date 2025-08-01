@@ -1,4 +1,4 @@
-package com.study.studypal.exceptions;
+package com.study.studypal.common.exception;
 
 public class NotFoundException extends RuntimeException{
     public NotFoundException(String message) {

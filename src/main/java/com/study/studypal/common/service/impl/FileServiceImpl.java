@@ -1,10 +1,10 @@
-package com.study.studypal.services.impl;
+package com.study.studypal.common.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.study.studypal.dtos.Shared.FileResponseDto;
-import com.study.studypal.exceptions.BusinessException;
-import com.study.studypal.services.FileService;
+import com.study.studypal.common.dto.FileResponseDto;
+import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

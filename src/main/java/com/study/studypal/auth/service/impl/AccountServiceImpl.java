@@ -1,12 +1,12 @@
 package com.study.studypal.auth.service.impl;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.enums.AuthProvider;
 import com.study.studypal.auth.enums.ExternalAuthProvider;
-import com.study.studypal.exceptions.BusinessException;
-import com.study.studypal.exceptions.NotFoundException;
+import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
 import jakarta.transaction.Transactional;

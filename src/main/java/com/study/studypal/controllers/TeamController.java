@@ -1,13 +1,13 @@
 package com.study.studypal.controllers;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.dtos.Team.request.CreateTeamRequestDto;
 import com.study.studypal.dtos.Team.request.UpdateTeamRequestDto;
 import com.study.studypal.dtos.Team.response.ListTeamResponseDto;
 import com.study.studypal.dtos.Team.response.TeamOverviewResponseDto;
 import com.study.studypal.dtos.Team.response.TeamProfileResponseDto;
 import com.study.studypal.dtos.Team.response.TeamResponseDto;
-import com.study.studypal.exceptions.ErrorResponse;
+import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.services.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

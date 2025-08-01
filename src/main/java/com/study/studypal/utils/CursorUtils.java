@@ -1,7 +1,7 @@
 package com.study.studypal.utils;
 
 import com.study.studypal.dtos.TeamUser.internal.DecodedCursor;
-import com.study.studypal.exceptions.BusinessException;
+import com.study.studypal.common.exception.BusinessException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

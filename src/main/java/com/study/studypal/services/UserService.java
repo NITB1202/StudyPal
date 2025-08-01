@@ -1,6 +1,6 @@
 package com.study.studypal.services;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.dtos.User.request.UpdateUserRequestDto;
 import com.study.studypal.dtos.User.response.ListUserResponseDto;
 import com.study.studypal.dtos.User.response.UserDetailResponseDto;

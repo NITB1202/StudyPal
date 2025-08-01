@@ -1,4 +1,4 @@
-package com.study.studypal.exceptions;
+package com.study.studypal.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

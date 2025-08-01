@@ -1,4 +1,4 @@
-package com.study.studypal.configs;
+package com.study.studypal.common.config;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Value;

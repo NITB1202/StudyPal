@@ -1,11 +1,11 @@
 package com.study.studypal.controllers;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.dtos.TeamUser.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.dtos.TeamUser.request.UpdateMemberRoleRequestDto;
 import com.study.studypal.dtos.TeamUser.response.ListTeamMemberResponseDto;
 import com.study.studypal.dtos.TeamUser.response.UserRoleInTeamResponseDto;
-import com.study.studypal.exceptions.ErrorResponse;
+import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.services.TeamMembershipService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

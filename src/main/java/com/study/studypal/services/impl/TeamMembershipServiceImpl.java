@@ -1,6 +1,6 @@
 package com.study.studypal.services.impl;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.dtos.TeamUser.internal.DecodedCursor;
 import com.study.studypal.dtos.TeamUser.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.dtos.TeamUser.request.UpdateMemberRoleRequestDto;
@@ -12,8 +12,8 @@ import com.study.studypal.entities.TeamUser;
 import com.study.studypal.entities.TeamUserId;
 import com.study.studypal.entities.User;
 import com.study.studypal.enums.TeamRole;
-import com.study.studypal.exceptions.BusinessException;
-import com.study.studypal.exceptions.NotFoundException;
+import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.repositories.TeamRepository;
 import com.study.studypal.repositories.TeamUserRepository;
 import com.study.studypal.services.TeamMembershipService;

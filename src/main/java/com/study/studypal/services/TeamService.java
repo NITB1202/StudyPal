@@ -1,6 +1,6 @@
 package com.study.studypal.services;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.dtos.Team.request.CreateTeamRequestDto;
 import com.study.studypal.dtos.Team.request.UpdateTeamRequestDto;
 import com.study.studypal.dtos.Team.response.ListTeamResponseDto;

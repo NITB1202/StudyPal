@@ -1,6 +1,6 @@
 package com.study.studypal.services;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.dtos.TeamUser.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.dtos.TeamUser.request.UpdateMemberRoleRequestDto;
 import com.study.studypal.dtos.TeamUser.response.ListTeamMemberResponseDto;

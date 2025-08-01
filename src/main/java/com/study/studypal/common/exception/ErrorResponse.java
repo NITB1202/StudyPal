@@ -1,4 +1,4 @@
-package com.study.studypal.exceptions;
+package com.study.studypal.common.exception;
 
 import lombok.Getter;
 import lombok.Setter;

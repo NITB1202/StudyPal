@@ -1,7 +1,7 @@
-package com.study.studypal.services.impl;
+package com.study.studypal.common.service.impl;
 
-import com.study.studypal.enums.VerificationType;
-import com.study.studypal.services.CodeService;
+import com.study.studypal.auth.enums.VerificationType;
+import com.study.studypal.common.service.CodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

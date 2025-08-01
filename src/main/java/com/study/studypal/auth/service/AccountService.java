@@ -1,6 +1,6 @@
 package com.study.studypal.auth.service;
 
-import com.study.studypal.dtos.Shared.ActionResponseDto;
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.ExternalAuthProvider;
 
