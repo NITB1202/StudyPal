@@ -1,5 +1,6 @@
 package com.study.studypal.entities;
 
+import com.study.studypal.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

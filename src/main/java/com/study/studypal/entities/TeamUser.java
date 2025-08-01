@@ -1,6 +1,7 @@
 package com.study.studypal.entities;
 
 import com.study.studypal.enums.TeamRole;
+import com.study.studypal.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Formula;

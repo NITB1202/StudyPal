@@ -1,12 +1,12 @@
-package com.study.studypal.controllers;
+package com.study.studypal.user.controller;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.dtos.User.request.UpdateUserRequestDto;
-import com.study.studypal.dtos.User.response.ListUserResponseDto;
-import com.study.studypal.dtos.User.response.UserDetailResponseDto;
-import com.study.studypal.dtos.User.response.UserSummaryResponseDto;
+import com.study.studypal.user.dto.request.UpdateUserRequestDto;
+import com.study.studypal.user.dto.response.ListUserResponseDto;
+import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
-import com.study.studypal.services.UserService;
+import com.study.studypal.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

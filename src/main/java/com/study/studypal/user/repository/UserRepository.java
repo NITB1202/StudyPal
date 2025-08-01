@@ -1,6 +1,6 @@
-package com.study.studypal.repositories;
+package com.study.studypal.user.repository;
 
-import com.study.studypal.entities.User;
+import com.study.studypal.user.entity.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

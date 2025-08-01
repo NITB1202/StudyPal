@@ -1,4 +1,4 @@
-package com.study.studypal.dtos.User.response;
+package com.study.studypal.user.dto.response;
 
 import lombok.*;
 

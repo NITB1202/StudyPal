@@ -10,7 +10,7 @@ import com.study.studypal.dtos.TeamUser.response.UserRoleInTeamResponseDto;
 import com.study.studypal.entities.Team;
 import com.study.studypal.entities.TeamUser;
 import com.study.studypal.entities.TeamUserId;
-import com.study.studypal.entities.User;
+import com.study.studypal.user.entity.User;
 import com.study.studypal.enums.TeamRole;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;

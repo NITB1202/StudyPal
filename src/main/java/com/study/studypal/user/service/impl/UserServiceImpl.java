@@ -1,17 +1,17 @@
-package com.study.studypal.services.impl;
+package com.study.studypal.user.service.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.dtos.User.request.UpdateUserRequestDto;
-import com.study.studypal.dtos.User.response.ListUserResponseDto;
-import com.study.studypal.dtos.User.response.UserDetailResponseDto;
-import com.study.studypal.dtos.User.response.UserSummaryResponseDto;
-import com.study.studypal.entities.User;
-import com.study.studypal.enums.Gender;
+import com.study.studypal.user.dto.request.UpdateUserRequestDto;
+import com.study.studypal.user.dto.response.ListUserResponseDto;
+import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserSummaryResponseDto;
+import com.study.studypal.user.entity.User;
+import com.study.studypal.user.enums.Gender;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
-import com.study.studypal.repositories.UserRepository;
+import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.common.service.FileService;
-import com.study.studypal.services.UserService;
+import com.study.studypal.user.service.UserService;
 import com.study.studypal.common.util.FileUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

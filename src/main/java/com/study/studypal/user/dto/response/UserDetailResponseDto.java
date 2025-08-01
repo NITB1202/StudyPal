@@ -1,7 +1,7 @@
-package com.study.studypal.dtos.User.response;
+package com.study.studypal.user.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.study.studypal.enums.Gender;
+import com.study.studypal.user.enums.Gender;
 import lombok.*;
 
 import java.time.LocalDate;

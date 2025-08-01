@@ -1,10 +1,10 @@
-package com.study.studypal.services;
+package com.study.studypal.user.service;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.dtos.User.request.UpdateUserRequestDto;
-import com.study.studypal.dtos.User.response.ListUserResponseDto;
-import com.study.studypal.dtos.User.response.UserDetailResponseDto;
-import com.study.studypal.dtos.User.response.UserSummaryResponseDto;
+import com.study.studypal.user.dto.request.UpdateUserRequestDto;
+import com.study.studypal.user.dto.response.ListUserResponseDto;
+import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;

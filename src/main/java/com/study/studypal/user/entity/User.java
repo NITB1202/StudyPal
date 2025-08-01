@@ -1,6 +1,6 @@
-package com.study.studypal.entities;
+package com.study.studypal.user.entity;
 
-import com.study.studypal.enums.Gender;
+import com.study.studypal.user.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 

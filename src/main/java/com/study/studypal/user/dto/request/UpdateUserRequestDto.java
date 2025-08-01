@@ -1,7 +1,7 @@
-package com.study.studypal.dtos.User.request;
+package com.study.studypal.user.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.study.studypal.enums.Gender;
+import com.study.studypal.user.enums.Gender;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.*;
