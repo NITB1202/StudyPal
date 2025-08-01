@@ -14,5 +14,6 @@ import java.util.UUID;
 @EqualsAndHashCode
 public class TeamUserId implements Serializable {
     private UUID teamId;
+
     private UUID userId;
 }
