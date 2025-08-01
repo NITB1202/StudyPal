@@ -18,6 +18,8 @@ import com.study.studypal.repositories.TeamRepository;
 import com.study.studypal.repositories.TeamUserRepository;
 import com.study.studypal.services.TeamMembershipService;
 import com.study.studypal.utils.CursorUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +37,9 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
 
+    @PersistenceContext
+    private final EntityManager entityManager;
+
     @Override
     public ActionResponseDto joinTeam(UUID userId, String teamCode) {
         Team team = teamRepository.findByTeamCode(teamCode);
@@ -47,8 +52,12 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
             throw new BusinessException("You are already in the team.");
         }
 
+        User user = entityManager.getReference(User.class, userId);
+
         TeamUser membership = TeamUser.builder()
                 .id(new TeamUserId(team.getId(), userId))
+                .team(team)
+                .user(user)
                 .role(TeamRole.MEMBER)
                 .joinedAt(LocalDateTime.now())
                 .build();
@@ -67,7 +76,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     @Override
     public UserRoleInTeamResponseDto getUserRoleInTeam(UUID userId, UUID teamId) {
         TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
-                ()-> new NotFoundException("Membership not found.")
+                ()-> new NotFoundException("You are not in this team.")
         );
 
         return UserRoleInTeamResponseDto.builder()
@@ -142,7 +151,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                 )
                 .toList();
 
-        long total = teamUserRepository.countTeamMembersByName(userId, teamId, keyword);
+        long total = teamUserRepository.countTeamMembersByName(userId, teamId, handledKeyword);
         String nextCursor = !members.isEmpty() && members.size() == size ? members.get(members.size() - 1).getUserId().toString() : null;
 
         return ListTeamMemberResponseDto.builder()

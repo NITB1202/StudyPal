@@ -23,6 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RedisTemplate<String, Object> redis;
+    private static final String AUTH_PREFIX = "/api/auth";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -34,9 +35,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UUID userId = JwtUtils.extractId(accessToken);
             AccountRole role = JwtUtils.extractAccountRole(accessToken);
 
-            String storedAccessToken = (String) redis.opsForValue().get(JwtUtils.getAccessTokenRedisKey(userId));
-            if (storedAccessToken == null || !storedAccessToken.equals(accessToken)) {
-                throw new UnauthorizedException("Invalid or expired token.");
+            String path = request.getRequestURI();
+            if (!path.startsWith(AUTH_PREFIX)) {
+                String storedAccessToken = (String) redis.opsForValue().get(JwtUtils.getAccessTokenRedisKey(userId));
+                if (storedAccessToken == null || !storedAccessToken.equals(accessToken)) {
+                    throw new UnauthorizedException("Invalid or expired token.");
+                }
             }
 
             UsernamePasswordAuthenticationToken auth =
