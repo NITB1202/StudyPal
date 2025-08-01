@@ -22,4 +22,8 @@ public interface TeamService {
     ActionResponseDto resetTeamCode(UUID userId, UUID teamId);
     ActionResponseDto deleteTeam(UUID teamId, UUID userId);
     ActionResponseDto uploadTeamAvatar(UUID userId, UUID teamId, MultipartFile file);
+
+    UUID getTeamIdByTeamCode(String teamCode);
+    void increaseMember(UUID teamId);
+    void decreaseMember(UUID teamId);
 }

@@ -14,7 +14,6 @@ import com.study.studypal.user.entity.User;
 import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
-import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.team.service.TeamMembershipService;
 import com.study.studypal.team.util.CursorUtils;
@@ -35,24 +34,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamMembershipServiceImpl implements TeamMembershipService {
     private final TeamUserRepository teamUserRepository;
-    private final TeamRepository teamRepository;
 
     @PersistenceContext
     private final EntityManager entityManager;
 
     @Override
-    public ActionResponseDto joinTeam(UUID userId, String teamCode) {
-        Team team = teamRepository.findByTeamCode(teamCode);
-
-        if(team == null) {
-            throw new NotFoundException("Team code is incorrect.");
-        }
-
-        if(teamUserRepository.existsByUserIdAndTeamId(userId, team.getId())) {
+    public ActionResponseDto joinTeam(UUID userId, UUID teamId) {
+        if(teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
             throw new BusinessException("You are already in the team.");
         }
 
         User user = entityManager.getReference(User.class, userId);
+        Team team = entityManager.getReference(Team.class, teamId);
 
         TeamUser membership = TeamUser.builder()
                 .id(new TeamUserId(team.getId(), userId))
@@ -63,9 +56,6 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                 .build();
 
         teamUserRepository.save(membership);
-
-        team.setTotalMembers(team.getTotalMembers() + 1);
-        teamRepository.save(team);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -211,12 +201,12 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
         switch (userInfo.getRole()) {
             case CREATOR: {
-                removeTeamMember(memberInfo);
+                teamUserRepository.delete(memberInfo);
                 break;
             }
             case ADMIN: {
                 if(memberInfo.getRole() == TeamRole.MEMBER) {
-                    removeTeamMember(memberInfo);
+                    teamUserRepository.delete(memberInfo);
                 }
                 else {
                     throw new BusinessException("Administrators can only remove members.");
@@ -234,13 +224,6 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                 .build();
     }
 
-    private void removeTeamMember(TeamUser membership) {
-        teamUserRepository.delete(membership);
-        Team team = membership.getTeam();
-        team.setTotalMembers(team.getTotalMembers() - 1);
-        teamRepository.save(team);
-    }
-
     @Override
     @Transactional
     public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
@@ -250,19 +233,11 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
         teamUserRepository.delete(membership);
 
-        Team team = membership.getTeam();
-        team.setTotalMembers(team.getTotalMembers() - 1);
+        int totalMembers = teamUserRepository.getTotalMembers(teamId) - 1;
 
-        if(team.getTotalMembers() == 0) {
-            teamRepository.delete(team);
-        }
-        else {
-            if (membership.getRole() == TeamRole.CREATOR) {
-                throw new BusinessException("You are the creator of the team." +
-                        " Please hand over your responsibilities before leaving.");
-            }
-
-            teamRepository.save(team);
+        if(totalMembers > 0 && membership.getRole() == TeamRole.CREATOR) {
+            throw new BusinessException("You are the creator of the team." +
+                    " Please hand over your responsibilities before leaving.");
         }
 
         return ActionResponseDto.builder()
@@ -292,6 +267,12 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         return teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
                 ()->new NotFoundException("You are not a member of this team.")
         );
+    }
+
+    @Override
+    public LocalDateTime getUserJoinedTeamsListCursor(UUID userId, UUID lastTeamId, int listSize, int size) {
+        TeamUser membership = getMemberShip(lastTeamId, userId);
+        return listSize > 0 && listSize == size ? membership.getJoinedAt() : null;
     }
 
     @Override

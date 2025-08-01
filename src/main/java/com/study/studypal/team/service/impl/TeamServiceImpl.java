@@ -219,4 +219,42 @@ public class TeamServiceImpl implements TeamService {
             throw new BusinessException("Reading file failed.");
         }
     }
+
+    @Override
+    public UUID getTeamIdByTeamCode(String teamCode) {
+        Team team = teamRepository.findByTeamCode(teamCode);
+
+        if(team == null) {
+            throw new NotFoundException("Team code is incorrect.");
+        }
+
+        return team.getId();
+    }
+
+    @Override
+    public void increaseMember(UUID teamId) {
+        Team team = teamRepository.findById(teamId).orElseThrow(
+                () -> new NotFoundException("Team not found.")
+        );
+
+        team.setTotalMembers(team.getTotalMembers() + 1);
+        teamRepository.save(team);
+    }
+
+    @Override
+    @Transactional
+    public void decreaseMember(UUID teamId) {
+        Team team = teamRepository.findById(teamId).orElseThrow(
+                () -> new NotFoundException("Team not found.")
+        );
+
+        team.setTotalMembers(team.getTotalMembers() - 1);
+
+        if(team.getTotalMembers() == 0) {
+            teamRepository.delete(team);
+        }
+        else {
+            teamRepository.save(team);
+        }
+    }
 }

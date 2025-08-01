@@ -1,6 +1,7 @@
 package com.study.studypal.team.controller;
 
 import com.study.studypal.common.dto.ActionResponseDto;
+import com.study.studypal.team.coordinator.TeamMembershipCoordinator;
 import com.study.studypal.team.dto.TeamUser.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.team.dto.TeamUser.request.UpdateMemberRoleRequestDto;
 import com.study.studypal.team.dto.TeamUser.response.ListTeamMemberResponseDto;
@@ -27,6 +28,7 @@ import java.util.UUID;
 @RequestMapping("/api/members")
 public class TeamMembershipController {
     private final TeamMembershipService teamMembershipService;
+    private final TeamMembershipCoordinator teamMembershipCoordinator;
 
     @PostMapping
     @Operation(summary = "Join a team by team code.")
@@ -35,7 +37,7 @@ public class TeamMembershipController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ActionResponseDto> joinTeam(@AuthenticationPrincipal UUID userId,
                                                       @RequestParam String teamCode){
-        return ResponseEntity.ok(teamMembershipService.joinTeam(userId, teamCode));
+        return ResponseEntity.ok(teamMembershipCoordinator.joinTeam(userId, teamCode));
     }
 
     @GetMapping
@@ -87,7 +89,7 @@ public class TeamMembershipController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ActionResponseDto> removeTeamMember(@AuthenticationPrincipal UUID userId,
                                                               @Valid @RequestBody RemoveTeamMemberRequestDto request){
-        return ResponseEntity.ok(teamMembershipService.removeTeamMember(userId, request));
+        return ResponseEntity.ok(teamMembershipCoordinator.removeTeamMember(userId, request));
     }
 
     @DeleteMapping("/leave")
@@ -97,6 +99,6 @@ public class TeamMembershipController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ActionResponseDto> leaveTeam(@AuthenticationPrincipal UUID userId,
                                                        @RequestParam UUID teamId){
-        return ResponseEntity.ok(teamMembershipService.leaveTeam(userId, teamId));
+        return ResponseEntity.ok(teamMembershipCoordinator.leaveTeam(userId, teamId));
     }
 }

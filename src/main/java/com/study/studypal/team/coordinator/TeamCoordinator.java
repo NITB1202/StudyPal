@@ -42,19 +42,33 @@ public class TeamCoordinator {
 
     public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
         ListTeamResponseDto list = teamService.getUserJoinedTeams(userId, cursor, size);
-        UUID lastTeamId = list.getTeams().get(list.getTeams().size() - 1).getId();
-        TeamUser membership = teamMembershipService.getMemberShip(lastTeamId, userId);
-        LocalDateTime nextCursor = !list.getTeams().isEmpty() && list.getTeams().size() == size ? membership.getJoinedAt() : null;
+        LocalDateTime nextCursor = null;
+
+        if(!list.getTeams().isEmpty()) {
+            UUID lastTeamId = list.getTeams().get(list.getTeams().size() - 1).getId();
+            int listSize = list.getTeams().size();
+
+            nextCursor = teamMembershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, listSize, size);
+        }
+
         list.setNextCursor(nextCursor);
+
         return list;
     }
 
     public ListTeamResponseDto searchUserJoinedTeamsByName(UUID userId, String keyword, LocalDateTime cursor, int size) {
         ListTeamResponseDto list = teamService.searchUserJoinedTeamsByName(userId, keyword, cursor, size);
-        UUID lastTeamId = list.getTeams().get(list.getTeams().size() - 1).getId();
-        TeamUser membership = teamMembershipService.getMemberShip(lastTeamId, userId);
-        LocalDateTime nextCursor = !list.getTeams().isEmpty() && list.getTeams().size() == size ? membership.getJoinedAt() : null;
+        LocalDateTime nextCursor = null;
+
+        if(!list.getTeams().isEmpty()) {
+            UUID lastTeamId = list.getTeams().get(list.getTeams().size() - 1).getId();
+            int listSize = list.getTeams().size();
+
+            nextCursor = teamMembershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, listSize, size);
+        }
+
         list.setNextCursor(nextCursor);
+
         return list;
     }
 
