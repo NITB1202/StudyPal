@@ -285,4 +285,17 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
             throw new BusinessException("Only creator has permission to update the team.");
         }
     }
+
+    @Override
+    public void validateInviteMemberPermission(UUID userId, UUID teamId, UUID inviteeId) {
+        TeamUser membership = getMemberShip(teamId, userId);
+
+        if(membership.getRole() == TeamRole.MEMBER) {
+            throw new BusinessException("You don’t have permission to invite members to this team.");
+        }
+
+        if(teamUserRepository.existsByUserIdAndTeamId(inviteeId, teamId)) {
+            throw new BusinessException("The invitee is already in the team.");
+        }
+    }
 }

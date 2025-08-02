@@ -24,4 +24,5 @@ public interface TeamMembershipService {
     TeamUser getMemberShip(UUID teamId, UUID userId);
     LocalDateTime getUserJoinedTeamsListCursor(UUID userId, UUID lastTeamId, int listSize, int size);
     void validateUpdateTeamPermission(UUID userId, UUID teamId);
+    void validateInviteMemberPermission(UUID userId, UUID teamId, UUID inviteeId);
 }
