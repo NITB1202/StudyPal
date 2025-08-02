@@ -2,8 +2,8 @@ package com.study.studypal.team.coordinator;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.TeamUser.request.RemoveTeamMemberRequestDto;
+import com.study.studypal.team.service.TeamInternalService;
 import com.study.studypal.team.service.TeamMembershipService;
-import com.study.studypal.team.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class TeamMembershipCoordinator {
-    private final TeamService teamService;
+    private final TeamInternalService teamService;
     private final TeamMembershipService teamMembershipService;
 
     public ActionResponseDto joinTeam(UUID userId, String teamCode) {

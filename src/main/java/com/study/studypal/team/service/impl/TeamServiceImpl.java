@@ -5,6 +5,7 @@ import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.Team.response.*;
 import com.study.studypal.team.entity.Team;
+import com.study.studypal.team.service.TeamInternalService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
@@ -33,7 +34,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TeamServiceImpl implements TeamService {
+public class TeamServiceImpl implements TeamService, TeamInternalService {
     private final TeamRepository teamRepository;
     private final CodeService codeService;
     private final FileService fileService;
@@ -219,6 +220,8 @@ public class TeamServiceImpl implements TeamService {
             throw new BusinessException("Reading file failed.");
         }
     }
+
+
 
     @Override
     public UUID getTeamIdByTeamCode(String teamCode) {

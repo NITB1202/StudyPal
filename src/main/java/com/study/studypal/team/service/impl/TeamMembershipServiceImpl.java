@@ -10,6 +10,7 @@ import com.study.studypal.team.dto.TeamUser.response.UserRoleInTeamResponseDto;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.entity.TeamUserId;
+import com.study.studypal.team.service.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.common.exception.BusinessException;
@@ -32,7 +33,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TeamMembershipServiceImpl implements TeamMembershipService {
+public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMembershipInternalService {
     private final TeamUserRepository teamUserRepository;
 
     @PersistenceContext
@@ -246,6 +247,8 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                 .build();
     }
 
+
+
     @Override
     public void createMembership(UUID teamId, UUID userId, TeamRole role) {
         Team team = entityManager.getReference(Team.class, teamId);
@@ -260,19 +263,6 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                 .build();
 
         teamUserRepository.save(membership);
-    }
-
-    @Override
-    public TeamUser getMemberShip(UUID teamId, UUID userId) {
-        return teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
-                ()->new NotFoundException("You are not a member of this team.")
-        );
-    }
-
-    @Override
-    public LocalDateTime getUserJoinedTeamsListCursor(UUID userId, UUID lastTeamId, int listSize, int size) {
-        TeamUser membership = getMemberShip(lastTeamId, userId);
-        return listSize > 0 && listSize == size ? membership.getJoinedAt() : null;
     }
 
     @Override
@@ -297,5 +287,18 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         if(teamUserRepository.existsByUserIdAndTeamId(inviteeId, teamId)) {
             throw new BusinessException("The invitee is already in the team.");
         }
+    }
+
+    @Override
+    public TeamUser getMemberShip(UUID teamId, UUID userId) {
+        return teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
+                ()->new NotFoundException("You are not a member of this team.")
+        );
+    }
+
+    @Override
+    public LocalDateTime getUserJoinedTeamsListCursor(UUID userId, UUID lastTeamId, int listSize, int size) {
+        TeamUser membership = getMemberShip(lastTeamId, userId);
+        return listSize > 0 && listSize == size ? membership.getJoinedAt() : null;
     }
 }

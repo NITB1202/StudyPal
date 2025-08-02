@@ -8,7 +8,7 @@ import com.study.studypal.team.dto.Team.response.TeamOverviewResponseDto;
 import com.study.studypal.team.dto.Team.response.TeamResponseDto;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
-import com.study.studypal.team.service.TeamMembershipService;
+import com.study.studypal.team.service.TeamMembershipInternalService;
 import com.study.studypal.team.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamCoordinator {
     private final TeamService teamService;
-    private final TeamMembershipService teamMembershipService;
+    private final TeamMembershipInternalService teamMembershipService;
 
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         TeamResponseDto team = teamService.createTeam(userId, request);

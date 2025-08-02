@@ -6,8 +6,8 @@ import com.study.studypal.team.dto.Invitation.response.InvitationResponseDto;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.service.InvitationService;
-import com.study.studypal.team.service.TeamMembershipService;
-import com.study.studypal.team.service.TeamService;
+import com.study.studypal.team.service.TeamInternalService;
+import com.study.studypal.team.service.TeamMembershipInternalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +16,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class InvitationCoordinator {
-    private final TeamService teamService;
-    private final TeamMembershipService teamMembershipService;
+    private final TeamInternalService teamService;
+    private final TeamMembershipInternalService teamMembershipService;
     private final InvitationService invitationService;
 
     public InvitationResponseDto sendInvitation(UUID userId, SendInvitationRequestDto request) {
