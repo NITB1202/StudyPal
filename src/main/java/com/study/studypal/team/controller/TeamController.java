@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -68,7 +69,7 @@ public class TeamController {
     @ApiResponse(responseCode = "404", description = "Not found.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ListTeamResponseDto> getUserJoinedTeams(@AuthenticationPrincipal UUID userId,
-                                                                  @RequestParam(required = false) LocalDateTime cursor,
+                                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
                                                                   @RequestParam(defaultValue = "10") @Positive int size){
         return ResponseEntity.ok(teamCoordinator.getUserJoinedTeams(userId, cursor, size));
     }
@@ -80,7 +81,7 @@ public class TeamController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ListTeamResponseDto> searchUserJoinedTeamsByName(@AuthenticationPrincipal UUID userId,
                                                                            @RequestParam String keyword,
-                                                                           @RequestParam(required = false) LocalDateTime cursor,
+                                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
                                                                            @RequestParam(defaultValue = "10") @Positive int size ){
         return ResponseEntity.ok(teamCoordinator.searchUserJoinedTeamsByName(userId, keyword, cursor, size));
     }
