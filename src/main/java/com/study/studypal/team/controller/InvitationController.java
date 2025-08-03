@@ -53,6 +53,6 @@ public class InvitationController {
     public ResponseEntity<ActionResponseDto> replyToInvitation(@PathVariable UUID invitationId,
                                                                @AuthenticationPrincipal UUID userId,
                                                                @RequestParam boolean accept) {
-        return ResponseEntity.ok(invitationService.replyToInvitation(userId, invitationId, accept));
+        return ResponseEntity.ok(invitationService.replyToInvitation(invitationId, userId, accept));
     }
 }

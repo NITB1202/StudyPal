@@ -185,7 +185,10 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
                 ()-> new NotFoundException("Team not found.")
         );
 
-        fileService.deleteFile(team.getId().toString(), "image");
+        if(team.getAvatarUrl() != null) {
+            fileService.deleteFile(team.getId().toString(), "image");
+        }
+
         teamRepository.delete(team);
 
         return ActionResponseDto.builder()

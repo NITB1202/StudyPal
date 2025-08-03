@@ -21,6 +21,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMembershipInternalService {
     private final TeamUserRepository teamUserRepository;
+    private final ModelMapper modelMapper;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -68,10 +70,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
                 () -> new NotFoundException("You are not in this team.")
         );
 
-        return UserRoleInTeamResponseDto.builder()
-                .userId(userId)
-                .role(membership.getRole())
-                .build();
+        return modelMapper.map(membership, UserRoleInTeamResponseDto.class);
     }
 
     @Override

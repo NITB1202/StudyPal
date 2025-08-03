@@ -67,7 +67,6 @@ public class InvitationServiceImpl implements InvitationService {
             throw new BusinessException("The invitee has already been invited to this team.");
         }
 
-
         return modelMapper.map(invitation, InvitationResponseDto.class);
     }
 

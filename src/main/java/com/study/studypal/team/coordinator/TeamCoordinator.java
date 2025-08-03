@@ -84,7 +84,7 @@ public class TeamCoordinator {
 
     public ActionResponseDto deleteTeam(UUID teamId, UUID userId) {
         teamMembershipService.validateUpdateTeamPermission(userId, teamId);
-        return teamService.deleteTeam(userId, teamId);
+        return teamService.deleteTeam(teamId, userId);
     }
 
     public ActionResponseDto uploadTeamAvatar(UUID userId, UUID teamId, MultipartFile file) {
