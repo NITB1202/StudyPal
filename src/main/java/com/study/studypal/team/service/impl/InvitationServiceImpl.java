@@ -8,10 +8,14 @@ import com.study.studypal.team.dto.Invitation.response.InvitationResponseDto;
 import com.study.studypal.team.dto.Invitation.response.ListInvitationResponseDto;
 import com.study.studypal.team.entity.Invitation;
 import com.study.studypal.team.entity.Team;
-import com.study.studypal.team.entity.TeamUser;
+import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.repository.InvitationRepository;
 import com.study.studypal.team.service.InvitationService;
+import com.study.studypal.team.service.TeamInternalService;
+import com.study.studypal.team.service.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -29,23 +33,29 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class InvitationServiceImpl implements InvitationService {
     private final InvitationRepository invitationRepository;
+    private final TeamMembershipInternalService teamMembershipService;
+    private final TeamInternalService teamService;
     private final ModelMapper modelMapper;
 
+    @PersistenceContext
+    private final EntityManager entityManager;
+
     @Override
-    public InvitationResponseDto sendInvitation(TeamUser membership, SendInvitationRequestDto request) {
+    public InvitationResponseDto sendInvitation(UUID userId, SendInvitationRequestDto request) {
+        teamMembershipService.validateInviteMemberPermission(userId, request.getTeamId(), request.getInviteeId());
+
         if(invitationRepository.existsByInviteeIdAndTeamId(request.getInviteeId(), request.getTeamId())) {
             throw new BusinessException("The invitee has already been invited to this team.");
         }
 
-        User inviter = membership.getUser();
-        Team team = membership.getTeam();
+        User inviter = entityManager.getReference(User.class, userId);
+        User invitee = entityManager.getReference(User.class, request.getInviteeId());
+        Team team = entityManager.getReference(Team.class, request.getTeamId());
 
         Invitation invitation = Invitation.builder()
-                .inviterName(inviter.getName())
-                .inviterAvatarUrl(inviter.getAvatarUrl())
-                .inviteeId(request.getInviteeId())
-                .teamId(request.getTeamId())
-                .teamName(team.getName())
+                .inviter(inviter)
+                .invitee(invitee)
+                .team(team)
                 .invitedAt(LocalDateTime.now())
                 .build();
 
@@ -79,8 +89,14 @@ public class InvitationServiceImpl implements InvitationService {
                 () -> new NotFoundException("Invitation not found.")
         );
 
-        if(!userId.equals(invitation.getInviteeId())) {
+        if(!userId.equals(invitation.getInvitee().getId())) {
             throw new BusinessException("You are not allowed to reply this invitation.");
+        }
+
+        if(accept) {
+            UUID teamId = invitation.getTeam().getId();
+            teamMembershipService.createMembership(teamId, userId, TeamRole.MEMBER);
+            teamService.increaseMember(teamId);
         }
 
         invitationRepository.delete(invitation);
@@ -89,14 +105,5 @@ public class InvitationServiceImpl implements InvitationService {
                 .success(true)
                 .message("Reply successfully.")
                 .build();
-    }
-
-    @Override
-    public UUID getTeamIdByInvitationId(UUID invitationId) {
-        Invitation invitation = invitationRepository.findById(invitationId).orElseThrow(
-                () -> new NotFoundException("Invitation not found.")
-        );
-
-        return invitation.getTeamId();
     }
 }

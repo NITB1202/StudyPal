@@ -1,5 +1,6 @@
 package com.study.studypal.team.entity;
 
+import com.study.studypal.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,27 +13,29 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "invitations")
+@Table(
+        name = "invitations",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"invitee_id", "team_id"})
+        }
+)
 public class Invitation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "inviter_name", nullable = false)
-    private String inviterName;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "inviter_id", nullable = false)
+    private User inviter;
 
-    @Column(name = "inviter_avatar_url", nullable = false)
-    private String inviterAvatarUrl;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "invitee_id", nullable = false)
+    private User invitee;
 
-    @Column(name = "invitee_id", nullable = false)
-    private UUID inviteeId;
-
-    @Column(name = "team_id", nullable = false)
-    private UUID teamId;
-
-    @Column(name = "team_name", nullable = false)
-    private String teamName;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
     @Column(name = "invited_at", nullable = false)
     private LocalDateTime invitedAt;

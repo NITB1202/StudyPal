@@ -2,7 +2,6 @@ package com.study.studypal.team.controller;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
-import com.study.studypal.team.coordinator.InvitationCoordinator;
 import com.study.studypal.team.dto.Invitation.request.SendInvitationRequestDto;
 import com.study.studypal.team.dto.Invitation.response.InvitationResponseDto;
 import com.study.studypal.team.dto.Invitation.response.ListInvitationResponseDto;
@@ -26,7 +25,6 @@ import java.util.UUID;
 @RequestMapping("/api/invitations")
 public class InvitationController {
     private final InvitationService invitationService;
-    private final InvitationCoordinator invitationCoordinator;
 
     @PostMapping
     @Operation(summary = "Invite a user to the team.")
@@ -35,7 +33,7 @@ public class InvitationController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<InvitationResponseDto> sendInvitation(@AuthenticationPrincipal UUID userId,
                                                                 @Valid @RequestBody SendInvitationRequestDto request){
-        return ResponseEntity.ok(invitationCoordinator.sendInvitation(userId, request));
+        return ResponseEntity.ok(invitationService.sendInvitation(userId, request));
     }
 
     @GetMapping
@@ -55,6 +53,6 @@ public class InvitationController {
     public ResponseEntity<ActionResponseDto> replyToInvitation(@PathVariable UUID invitationId,
                                                                @AuthenticationPrincipal UUID userId,
                                                                @RequestParam boolean accept) {
-        return ResponseEntity.ok(invitationCoordinator.replyToInvitation(userId, invitationId, accept));
+        return ResponseEntity.ok(invitationService.replyToInvitation(userId, invitationId, accept));
     }
 }
