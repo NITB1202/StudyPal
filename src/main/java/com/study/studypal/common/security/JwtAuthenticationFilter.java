@@ -38,8 +38,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String path = request.getRequestURI();
             if (!path.startsWith(AUTH_PREFIX)) {
                 String storedAccessToken = (String) redis.opsForValue().get(JwtUtils.getAccessTokenRedisKey(userId));
-                if (storedAccessToken == null || !storedAccessToken.equals(accessToken)) {
+                if (storedAccessToken == null) {
                     throw new UnauthorizedException("Invalid or expired token.");
+                }
+
+                if(!storedAccessToken.equals(accessToken)) {
+                    throw new UnauthorizedException("Account logged in from another device.");
                 }
             }
 
