@@ -189,31 +189,38 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
             throw new BusinessException("You can't remove yourself from the team.");
         }
 
-        TeamUser userInfo = teamUserRepository.findByUserIdAndTeamId(userId, request.getTeamId()).orElseThrow(
+        //Lock user performing action
+        TeamUser userInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(userId, request.getTeamId()).orElseThrow(
                 ()-> new NotFoundException("User's membership not found.")
         );
 
-        TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamId(request.getMemberId(), request.getTeamId()).orElseThrow(
+        //Lock member being removed
+        TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(request.getMemberId(), request.getTeamId()).orElseThrow(
                 ()-> new NotFoundException("Member's membership not found.")
         );
 
+        //Permission check
         switch (userInfo.getRole()) {
             case CREATOR: {
-                teamUserRepository.delete(memberInfo);
                 break;
             }
             case ADMIN: {
                 if(memberInfo.getRole() == TeamRole.MEMBER) {
-                    teamUserRepository.delete(memberInfo);
+                    break;
                 }
                 else {
                     throw new BusinessException("Administrators can only remove members.");
                 }
-                break;
             }
             case MEMBER: {
                 throw new BusinessException("You don't have permission to remove another member.");
             }
+        }
+
+        // Safe delete (only one transaction can proceed at a time due to lock)
+        int rowsDeleted = teamUserRepository.deleteMemberById(memberInfo.getId());
+        if (rowsDeleted == 0) {
+            throw new BusinessException("Member has already been removed.");
         }
 
         return ActionResponseDto.builder()

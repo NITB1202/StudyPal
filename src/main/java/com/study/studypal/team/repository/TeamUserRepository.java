@@ -1,8 +1,11 @@
 package com.study.studypal.team.repository;
 
 import com.study.studypal.team.entity.TeamUser;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -61,4 +64,11 @@ public interface TeamUserRepository extends JpaRepository<TeamUser, UUID> {
     long countTeamMembersByName(@Param("userId") UUID userId,
                                 @Param("teamId") UUID teamId,
                                 @Param("keyword") String keyword);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT tu FROM TeamUser tu WHERE tu.user.id = :userId AND tu.team.id = :teamId")
+    Optional<TeamUser> findByUserIdAndTeamIdForUpdate(UUID userId, UUID teamId);
+    // Custom delete query that returns affected rows for race condition check
+    @Modifying
+    @Query("DELETE FROM TeamUser tu WHERE tu.id = :id")
+    int deleteMemberById(UUID id);
 }
