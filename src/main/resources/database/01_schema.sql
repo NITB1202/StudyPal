@@ -30,11 +30,27 @@ CREATE TABLE teams (
 );
 
 CREATE TABLE teams_users (
+    id UUID PRIMARY KEY,
     team_id UUID NOT NULL,
     user_id UUID NOT NULL,
     joined_at TIMESTAMP NOT NULL,
     role VARCHAR(20) NOT NULL,
-    PRIMARY KEY (team_id, user_id),
+    CONSTRAINT uq_teams_users UNIQUE (team_id, user_id),
     CONSTRAINT fk_teams_users_team FOREIGN KEY (team_id) REFERENCES teams (id) ON DELETE CASCADE,
     CONSTRAINT fk_teams_users_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE invitations (
+    id UUID PRIMARY KEY,
+    inviter_id UUID NOT NULL,
+    invitee_id UUID NOT NULL,
+    team_id UUID NOT NULL,
+    invited_at TIMESTAMP NOT NULL,
+    CONSTRAINT uq_invitation_invitee_team UNIQUE (invitee_id, team_id),
+    CONSTRAINT fk_invitation_inviter FOREIGN KEY (inviter_id)
+        REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_invitation_invitee FOREIGN KEY (invitee_id)
+        REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_invitation_team FOREIGN KEY (team_id)
+        REFERENCES teams (id) ON DELETE CASCADE
 );
