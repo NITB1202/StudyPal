@@ -11,6 +11,7 @@ import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,13 @@ public class AccountServiceImpl implements AccountService {
                 .providers(List.of(AuthProvider.LOCAL))
                 .build();
 
-        accountRepository.save(account);
+        //Handle race condition
+        try {
+            accountRepository.save(account);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Email is already registered.");
+        }
+
     }
 
     @Override

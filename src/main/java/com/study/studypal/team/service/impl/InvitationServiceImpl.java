@@ -20,6 +20,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,13 @@ public class InvitationServiceImpl implements InvitationService {
                 .invitedAt(LocalDateTime.now())
                 .build();
 
-        invitationRepository.save(invitation);
+        //Handle race condition
+        try {
+            invitationRepository.save(invitation);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("The invitee has already been invited to this team.");
+        }
+
 
         return modelMapper.map(invitation, InvitationResponseDto.class);
     }
