@@ -1,17 +1,18 @@
 package com.study.studypal.team.repository;
 
 import com.study.studypal.team.entity.TeamUser;
-import com.study.studypal.team.entity.TeamUserId;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-public interface TeamUserRepository extends JpaRepository<TeamUser, TeamUserId> {
+public interface TeamUserRepository extends JpaRepository<TeamUser, UUID> {
     boolean existsByUserIdAndTeamId(UUID userId, UUID teamId);
+    Optional<TeamUser> findByUserIdAndTeamId(UUID userId, UUID teamId);
     @Query("""
     SELECT tu FROM TeamUser tu
     WHERE tu.team.id = :teamId

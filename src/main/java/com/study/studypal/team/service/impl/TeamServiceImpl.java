@@ -45,7 +45,6 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
     private static final String AVATAR_FOLDER = "teams";
 
     @Override
-    @Transactional
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
             throw new BusinessException("You have already created a team with the same name.");
@@ -181,7 +180,6 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
     }
 
     @Override
-    @Transactional
     public ActionResponseDto deleteTeam(UUID teamId, UUID userId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
                 ()-> new NotFoundException("Team not found.")

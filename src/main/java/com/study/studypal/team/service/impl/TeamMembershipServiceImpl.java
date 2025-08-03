@@ -9,7 +9,6 @@ import com.study.studypal.team.dto.TeamUser.response.TeamMemberResponseDto;
 import com.study.studypal.team.dto.TeamUser.response.UserRoleInTeamResponseDto;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
-import com.study.studypal.team.entity.TeamUserId;
 import com.study.studypal.team.service.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.team.enums.TeamRole;
@@ -49,7 +48,6 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
         Team team = entityManager.getReference(Team.class, teamId);
 
         TeamUser membership = TeamUser.builder()
-                .id(new TeamUserId(team.getId(), userId))
                 .team(team)
                 .user(user)
                 .role(TeamRole.MEMBER)
@@ -66,8 +64,8 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
 
     @Override
     public UserRoleInTeamResponseDto getUserRoleInTeam(UUID userId, UUID teamId) {
-        TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
-                ()-> new NotFoundException("You are not in this team.")
+        TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
+                () -> new NotFoundException("You are not in this team.")
         );
 
         return UserRoleInTeamResponseDto.builder()
@@ -158,11 +156,11 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
             throw new BusinessException("You can't update your own role.");
         }
 
-        TeamUser userInfo = teamUserRepository.findById(new TeamUserId(request.getTeamId(), userId)).orElseThrow(
+        TeamUser userInfo = teamUserRepository.findByUserIdAndTeamId(userId, request.getTeamId()).orElseThrow(
                 ()-> new NotFoundException("User's membership not found.")
         );
 
-        TeamUser memberInfo = teamUserRepository.findById(new TeamUserId(request.getTeamId(), request.getMemberId())).orElseThrow(
+        TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamId(request.getMemberId(), request.getTeamId()).orElseThrow(
                 ()-> new NotFoundException("Member's membership not found.")
         );
 
@@ -186,17 +184,16 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
     }
 
     @Override
-    @Transactional
     public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
         if(userId.equals(request.getMemberId())) {
             throw new BusinessException("You can't remove yourself from the team.");
         }
 
-        TeamUser userInfo = teamUserRepository.findById(new TeamUserId(request.getTeamId(), userId)).orElseThrow(
+        TeamUser userInfo = teamUserRepository.findByUserIdAndTeamId(userId, request.getTeamId()).orElseThrow(
                 ()-> new NotFoundException("User's membership not found.")
         );
 
-        TeamUser memberInfo = teamUserRepository.findById(new TeamUserId(request.getTeamId(), request.getMemberId())).orElseThrow(
+        TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamId(request.getMemberId(), request.getTeamId()).orElseThrow(
                 ()-> new NotFoundException("Member's membership not found.")
         );
 
@@ -226,9 +223,8 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
     }
 
     @Override
-    @Transactional
     public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
-        TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
+        TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
                 ()-> new NotFoundException("Membership not found.")
         );
 
@@ -255,7 +251,6 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
         User user = entityManager.getReference(User.class, userId);
 
         TeamUser membership = TeamUser.builder()
-                .id(new TeamUserId(team.getId(), userId))
                 .team(team)
                 .user(user)
                 .role(TeamRole.CREATOR)
@@ -267,7 +262,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
 
     @Override
     public void validateUpdateTeamPermission(UUID userId, UUID teamId) {
-        TeamUser membership = teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
+        TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
                 ()->new NotFoundException("You are not a member of this team.")
         );
 
@@ -291,7 +286,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService, TeamMem
 
     @Override
     public TeamUser getMemberShip(UUID teamId, UUID userId) {
-        return teamUserRepository.findById(new TeamUserId(teamId, userId)).orElseThrow(
+        return teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
                 ()->new NotFoundException("You are not a member of this team.")
         );
     }

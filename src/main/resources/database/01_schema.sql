@@ -30,11 +30,12 @@ CREATE TABLE teams (
 );
 
 CREATE TABLE teams_users (
+    id UUID PRIMARY KEY,
     team_id UUID NOT NULL,
     user_id UUID NOT NULL,
     joined_at TIMESTAMP NOT NULL,
     role VARCHAR(20) NOT NULL,
-    PRIMARY KEY (team_id, user_id),
+    CONSTRAINT uq_teams_users UNIQUE (team_id, user_id),
     CONSTRAINT fk_teams_users_team FOREIGN KEY (team_id) REFERENCES teams (id) ON DELETE CASCADE,
     CONSTRAINT fk_teams_users_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
