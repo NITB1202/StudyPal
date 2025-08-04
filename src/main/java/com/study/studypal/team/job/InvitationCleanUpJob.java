@@ -1,6 +1,5 @@
 package com.study.studypal.team.job;
 
-import com.study.studypal.team.service.api.InvitationService;
 import com.study.studypal.team.service.internal.InvitationInternalService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;

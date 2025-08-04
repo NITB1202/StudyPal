@@ -1,11 +1,13 @@
-package com.study.studypal.team.service.impl;
+package com.study.studypal.team.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.Team.response.*;
 import com.study.studypal.team.entity.Team;
-import com.study.studypal.team.service.internal.TeamInternalService;
+import com.study.studypal.team.entity.TeamUser;
+import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
@@ -34,8 +36,9 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TeamServiceImpl implements TeamService, TeamInternalService {
+public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
+    private final TeamMembershipInternalService membershipService;
     private final CodeService codeService;
     private final FileService fileService;
     private final ModelMapper modelMapper;
@@ -67,7 +70,8 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
                         .build();
 
                 teamRepository.save(team);
-
+                membershipService.createMembership(team.getId(), userId, TeamRole.CREATOR);
+                
                 return modelMapper.map(team, TeamResponseDto.class);
             }
             catch (DataIntegrityViolationException e){
@@ -83,7 +87,14 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
                 ()->new NotFoundException("Team not found.")
         );
 
-        return modelMapper.map(team, TeamOverviewResponseDto.class);
+        TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
+
+        TeamUser membership = membershipService.getMemberShip(teamId, userId);
+        if(membership.getRole() == TeamRole.MEMBER) {
+            overview.setTeamCode(null);
+        }
+
+        return overview;
     }
 
     @Override
@@ -112,9 +123,16 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
 
         long total = teamRepository.countUserJoinedTeam(userId);
 
+        LocalDateTime nextCursor = null;
+        if(!teams.isEmpty()) {
+            UUID lastTeamId = teams.get(teams.size() - 1).getId();
+            nextCursor = membershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, teams.size(), size);
+        }
+
         return ListTeamResponseDto.builder()
                 .teams(summaries)
                 .total(total)
+                .nextCursor(nextCursor)
                 .build();
     }
 
@@ -128,9 +146,16 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
 
         long total = teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
 
+        LocalDateTime nextCursor = null;
+        if(!teams.isEmpty()) {
+            UUID lastTeamId = teams.get(teams.size() - 1).getId();
+            nextCursor = membershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, teams.size(), size);
+        }
+
         return ListTeamResponseDto.builder()
                 .teams(summaries)
                 .total(total)
+                .nextCursor(nextCursor)
                 .build();
     }
 
@@ -139,6 +164,8 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
         Team team = teamRepository.findById(teamId).orElseThrow(
                 () -> new NotFoundException("Team not found.")
         );
+
+        membershipService.validateUpdateTeamPermission(userId, teamId);
 
         if(request.getName() != null) {
             if(request.getName().isEmpty()) {
@@ -165,6 +192,8 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
                 () -> new NotFoundException("Team not found.")
         );
 
+        membershipService.validateUpdateTeamPermission(userId, teamId);
+
         String teamCode = codeService.generateTeamCode();
         while(teamRepository.existsByTeamCode(teamCode)){
             teamCode = codeService.generateTeamCode();
@@ -185,6 +214,8 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
                 ()-> new NotFoundException("Team not found.")
         );
 
+        membershipService.validateUpdateTeamPermission(userId, teamId);
+
         if(team.getAvatarUrl() != null) {
             fileService.deleteFile(team.getId().toString(), "image");
         }
@@ -203,6 +234,8 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
             throw new BusinessException("Team's avatar must be an image.");
         }
 
+        membershipService.validateUpdateTeamPermission(userId, teamId);
+
         try {
             String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
             Team team = teamRepository.findById(teamId).orElseThrow(
@@ -219,46 +252,6 @@ public class TeamServiceImpl implements TeamService, TeamInternalService {
 
         } catch (IOException e) {
             throw new BusinessException("Reading file failed.");
-        }
-    }
-
-
-
-    @Override
-    public UUID getTeamIdByTeamCode(String teamCode) {
-        Team team = teamRepository.findByTeamCode(teamCode);
-
-        if(team == null) {
-            throw new NotFoundException("Team code is incorrect.");
-        }
-
-        return team.getId();
-    }
-
-    @Override
-    public void increaseMember(UUID teamId) {
-        Team team = teamRepository.findById(teamId).orElseThrow(
-                () -> new NotFoundException("Team not found.")
-        );
-
-        team.setTotalMembers(team.getTotalMembers() + 1);
-        teamRepository.save(team);
-    }
-
-    @Override
-    @Transactional
-    public void decreaseMember(UUID teamId) {
-        Team team = teamRepository.findById(teamId).orElseThrow(
-                () -> new NotFoundException("Team not found.")
-        );
-
-        team.setTotalMembers(team.getTotalMembers() - 1);
-
-        if(team.getTotalMembers() == 0) {
-            teamRepository.delete(team);
-        }
-        else {
-            teamRepository.save(team);
         }
     }
 }
