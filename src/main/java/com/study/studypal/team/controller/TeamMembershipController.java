@@ -7,7 +7,6 @@ import com.study.studypal.team.dto.TeamUser.request.UpdateMemberRoleRequestDto;
 import com.study.studypal.team.dto.TeamUser.response.ListTeamMemberResponseDto;
 import com.study.studypal.team.dto.TeamUser.response.UserRoleInTeamResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
-import com.study.studypal.team.service.TeamMembershipService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +26,6 @@ import java.util.UUID;
 @Validated
 @RequestMapping("/api/members")
 public class TeamMembershipController {
-    private final TeamMembershipService teamMembershipService;
     private final TeamMembershipCoordinator teamMembershipCoordinator;
 
     @PostMapping
@@ -47,7 +45,7 @@ public class TeamMembershipController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<UserRoleInTeamResponseDto> getUserRoleInTeam(@AuthenticationPrincipal UUID userId,
                                                                        @RequestParam UUID teamId){
-        return ResponseEntity.ok(teamMembershipService.getUserRoleInTeam(userId, teamId));
+        return ResponseEntity.ok(teamMembershipCoordinator.getUserRoleInTeam(userId, teamId));
     }
 
     @GetMapping("/all")
@@ -56,7 +54,7 @@ public class TeamMembershipController {
     public ResponseEntity<ListTeamMemberResponseDto> getTeamMembers(@RequestParam UUID teamId,
                                                                     @RequestParam(required = false) String cursor,
                                                                     @RequestParam(defaultValue = "10") @Positive int size){
-        return ResponseEntity.ok(teamMembershipService.getTeamMembers(teamId, cursor, size));
+        return ResponseEntity.ok(teamMembershipCoordinator.getTeamMembers(teamId, cursor, size));
     }
 
     @GetMapping("/search")
@@ -67,7 +65,7 @@ public class TeamMembershipController {
                                                                                  @RequestParam String keyword,
                                                                                  @RequestParam(required = false) UUID cursor,
                                                                                  @RequestParam(defaultValue = "10") @Positive int size){
-        return ResponseEntity.ok(teamMembershipService.searchTeamMembersByName(userId, teamId, keyword, cursor, size));
+        return ResponseEntity.ok(teamMembershipCoordinator.searchTeamMembersByName(userId, teamId, keyword, cursor, size));
     }
 
     @PatchMapping
@@ -79,7 +77,7 @@ public class TeamMembershipController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ActionResponseDto> updateTeamMemberRole(@AuthenticationPrincipal UUID userId,
                                                                   @Valid @RequestBody UpdateMemberRoleRequestDto request){
-        return ResponseEntity.ok(teamMembershipService.updateTeamMemberRole(userId, request));
+        return ResponseEntity.ok(teamMembershipCoordinator.updateTeamMemberRole(userId, request));
     }
 
     @DeleteMapping

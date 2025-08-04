@@ -9,7 +9,6 @@ import com.study.studypal.team.dto.Team.response.TeamOverviewResponseDto;
 import com.study.studypal.team.dto.Team.response.TeamProfileResponseDto;
 import com.study.studypal.team.dto.Team.response.TeamResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
-import com.study.studypal.team.service.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,7 +30,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/teams")
 public class TeamController {
-    private final TeamService teamService;
     private final TeamCoordinator teamCoordinator;
 
     @PostMapping
@@ -60,7 +58,7 @@ public class TeamController {
     @ApiResponse(responseCode = "404", description = "Not found.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<TeamProfileResponseDto> getTeamProfileByTeamCode(@PathVariable String teamCode){
-        return ResponseEntity.ok(teamService.getTeamProfileByTeamCode(teamCode));
+        return ResponseEntity.ok(teamCoordinator.getTeamProfileByTeamCode(teamCode));
     }
 
     @GetMapping("/all")

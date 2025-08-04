@@ -1,4 +1,4 @@
-package com.study.studypal.team.service;
+package com.study.studypal.team.service.internal;
 
 import java.util.UUID;
 

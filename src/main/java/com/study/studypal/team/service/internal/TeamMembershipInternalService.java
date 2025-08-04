@@ -1,4 +1,4 @@
-package com.study.studypal.team.service;
+package com.study.studypal.team.service.internal;
 
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;

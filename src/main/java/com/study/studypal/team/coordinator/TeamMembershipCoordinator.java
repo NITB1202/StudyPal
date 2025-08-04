@@ -2,35 +2,18 @@ package com.study.studypal.team.coordinator;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.TeamUser.request.RemoveTeamMemberRequestDto;
-import com.study.studypal.team.service.TeamInternalService;
-import com.study.studypal.team.service.TeamMembershipService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.study.studypal.team.dto.TeamUser.request.UpdateMemberRoleRequestDto;
+import com.study.studypal.team.dto.TeamUser.response.ListTeamMemberResponseDto;
+import com.study.studypal.team.dto.TeamUser.response.UserRoleInTeamResponseDto;
 
 import java.util.UUID;
 
-@Service
-@RequiredArgsConstructor
-public class TeamMembershipCoordinator {
-    private final TeamInternalService teamService;
-    private final TeamMembershipService teamMembershipService;
-
-    public ActionResponseDto joinTeam(UUID userId, String teamCode) {
-        UUID teamId = teamService.getTeamIdByTeamCode(teamCode);
-        ActionResponseDto response = teamMembershipService.joinTeam(userId, teamId);
-        teamService.increaseMember(teamId);
-        return response;
-    }
-
-    public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
-        ActionResponseDto response = teamMembershipService.removeTeamMember(userId, request);
-        teamService.decreaseMember(request.getTeamId());
-        return response;
-    }
-
-    public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
-        ActionResponseDto response = teamMembershipService.leaveTeam(userId, teamId);
-        teamService.decreaseMember(teamId);
-        return response;
-    }
+public interface TeamMembershipCoordinator {
+    ActionResponseDto joinTeam(UUID userId, String teamCode);
+    UserRoleInTeamResponseDto getUserRoleInTeam(UUID userId, UUID teamId);
+    ListTeamMemberResponseDto getTeamMembers(UUID teamId, String cursor, int size);
+    ListTeamMemberResponseDto searchTeamMembersByName(UUID userId, UUID teamId, String keyword, UUID cursor, int size);
+    ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request);
+    ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request);
+    ActionResponseDto leaveTeam(UUID userId, UUID teamId);
 }
