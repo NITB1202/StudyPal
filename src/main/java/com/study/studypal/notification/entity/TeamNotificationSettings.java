@@ -1,7 +1,10 @@
-package com.study.studypal.team.entity;
+package com.study.studypal.notification.entity;
 
+import com.study.studypal.team.entity.TeamUser;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
@@ -18,11 +21,10 @@ public class TeamNotificationSettings {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
-
-    @Column(name = "team_id", nullable = false)
-    private UUID teamId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "membership_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private TeamUser membership;
 
     @Column(name = "team_notification", nullable = false)
     private Boolean teamNotification;
