@@ -1,5 +1,6 @@
 package com.study.studypal.team.repository;
 
+import com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,15 +16,20 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     Team findByTeamCode(String teamCode);
     boolean existsByTeamCode(String teamCode);
     @Query("""
-    SELECT t
+    SELECT new com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto(
+        t.id,
+        t.name,
+        t.avatarUrl,
+        CASE WHEN tu.role IN (com.study.studypal.team.enums.TeamRole.CREATOR, com.study.studypal.team.enums.TeamRole.ADMIN) THEN true ELSE false END
+    )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
       AND (:cursor IS NULL OR tu.joinedAt < :cursor)
     ORDER BY tu.joinedAt DESC
-    """)
-    List<Team> findUserJoinedTeamWithCursor(@Param("userId") UUID userId,
-                                            @Param("cursor") LocalDateTime cursor,
-                                            Pageable pageable);
+""")
+    List<TeamSummaryResponseDto> findUserJoinedTeamWithCursor(@Param("userId") UUID userId,
+                                                              @Param("cursor") LocalDateTime cursor,
+                                                              Pageable pageable);
     @Query("""
     SELECT COUNT(t)
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
@@ -31,14 +37,19 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     """)
     long countUserJoinedTeam(@Param("userId") UUID userId);
     @Query("""
-    SELECT t
+    SELECT new com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto(
+        t.id,
+        t.name,
+        t.avatarUrl,
+        CASE WHEN tu.role IN (com.study.studypal.team.enums.TeamRole.CREATOR, com.study.studypal.team.enums.TeamRole.ADMIN) THEN true ELSE false END
+    )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
       AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
       AND (:cursor IS NULL OR tu.joinedAt < :cursor)
     ORDER BY tu.joinedAt DESC
     """)
-    List<Team> searchUserJoinedTeamByNameWithCursor(@Param("userId") UUID userId,
+    List<TeamSummaryResponseDto> searchUserJoinedTeamByNameWithCursor(@Param("userId") UUID userId,
                                                     @Param("keyword") String keyword,
                                                     @Param("cursor") LocalDateTime cursor,
                                                     Pageable pageable);

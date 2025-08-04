@@ -21,7 +21,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -118,9 +117,7 @@ public class TeamServiceImpl implements TeamService {
     public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
-        List<Team> teams = teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
-        List<TeamSummaryResponseDto> summaries = modelMapper.map(teams, new TypeToken<List<TeamSummaryResponseDto>>() {}.getType());
-
+        List<TeamSummaryResponseDto> teams = teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
         long total = teamRepository.countUserJoinedTeam(userId);
 
         LocalDateTime nextCursor = null;
@@ -130,7 +127,7 @@ public class TeamServiceImpl implements TeamService {
         }
 
         return ListTeamResponseDto.builder()
-                .teams(summaries)
+                .teams(teams)
                 .total(total)
                 .nextCursor(nextCursor)
                 .build();
@@ -141,9 +138,7 @@ public class TeamServiceImpl implements TeamService {
         String handledKeyword = keyword.toLowerCase().trim();
         Pageable pageable = PageRequest.of(0, size);
 
-        List<Team> teams = teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
-        List<TeamSummaryResponseDto> summaries = modelMapper.map(teams, new TypeToken<List<TeamSummaryResponseDto>>() {}.getType());
-
+        List<TeamSummaryResponseDto> teams = teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
         long total = teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
 
         LocalDateTime nextCursor = null;
@@ -153,7 +148,7 @@ public class TeamServiceImpl implements TeamService {
         }
 
         return ListTeamResponseDto.builder()
-                .teams(summaries)
+                .teams(teams)
                 .total(total)
                 .nextCursor(nextCursor)
                 .build();
