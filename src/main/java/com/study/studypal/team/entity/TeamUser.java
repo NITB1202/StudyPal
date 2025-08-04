@@ -21,6 +21,10 @@ import java.util.UUID;
         name = "teams_users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"user_id", "team_id"})
+        },
+        indexes = {
+                @Index(name = "idx_team_users_user_joined_at", columnList = "user_id, joined_at"),
+                @Index(name = "idx_team_users_team_role_user", columnList = "team_id, role, user_id")
         }
 )
 public class TeamUser {
