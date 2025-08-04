@@ -92,16 +92,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LoginResponseDto saveUserSession(Account account) {
-        String accessToken = JwtUtils.generateAccessToken(account.getUserId(), account.getRole());
+        String accessToken = JwtUtils.generateAccessToken(account.getUser().getId(), account.getRole());
         String refreshToken = JwtUtils.generateRefreshToken(account.getId());
 
         redis.opsForValue().set(
-                JwtUtils.getAccessTokenRedisKey(account.getUserId()),
+                JwtUtils.getAccessTokenRedisKey(account.getUser().getId()),
                 accessToken,
                 JwtUtils.getAccessTokenTTL());
 
         redis.opsForValue().set(
-                JwtUtils.getRefreshTokenRedisKey(account.getUserId()),
+                JwtUtils.getRefreshTokenRedisKey(account.getId()),
                 refreshToken,
                 JwtUtils.getRefreshTokenTTL()
         );
@@ -205,13 +205,13 @@ public class AuthServiceImpl implements AuthService {
         UUID accountId = JwtUtils.extractId(refreshToken);
         Account account = accountService.getAccountById(accountId);
 
-        String storedRefreshToken = (String) redis.opsForValue().get(JwtUtils.getRefreshTokenRedisKey(account.getUserId()));
+        String storedRefreshToken = (String) redis.opsForValue().get(JwtUtils.getRefreshTokenRedisKey(accountId));
 
         if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
-            String newAccessToken = JwtUtils.generateAccessToken(account.getUserId(), account.getRole());
+            String newAccessToken = JwtUtils.generateAccessToken(account.getUser().getId(), account.getRole());
 
             redis.opsForValue().set(
-                    JwtUtils.getAccessTokenRedisKey(account.getUserId()),
+                    JwtUtils.getAccessTokenRedisKey(account.getUser().getId()),
                     newAccessToken,
                     JwtUtils.getAccessTokenTTL()
             );

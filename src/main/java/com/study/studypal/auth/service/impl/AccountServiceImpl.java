@@ -9,6 +9,9 @@ import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
+import com.study.studypal.user.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,12 +29,16 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @PersistenceContext
+    private final EntityManager entityManager;
+
     @Override
     public void registerWithCredentials(UUID userId, String email, String password) {
+        User user = entityManager.getReference(User.class, userId);
         String hashedPassword = passwordEncoder.encode(password);
 
         Account account = Account.builder()
-                .userId(userId)
+                .user(user)
                 .email(email)
                 .hashedPassword(hashedPassword)
                 .role(AccountRole.USER)
@@ -49,10 +56,11 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void registerWithProvider(UUID userId, String email, ExternalAuthProvider provider) {
+        User user = entityManager.getReference(User.class, userId);
         AuthProvider authProvider = toAuthProvider(provider);
 
         Account account = Account.builder()
-                .userId(userId)
+                .user(user)
                 .email(email)
                 .role(AccountRole.USER)
                 .providers(List.of(authProvider))
