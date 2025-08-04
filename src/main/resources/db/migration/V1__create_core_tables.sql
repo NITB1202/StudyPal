@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     dob DATE,
@@ -6,7 +6,7 @@ CREATE TABLE users (
     avatar_url VARCHAR(255)
 );
 
-CREATE TABLE accounts (
+CREATE TABLE IF NOT EXISTS accounts (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL UNIQUE ,
     providers VARCHAR(255) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE accounts (
     CONSTRAINT fk_accounts_users FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE teams (
+CREATE TABLE IF NOT EXISTS teams (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255),
@@ -29,7 +29,7 @@ CREATE TABLE teams (
     CONSTRAINT fk_teams_creator FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE RESTRICT
 );
 
-CREATE TABLE teams_users (
+CREATE TABLE IF NOT EXISTS teams_users (
     id UUID PRIMARY KEY,
     team_id UUID NOT NULL,
     user_id UUID NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE teams_users (
     CONSTRAINT fk_teams_users_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE TABLE invitations (
+CREATE TABLE IF NOT EXISTS invitations (
     id UUID PRIMARY KEY,
     inviter_id UUID NOT NULL,
     invitee_id UUID NOT NULL,
@@ -54,3 +54,14 @@ CREATE TABLE invitations (
     CONSTRAINT fk_invitation_team FOREIGN KEY (team_id)
         REFERENCES teams (id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS team_notification_settings (
+    id UUID PRIMARY KEY,
+    membership_id UUID NOT NULL UNIQUE,
+    team_notification BOOLEAN NOT NULL,
+    team_plan_reminder BOOLEAN NOT NULL,
+    chat_notification BOOLEAN NOT NULL,
+    CONSTRAINT fk_team_notification_membership FOREIGN KEY (membership_id)
+        REFERENCES teams_users (id) ON DELETE CASCADE
+);
+

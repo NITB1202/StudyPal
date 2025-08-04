@@ -49,4 +49,10 @@ VALUES
 
 INSERT INTO invitations (id, inviter_id, invitee_id, team_id, invited_at)
 VALUES
-    ('11111111-1111-1111-1111-111111111111','9f5d79f2-83a2-411d-bb66-caeb640a62b0', '041c77e0-ae77-4005-b745-ea12dca9bec6', '555e8400-e29b-41d4-a716-446655440006', '2025-08-03 10:30:00');
+    ('75d8831a-7324-436d-aab0-edbec38e38bb','9f5d79f2-83a2-411d-bb66-caeb640a62b0', '041c77e0-ae77-4005-b745-ea12dca9bec6', '555e8400-e29b-41d4-a716-446655440006', '2025-08-03 10:30:00');
+
+INSERT INTO team_notification_settings (id, membership_id, team_notification, team_plan_reminder, chat_notification)
+VALUES
+    ('6fbeb41d-74f4-4e1b-be73-9ff503800e5d', '550e8400-e29b-41d4-a716-446655440000', TRUE, TRUE, TRUE),
+    ('23188d8a-ebc9-41ab-94a0-7d23bcc17305', '660e8400-e29b-41d4-a716-446655440003', TRUE, TRUE, TRUE),
+    ('edc72285-d3b1-4ad9-95f1-47399d471385', '770e8400-e29b-41d4-a716-446655440005', TRUE, TRUE, TRUE);
