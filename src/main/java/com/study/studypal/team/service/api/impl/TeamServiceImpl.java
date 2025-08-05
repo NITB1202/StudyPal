@@ -37,7 +37,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
-    private final TeamMembershipInternalService membershipService;
+    private final TeamMembershipInternalService teamMembershipService;
     private final CodeService codeService;
     private final FileService fileService;
     private final ModelMapper modelMapper;
@@ -69,7 +69,7 @@ public class TeamServiceImpl implements TeamService {
                         .build();
 
                 teamRepository.save(team);
-                membershipService.createMembership(team.getId(), userId, TeamRole.CREATOR);
+                teamMembershipService.createMembership(team.getId(), userId, TeamRole.CREATOR);
                 
                 return modelMapper.map(team, TeamResponseDto.class);
             }
@@ -88,7 +88,7 @@ public class TeamServiceImpl implements TeamService {
 
         TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
 
-        TeamUser membership = membershipService.getMemberShip(teamId, userId);
+        TeamUser membership = teamMembershipService.getMemberShip(teamId, userId);
         if(membership.getRole() == TeamRole.MEMBER) {
             overview.setTeamCode(null);
         }
@@ -123,7 +123,7 @@ public class TeamServiceImpl implements TeamService {
         LocalDateTime nextCursor = null;
         if(!teams.isEmpty()) {
             UUID lastTeamId = teams.get(teams.size() - 1).getId();
-            nextCursor = membershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, teams.size(), size);
+            nextCursor = teamMembershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, teams.size(), size);
         }
 
         return ListTeamResponseDto.builder()
@@ -144,7 +144,7 @@ public class TeamServiceImpl implements TeamService {
         LocalDateTime nextCursor = null;
         if(!teams.isEmpty()) {
             UUID lastTeamId = teams.get(teams.size() - 1).getId();
-            nextCursor = membershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, teams.size(), size);
+            nextCursor = teamMembershipService.getUserJoinedTeamsListCursor(userId, lastTeamId, teams.size(), size);
         }
 
         return ListTeamResponseDto.builder()
@@ -160,7 +160,7 @@ public class TeamServiceImpl implements TeamService {
                 () -> new NotFoundException("Team not found.")
         );
 
-        membershipService.validateUpdateTeamPermission(userId, teamId);
+        teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
         if(request.getName() != null) {
             if(request.getName().isEmpty()) {
@@ -187,7 +187,7 @@ public class TeamServiceImpl implements TeamService {
                 () -> new NotFoundException("Team not found.")
         );
 
-        membershipService.validateUpdateTeamPermission(userId, teamId);
+        teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
         String teamCode = codeService.generateTeamCode();
         while(teamRepository.existsByTeamCode(teamCode)){
@@ -209,7 +209,7 @@ public class TeamServiceImpl implements TeamService {
                 ()-> new NotFoundException("Team not found.")
         );
 
-        membershipService.validateUpdateTeamPermission(userId, teamId);
+        teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
         if(team.getAvatarUrl() != null) {
             fileService.deleteFile(team.getId().toString(), "image");
@@ -229,7 +229,7 @@ public class TeamServiceImpl implements TeamService {
             throw new BusinessException("Team's avatar must be an image.");
         }
 
-        membershipService.validateUpdateTeamPermission(userId, teamId);
+        teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
         try {
             String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
