@@ -1,0 +1,46 @@
+package com.study.studypal.user.service.internal.impl;
+
+import com.study.studypal.user.entity.User;
+import com.study.studypal.user.enums.Gender;
+import com.study.studypal.user.repository.UserRepository;
+import com.study.studypal.user.service.internal.UserInternalService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class UserInternalServiceImpl implements UserInternalService {
+    private final UserRepository userRepository;
+
+    @Override
+    public UUID createDefaultProfile(String name) {
+        User user = User.builder()
+                .name(name)
+                .dateOfBirth(LocalDate.now())
+                .gender(Gender.UNSPECIFIED)
+                .build();
+
+        userRepository.save(user);
+
+        return user.getId();
+    }
+
+    @Override
+    public UUID createProfile(String name, String avatarUrl) {
+        User user = User.builder()
+                .name(name)
+                .dateOfBirth(LocalDate.now())
+                .gender(Gender.UNSPECIFIED)
+                .avatarUrl(avatarUrl)
+                .build();
+
+        userRepository.save(user);
+
+        return user.getId();
+    }
+}

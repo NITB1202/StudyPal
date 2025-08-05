@@ -1,4 +1,4 @@
-package com.study.studypal.user.service.impl;
+package com.study.studypal.user.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
@@ -6,12 +6,11 @@ import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
-import com.study.studypal.user.enums.Gender;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.common.service.FileService;
-import com.study.studypal.user.service.UserService;
+import com.study.studypal.user.service.api.UserService;
 import com.study.studypal.common.util.FileUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,45 +22,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final FileService fileService;
     private static final String AVATAR_FOLDER = "users";
-
-    @Override
-    public UUID createDefaultProfile(String name) {
-        User user = User.builder()
-                .name(name)
-                .dateOfBirth(LocalDate.now())
-                .gender(Gender.UNSPECIFIED)
-                .build();
-
-        userRepository.save(user);
-
-        return user.getId();
-    }
-
-    @Override
-    public UUID createProfile(String name, String avatarUrl) {
-        User user = User.builder()
-                .name(name)
-                .dateOfBirth(LocalDate.now())
-                .gender(Gender.UNSPECIFIED)
-                .avatarUrl(avatarUrl)
-                .build();
-
-        userRepository.save(user);
-
-        return user.getId();
-    }
 
     @Override
     public UserSummaryResponseDto getUserSummaryProfile(UUID userId) {
@@ -112,6 +82,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
             throw new BusinessException("User's avatar must be an image.");

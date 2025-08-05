@@ -14,7 +14,7 @@ import com.study.studypal.auth.enums.VerificationType;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.UnauthorizedException;
 import com.study.studypal.common.util.JwtUtils;
-import com.study.studypal.user.service.UserService;
+import com.study.studypal.user.service.internal.UserInternalService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -32,7 +32,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final AccountService accountService;
-    private final UserService userService;
+    private final UserInternalService userService;
     private final MailService mailService;
     private final CodeService codeService;
     private final RedisTemplate<String, Object> redis;
