@@ -1,4 +1,4 @@
-package com.study.studypal.team.service.impl;
+package com.study.studypal.team.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BusinessException;
@@ -10,13 +10,12 @@ import com.study.studypal.team.entity.Invitation;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.repository.InvitationRepository;
-import com.study.studypal.team.service.InvitationService;
-import com.study.studypal.team.service.TeamInternalService;
-import com.study.studypal.team.service.TeamMembershipInternalService;
+import com.study.studypal.team.service.api.InvitationService;
+import com.study.studypal.team.service.internal.TeamInternalService;
+import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class InvitationServiceImpl implements InvitationService {
     private final InvitationRepository invitationRepository;

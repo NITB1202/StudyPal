@@ -17,6 +17,9 @@ import java.util.UUID;
         name = "invitations",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"invitee_id", "team_id"})
+        },
+        indexes = {
+                @Index(name = "idx_invitations_invitee_invited_at", columnList = "invitee_id, invited_at DESC")
         }
 )
 public class Invitation {

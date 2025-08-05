@@ -22,7 +22,7 @@ public class TeamNotificationSettings {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "membership_id", nullable = false)
+    @JoinColumn(name = "membership_id", nullable = false, unique = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private TeamUser membership;
 

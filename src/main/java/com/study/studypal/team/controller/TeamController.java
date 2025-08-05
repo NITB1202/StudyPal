@@ -1,7 +1,6 @@
 package com.study.studypal.team.controller;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.team.coordinator.TeamCoordinator;
 import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.Team.response.ListTeamResponseDto;
@@ -9,7 +8,7 @@ import com.study.studypal.team.dto.Team.response.TeamOverviewResponseDto;
 import com.study.studypal.team.dto.Team.response.TeamProfileResponseDto;
 import com.study.studypal.team.dto.Team.response.TeamResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
-import com.study.studypal.team.service.TeamService;
+import com.study.studypal.team.service.api.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,7 +31,6 @@ import java.util.UUID;
 @RequestMapping("/api/teams")
 public class TeamController {
     private final TeamService teamService;
-    private final TeamCoordinator teamCoordinator;
 
     @PostMapping
     @Operation(summary = "Create a new team.")
@@ -41,7 +39,7 @@ public class TeamController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<TeamResponseDto> createTeam(@AuthenticationPrincipal UUID userId,
                                                       @Valid @RequestBody CreateTeamRequestDto request){
-        return ResponseEntity.ok(teamCoordinator.createTeam(userId, request));
+        return ResponseEntity.ok(teamService.createTeam(userId, request));
     }
 
     @GetMapping("/{teamId}")
@@ -51,7 +49,7 @@ public class TeamController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<TeamOverviewResponseDto> getTeamOverview(@AuthenticationPrincipal UUID userId,
                                                                    @PathVariable UUID teamId){
-        return ResponseEntity.ok(teamCoordinator.getTeamOverview(userId, teamId));
+        return ResponseEntity.ok(teamService.getTeamOverview(userId, teamId));
     }
 
     @GetMapping("/code/{teamCode}")
@@ -71,7 +69,7 @@ public class TeamController {
     public ResponseEntity<ListTeamResponseDto> getUserJoinedTeams(@AuthenticationPrincipal UUID userId,
                                                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
                                                                   @RequestParam(defaultValue = "10") @Positive int size){
-        return ResponseEntity.ok(teamCoordinator.getUserJoinedTeams(userId, cursor, size));
+        return ResponseEntity.ok(teamService.getUserJoinedTeams(userId, cursor, size));
     }
 
     @GetMapping("/search")
@@ -83,7 +81,7 @@ public class TeamController {
                                                                            @RequestParam String keyword,
                                                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
                                                                            @RequestParam(defaultValue = "10") @Positive int size ){
-        return ResponseEntity.ok(teamCoordinator.searchUserJoinedTeamsByName(userId, keyword, cursor, size));
+        return ResponseEntity.ok(teamService.searchUserJoinedTeamsByName(userId, keyword, cursor, size));
     }
 
     @PatchMapping("/{teamId}")
@@ -96,7 +94,7 @@ public class TeamController {
     public ResponseEntity<TeamResponseDto> updateTeam(@AuthenticationPrincipal UUID userId,
                                                       @PathVariable UUID teamId,
                                                       @Valid @RequestBody UpdateTeamRequestDto request){
-        return ResponseEntity.ok(teamCoordinator.updateTeam(userId, teamId, request));
+        return ResponseEntity.ok(teamService.updateTeam(userId, teamId, request));
     }
 
     @PatchMapping("/reset/{teamId}")
@@ -106,7 +104,7 @@ public class TeamController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ActionResponseDto> resetTeamCode(@AuthenticationPrincipal UUID userId,
                                                            @PathVariable UUID teamId) {
-        return ResponseEntity.ok(teamCoordinator.resetTeamCode(userId, teamId));
+        return ResponseEntity.ok(teamService.resetTeamCode(userId, teamId));
     }
 
     @DeleteMapping("/{teamId}")
@@ -116,7 +114,7 @@ public class TeamController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ActionResponseDto> deleteTeam(@PathVariable UUID teamId,
                                                         @AuthenticationPrincipal UUID userId){
-        return ResponseEntity.ok(teamCoordinator.deleteTeam(teamId, userId));
+        return ResponseEntity.ok(teamService.deleteTeam(teamId, userId));
     }
 
     @PostMapping(value = "/avatar/{teamId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -129,6 +127,6 @@ public class TeamController {
     public ResponseEntity<ActionResponseDto> uploadTeamAvatar(@AuthenticationPrincipal UUID userId,
                                                               @PathVariable UUID teamId,
                                                               @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(teamCoordinator.uploadTeamAvatar(userId, teamId, file));
+        return ResponseEntity.ok(teamService.uploadTeamAvatar(userId, teamId, file));
     }
 }

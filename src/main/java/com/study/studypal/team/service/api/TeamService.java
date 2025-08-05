@@ -1,4 +1,4 @@
-package com.study.studypal.team.service;
+package com.study.studypal.team.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;

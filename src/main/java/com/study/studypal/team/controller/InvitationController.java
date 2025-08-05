@@ -5,7 +5,7 @@ import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.team.dto.Invitation.request.SendInvitationRequestDto;
 import com.study.studypal.team.dto.Invitation.response.InvitationResponseDto;
 import com.study.studypal.team.dto.Invitation.response.ListInvitationResponseDto;
-import com.study.studypal.team.service.InvitationService;
+import com.study.studypal.team.service.api.InvitationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
