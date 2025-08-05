@@ -1,4 +1,4 @@
-package com.study.studypal.user.service;
+package com.study.studypal.user.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
@@ -10,8 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 public interface UserService {
-    UUID createDefaultProfile(String name);
-    UUID createProfile(String name, String avatarUrl);
     UserSummaryResponseDto getUserSummaryProfile(UUID userId);
     UserDetailResponseDto getUserProfile(UUID userId);
     ListUserResponseDto searchUsersByName(UUID userId, String keyword, UUID cursor, int size);
