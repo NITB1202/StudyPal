@@ -3,6 +3,7 @@ package com.study.studypal.common.security;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.exception.UnauthorizedException;
+import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.common.util.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -38,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String path = request.getRequestURI();
             if (!path.startsWith(AUTH_PREFIX)) {
-                String storedAccessToken = cacheManager.getCache(CacheNames.ACCESS_TOKENS).get(userId, String.class);
+                String storedAccessToken = cacheManager.getCache(CacheNames.ACCESS_TOKENS).get(CacheKeyUtils.of(userId), String.class);
                 if (storedAccessToken == null) {
                     throw new UnauthorizedException("Invalid or expired token.");
                 }

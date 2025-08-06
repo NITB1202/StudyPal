@@ -12,4 +12,10 @@ app:
         maxSize: 1000
       userSummary:
         ttl: PT15M
+        maxSize: 500
+      userTeams:
+        ttl: PT15M
+        maxSize: 1000
+      teamOverview:
+        ttl: PT15M
         maxSize: 1000

@@ -3,6 +3,7 @@ package com.study.studypal.common.service.impl;
 import com.study.studypal.auth.enums.VerificationType;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.service.CodeService;
+import com.study.studypal.common.util.CacheKeyUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
@@ -24,19 +25,19 @@ public class CodeServiceImpl implements CodeService {
     @Override
     public String generateVerificationCode(String email, VerificationType type) {
         String code = generateRandomCode();
-        cache.put(email, code);
+        cache.put(CacheKeyUtils.of(email), code);
         return code;
     }
 
     @Override
     public boolean verifyCode(String email, String code, VerificationType type) {
-        String storedCode = cache.get(email, String.class);
+        String storedCode = cache.get(CacheKeyUtils.of(email), String.class);
 
         if(storedCode == null || !storedCode.equals(code)) {
             return false;
         }
 
-        cache.evict(email);
+        cache.evict(CacheKeyUtils.of(email));
         return true;
     }
 

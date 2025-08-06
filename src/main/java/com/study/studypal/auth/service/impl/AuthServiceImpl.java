@@ -14,6 +14,7 @@ import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.VerificationType;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.UnauthorizedException;
+import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.common.util.JwtUtils;
 import com.study.studypal.user.service.internal.UserInternalService;
 import jakarta.annotation.PostConstruct;
@@ -108,8 +109,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = JwtUtils.generateAccessToken(userId, account.getRole());
         String refreshToken = JwtUtils.generateRefreshToken(userId);
 
-        accessTokenCache.put(userId, accessToken);
-        refreshTokenCache.put(userId, refreshToken);
+        accessTokenCache.put(CacheKeyUtils.of(userId), accessToken);
+        refreshTokenCache.put(CacheKeyUtils.of(userId), refreshToken);
 
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
@@ -119,8 +120,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ActionResponseDto logout(UUID userId) {
-        accessTokenCache.evict(userId);
-        refreshTokenCache.evict(userId);
+        accessTokenCache.evict(CacheKeyUtils.of(userId));
+        refreshTokenCache.evict(CacheKeyUtils.of(userId));
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -210,11 +211,11 @@ public class AuthServiceImpl implements AuthService {
         UUID userId = JwtUtils.extractId(refreshToken);
         Account account = accountService.getAccountByUserId(userId);
 
-        String storedRefreshToken = refreshTokenCache.get(userId, String.class);
+        String storedRefreshToken = refreshTokenCache.get(CacheKeyUtils.of(userId), String.class);
 
         if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
             String newAccessToken = JwtUtils.generateAccessToken(userId, account.getRole());
-            accessTokenCache.put(userId, newAccessToken);
+            accessTokenCache.put(CacheKeyUtils.of(userId), newAccessToken);
 
             return GenerateAccessTokenResponseDto.builder()
                     .accessToken(newAccessToken)

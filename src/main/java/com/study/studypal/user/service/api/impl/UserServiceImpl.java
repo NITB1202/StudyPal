@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     private static final String AVATAR_FOLDER = "users";
 
     @Override
-    @Cacheable(value = CacheNames.USER_SUMMARY, key = "#userId")
+    @Cacheable(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserSummaryResponseDto getUserSummaryProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
                 ()-> new NotFoundException("User with id " + userId + " not found.")
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "#userId")
+    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserDetailResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("User with id " + userId + " not found.")
@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "#userId")
+    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
             throw new BusinessException("User's avatar must be an image.");
