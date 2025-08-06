@@ -24,29 +24,12 @@ services:
     networks:
       - network-studypal-staging
 
-  redis:
-    image: redis:7.2
-    restart: unless-stopped
-    container_name: redis-studypal-staging
-    command: ["redis-server", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
-    volumes:
-      - redis-data-staging:/data
-    ports:
-      - "6379:6379"
-    deploy:
-      resources:
-        limits:
-          memory: 150M
-    networks:
-      - network-studypal-staging
-
   app:
     image: rialfield/studypal-mobileapp:latest
     restart: unless-stopped
     container_name: studypal-app-staging
     environment:
       SPRING_PROFILES_ACTIVE: staging
-      REDIS_HOST: ${REDIS_HOST}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -60,7 +43,6 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
-      - redis
     deploy:
       resources:
         limits:
@@ -70,7 +52,6 @@ services:
 
 volumes:
   postgres-data-staging:
-  redis-data-staging:
 
 networks:
   network-studypal-staging:

@@ -22,20 +22,6 @@ services:
     networks:
       - network-studypal-dev
 
-  redis:
-    image: redis:7.2
-    restart: unless-stopped
-    container_name: redis-studypal-dev
-    ports:
-      - "6380:6379"
-    volumes:
-      - redis-data-dev:/data
-    networks:
-      - network-studypal-dev
-
-volumes:
-  redis-data-dev:
-
 networks:
   network-studypal-dev:
     driver: bridge
