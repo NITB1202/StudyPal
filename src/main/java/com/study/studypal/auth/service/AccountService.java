@@ -10,7 +10,7 @@ public interface AccountService {
     void registerWithCredentials(UUID userId, String email, String password);
     void registerWithProvider(UUID userId, String email, ExternalAuthProvider provider);
     void linkLocalLogin(String email, String password);
-    Account getAccountById(UUID id);
+    Account getAccountByUserId(UUID userId);
     Account loginWithCredentials(String email, String password);
     Account loginWithProvider(String email, ExternalAuthProvider provider);
     boolean isEmailRegistered(String email);

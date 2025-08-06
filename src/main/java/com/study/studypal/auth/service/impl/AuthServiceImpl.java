@@ -6,6 +6,7 @@ import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.auth.service.AuthService;
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.MailService;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -17,7 +18,8 @@ import com.study.studypal.common.util.JwtUtils;
 import com.study.studypal.user.service.internal.UserInternalService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -35,7 +37,10 @@ public class AuthServiceImpl implements AuthService {
     private final UserInternalService userService;
     private final MailService mailService;
     private final CodeService codeService;
-    private final RedisTemplate<String, Object> redis;
+    private final CacheManager cacheManager;
+
+    private final Cache accessTokenCache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
+    private final Cache refreshTokenCache = cacheManager.getCache(CacheNames.REFRESH_TOKENS);
 
     @Override
     public LoginResponseDto loginWithCredentials(LoginWithCredentialsRequestDto request) {
@@ -92,19 +97,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LoginResponseDto saveUserSession(Account account) {
-        String accessToken = JwtUtils.generateAccessToken(account.getUser().getId(), account.getRole());
-        String refreshToken = JwtUtils.generateRefreshToken(account.getId());
+        UUID userId = account.getUser().getId();
 
-        redis.opsForValue().set(
-                JwtUtils.getAccessTokenRedisKey(account.getUser().getId()),
-                accessToken,
-                JwtUtils.getAccessTokenTTL());
+        String accessToken = JwtUtils.generateAccessToken(userId, account.getRole());
+        String refreshToken = JwtUtils.generateRefreshToken(userId);
 
-        redis.opsForValue().set(
-                JwtUtils.getRefreshTokenRedisKey(account.getId()),
-                refreshToken,
-                JwtUtils.getRefreshTokenTTL()
-        );
+        String accessTokenKey = JwtUtils.getAccessTokenKey(userId);
+        accessTokenCache.put(accessTokenKey, accessToken);
+
+        String refreshTokenKey = JwtUtils.getRefreshTokenKey(userId);
+        refreshTokenCache.put(refreshTokenKey, refreshToken);
 
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
@@ -114,8 +116,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ActionResponseDto logout(UUID userId) {
-        redis.delete(JwtUtils.getAccessTokenRedisKey(userId));
-        redis.delete(JwtUtils.getRefreshTokenRedisKey(userId));
+        accessTokenCache.evict(JwtUtils.getAccessTokenKey(userId));
+        refreshTokenCache.evict(JwtUtils.getRefreshTokenKey(userId));
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -202,19 +204,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public GenerateAccessTokenResponseDto generateAccessToken(String refreshToken) {
-        UUID accountId = JwtUtils.extractId(refreshToken);
-        Account account = accountService.getAccountById(accountId);
+        UUID userId = JwtUtils.extractId(refreshToken);
+        Account account = accountService.getAccountByUserId(userId);
 
-        String storedRefreshToken = (String) redis.opsForValue().get(JwtUtils.getRefreshTokenRedisKey(accountId));
+        String storedRefreshToken = refreshTokenCache.get(JwtUtils.getRefreshTokenKey(userId), String.class);
 
         if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
-            String newAccessToken = JwtUtils.generateAccessToken(account.getUser().getId(), account.getRole());
-
-            redis.opsForValue().set(
-                    JwtUtils.getAccessTokenRedisKey(account.getUser().getId()),
-                    newAccessToken,
-                    JwtUtils.getAccessTokenTTL()
-            );
+            String newAccessToken = JwtUtils.generateAccessToken(userId, account.getRole());
+            accessTokenCache.put(JwtUtils.getAccessTokenKey(userId), newAccessToken);
 
             return GenerateAccessTokenResponseDto.builder()
                     .accessToken(newAccessToken)

@@ -82,10 +82,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccountById(UUID id) {
-        return accountRepository.findById(id).orElseThrow(
-                () -> new NotFoundException("Account with id " + id + " not found.")
-        );
+    public Account getAccountByUserId(UUID userId) {
+        Account account = accountRepository.findByUserId(userId);
+
+        if (account == null) {
+            throw new NotFoundException("Account not found.");
+        }
+
+        return account;
     }
 
     @Override
