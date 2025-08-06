@@ -117,7 +117,10 @@ public class TeamServiceImpl implements TeamService {
     public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
-        List<TeamSummaryResponseDto> teams = teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
+        List<TeamSummaryResponseDto> teams = cursor == null ?
+                teamRepository.findUserJoinedTeam(userId, pageable) :
+                teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
+
         long total = teamRepository.countUserJoinedTeam(userId);
 
         LocalDateTime nextCursor = null;
@@ -138,7 +141,10 @@ public class TeamServiceImpl implements TeamService {
         String handledKeyword = keyword.toLowerCase().trim();
         Pageable pageable = PageRequest.of(0, size);
 
-        List<TeamSummaryResponseDto> teams = teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
+        List<TeamSummaryResponseDto> teams = cursor == null ?
+                teamRepository.searchUserJoinedTeamByName(userId, handledKeyword, pageable) :
+                teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
+
         long total = teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
 
         LocalDateTime nextCursor = null;
