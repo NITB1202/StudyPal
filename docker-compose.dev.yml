@@ -1,6 +1,27 @@
 name: studypal_dev
 
 services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    container_name: postgres-studypal-dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    command: >
+      postgres -c shared_buffers=256MB
+               -c work_mem=4MB
+               -c max_connections=20
+    networks:
+      - network-studypal-dev
+
   redis:
     image: redis:7.2
     restart: unless-stopped
