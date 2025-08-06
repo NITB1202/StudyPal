@@ -12,7 +12,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 @Configuration
 @RequiredArgsConstructor
 public class QuartzSchedulerConfig {
-
     private final Scheduler scheduler;
     private final Environment environment;
 
@@ -58,6 +57,13 @@ public class QuartzSchedulerConfig {
     }
 
     private void registerJob(Class<? extends Job> jobClass, String jobName, String cronExpression) throws SchedulerException {
+        //If the job already exists, skip the registration
+        JobKey jobKey = new JobKey(jobName);
+        if (scheduler.checkExists(jobKey)) {
+            System.out.printf("Job %s already exists. Skipping registration.%n", jobName);
+            return;
+        }
+
         JobDetail jobDetail = JobBuilder.newJob(jobClass)
                 .withIdentity(jobName)
                 .storeDurably()
