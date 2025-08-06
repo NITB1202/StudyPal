@@ -16,6 +16,7 @@ import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.UnauthorizedException;
 import com.study.studypal.common.util.JwtUtils;
 import com.study.studypal.user.service.internal.UserInternalService;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
@@ -38,9 +39,14 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final CodeService codeService;
     private final CacheManager cacheManager;
+    private Cache accessTokenCache;
+    private Cache refreshTokenCache;
 
-    private final Cache accessTokenCache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
-    private final Cache refreshTokenCache = cacheManager.getCache(CacheNames.REFRESH_TOKENS);
+    @PostConstruct
+    public void initCaches() {
+        this.accessTokenCache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
+        this.refreshTokenCache = cacheManager.getCache(CacheNames.REFRESH_TOKENS);
+    }
 
     @Override
     public LoginResponseDto loginWithCredentials(LoginWithCredentialsRequestDto request) {

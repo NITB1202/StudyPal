@@ -1,6 +1,7 @@
 package com.study.studypal.common.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.study.studypal.common.cache.CacheSpec;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,8 +12,7 @@ import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.Duration;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,27 +22,28 @@ import java.util.Map;
 @Getter
 @Setter
 public class CaffeineCacheConfig {
-    private Map<String, CacheSpec> cacheSpecs;
+    private Map<String, CacheSpec> cacheSpecs = new HashMap<>();
 
     @Bean
     public CacheManager cacheManager() {
-        List<CaffeineCache> caches = new ArrayList<>();
-        for (Map.Entry<String, CacheSpec> entry : cacheSpecs.entrySet()) {
-            CacheSpec spec = entry.getValue();
-            Caffeine<Object, Object> builder = Caffeine.newBuilder()
-                    .expireAfterWrite(spec.getTtl())
-                    .maximumSize(spec.getMaxSize());
-            caches.add(new CaffeineCache(entry.getKey(), builder.build()));
+        if (cacheSpecs == null || cacheSpecs.isEmpty()) {
+            throw new IllegalStateException("No cache specs configured!");
         }
+
+        List<CaffeineCache> caches = cacheSpecs.entrySet()
+                .stream()
+                .map(entry -> {
+                    CacheSpec spec = entry.getValue();
+                    return new CaffeineCache(entry.getKey(),
+                            Caffeine.newBuilder()
+                                    .expireAfterWrite(spec.getTtl())
+                                    .maximumSize(spec.getMaxSize())
+                                    .build());
+                })
+                .toList();
+
         SimpleCacheManager cacheManager = new SimpleCacheManager();
         cacheManager.setCaches(caches);
         return cacheManager;
-    }
-
-    @Getter
-    @Setter
-    public static class CacheSpec {
-        private Duration ttl;
-        private long maxSize;
     }
 }

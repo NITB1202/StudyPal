@@ -3,6 +3,7 @@ package com.study.studypal.common.service.impl;
 import com.study.studypal.auth.enums.VerificationType;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.service.CodeService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -11,9 +12,14 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CodeServiceImpl implements CodeService {
-    private static final int LENGTH = 6;
     private final CacheManager cacheManager;
-    private final Cache cache = cacheManager.getCache(CacheNames.VERIFICATION_CODES);
+    private Cache cache;
+    private static final int LENGTH = 6;
+
+    @PostConstruct
+    public void initCaches() {
+        this.cache = cacheManager.getCache(CacheNames.VERIFICATION_CODES);
+    }
 
     @Override
     public String generateVerificationCode(String email, VerificationType type) {
