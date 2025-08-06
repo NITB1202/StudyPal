@@ -1,0 +1,15 @@
+app:
+  caches:
+    cacheSpecs:
+      verificationCodes:
+        ttl: PT5M
+        maxSize: 100
+      accessTokens:
+        ttl: PT1H
+        maxSize: 1000
+      refreshTokens:
+        ttl: P7D
+        maxSize: 1000
+      userSummary:
+        ttl: PT15M
+        maxSize: 1000
