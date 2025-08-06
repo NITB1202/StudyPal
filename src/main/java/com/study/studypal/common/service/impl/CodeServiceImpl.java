@@ -24,33 +24,25 @@ public class CodeServiceImpl implements CodeService {
     @Override
     public String generateVerificationCode(String email, VerificationType type) {
         String code = generateRandomCode();
-        String key = generateKey(email, type);
-
-        cache.put(key, code);
-
+        cache.put(email, code);
         return code;
     }
 
     @Override
     public boolean verifyCode(String email, String code, VerificationType type) {
-        String key = generateKey(email, type);
-        String storedCode = cache.get(key, String.class);
+        String storedCode = cache.get(email, String.class);
 
         if(storedCode == null || !storedCode.equals(code)) {
             return false;
         }
 
-        cache.evict(key);
+        cache.evict(email);
         return true;
     }
 
     @Override
     public String generateTeamCode() {
         return generateRandomCode();
-    }
-
-    private String generateKey(String email, VerificationType type) {
-        return type + ":" + email.toLowerCase();
     }
 
     private String generateRandomCode() {

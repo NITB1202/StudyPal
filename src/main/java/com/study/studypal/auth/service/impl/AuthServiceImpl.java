@@ -108,11 +108,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = JwtUtils.generateAccessToken(userId, account.getRole());
         String refreshToken = JwtUtils.generateRefreshToken(userId);
 
-        String accessTokenKey = JwtUtils.getAccessTokenKey(userId);
-        accessTokenCache.put(accessTokenKey, accessToken);
-
-        String refreshTokenKey = JwtUtils.getRefreshTokenKey(userId);
-        refreshTokenCache.put(refreshTokenKey, refreshToken);
+        accessTokenCache.put(userId, accessToken);
+        refreshTokenCache.put(userId, refreshToken);
 
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
@@ -122,8 +119,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ActionResponseDto logout(UUID userId) {
-        accessTokenCache.evict(JwtUtils.getAccessTokenKey(userId));
-        refreshTokenCache.evict(JwtUtils.getRefreshTokenKey(userId));
+        accessTokenCache.evict(userId);
+        refreshTokenCache.evict(userId);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -213,11 +210,11 @@ public class AuthServiceImpl implements AuthService {
         UUID userId = JwtUtils.extractId(refreshToken);
         Account account = accountService.getAccountByUserId(userId);
 
-        String storedRefreshToken = refreshTokenCache.get(JwtUtils.getRefreshTokenKey(userId), String.class);
+        String storedRefreshToken = refreshTokenCache.get(userId, String.class);
 
         if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
             String newAccessToken = JwtUtils.generateAccessToken(userId, account.getRole());
-            accessTokenCache.put(JwtUtils.getAccessTokenKey(userId), newAccessToken);
+            accessTokenCache.put(userId, newAccessToken);
 
             return GenerateAccessTokenResponseDto.builder()
                     .accessToken(newAccessToken)

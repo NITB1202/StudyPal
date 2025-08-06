@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String path = request.getRequestURI();
             if (!path.startsWith(AUTH_PREFIX)) {
-                String storedAccessToken = cacheManager.getCache(CacheNames.ACCESS_TOKENS).get(JwtUtils.getAccessTokenKey(userId), String.class);
+                String storedAccessToken = cacheManager.getCache(CacheNames.ACCESS_TOKENS).get(userId, String.class);
                 if (storedAccessToken == null) {
                     throw new UnauthorizedException("Invalid or expired token.");
                 }

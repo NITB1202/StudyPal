@@ -42,14 +42,6 @@ public class JwtUtils {
                 .compact();
     }
 
-    public static String getAccessTokenKey(UUID userId) {
-        return "access_token_" + userId.toString();
-    }
-
-    public static String getRefreshTokenKey(UUID userId) {
-        return "refresh_token_" + userId.toString();
-    }
-
     public static UUID extractId(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
