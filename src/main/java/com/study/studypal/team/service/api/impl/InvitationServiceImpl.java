@@ -1,5 +1,6 @@
 package com.study.studypal.team.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
@@ -19,6 +20,9 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +44,10 @@ public class InvitationServiceImpl implements InvitationService {
     private final EntityManager entityManager;
 
     @Override
+    @CacheEvict(
+            value = CacheNames.INVITATIONS,
+            key = "@keys.of(#request.inviteeId)"
+    )
     public InvitationResponseDto sendInvitation(UUID userId, SendInvitationRequestDto request) {
         teamMembershipService.validateInviteMemberPermission(userId, request.getTeamId(), request.getInviteeId());
 
@@ -69,6 +77,11 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.INVITATIONS,
+            key = "@keys.of(#userId)",
+            condition = "#cursor == null && #size == 10"
+    )
     public ListInvitationResponseDto getInvitations(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
@@ -88,6 +101,10 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
+    @CacheEvict(
+            value = CacheNames.INVITATIONS,
+            key = "@keys.of(#userId)"
+    )
     public ActionResponseDto replyToInvitation(UUID invitationId, UUID userId, boolean accept) {
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow(
                 () -> new NotFoundException("Invitation not found.")

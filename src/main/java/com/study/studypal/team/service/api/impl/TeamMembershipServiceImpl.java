@@ -20,7 +20,6 @@ import com.study.studypal.team.service.api.TeamMembershipService;
 import com.study.studypal.team.util.CursorUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -38,7 +37,11 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     private final TeamUserRepository teamUserRepository;
     private final TeamMembershipInternalService internalService;
     private final TeamInternalService teamService;
-    private final CacheManager cacheManager;
+
+    /**
+     * Note: Cache eviction for teamMembers is already handled inside
+     * TeamInternalService's increaseMember and decreaseMember methods.
+     */
 
     @Override
     @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
@@ -51,8 +54,6 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
         internalService.createMembership(teamId, userId, TeamRole.MEMBER);
         teamService.increaseMember(teamId);
-
-        cacheManager.getCache(CacheNames.TEAM_MEMBERS).evictIfPresent(CacheKeyUtils.of(teamId));
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -182,8 +183,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
-            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#request.memberId, #request.teamId)"),
-            @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#request.teamId)")
+            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#request.memberId, #request.teamId)")
     })
     public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
         if(userId.equals(request.getMemberId())) {
@@ -235,8 +235,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)"),
-            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#userId, #teamId)"),
-            @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#teamId)")
+            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#userId, #teamId)")
     })
     public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
         TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(

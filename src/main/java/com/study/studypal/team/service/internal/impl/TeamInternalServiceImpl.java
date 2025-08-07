@@ -1,11 +1,13 @@
 package com.study.studypal.team.service.internal.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.service.internal.TeamInternalService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -27,6 +29,10 @@ public class TeamInternalServiceImpl implements TeamInternalService {
     }
 
     @Override
+    @CacheEvict(
+            value = CacheNames.TEAM_MEMBERS,
+            key = "@keys.of(#teamId)"
+    )
     public void increaseMember(UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
                 () -> new NotFoundException("Team not found.")
@@ -38,6 +44,10 @@ public class TeamInternalServiceImpl implements TeamInternalService {
 
     @Override
     @Transactional
+    @CacheEvict(
+            value = CacheNames.TEAM_MEMBERS,
+            key = "@keys.of(#teamId)"
+    )
     public void decreaseMember(UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
                 () -> new NotFoundException("Team not found.")
