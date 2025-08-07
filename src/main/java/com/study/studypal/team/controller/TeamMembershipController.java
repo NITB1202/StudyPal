@@ -4,7 +4,6 @@ import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.TeamUser.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.team.dto.TeamUser.request.UpdateMemberRoleRequestDto;
 import com.study.studypal.team.dto.TeamUser.response.ListTeamMemberResponseDto;
-import com.study.studypal.team.dto.TeamUser.response.UserRoleInTeamResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.team.service.api.TeamMembershipService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,16 +35,6 @@ public class TeamMembershipController {
     public ResponseEntity<ActionResponseDto> joinTeam(@AuthenticationPrincipal UUID userId,
                                                       @RequestParam String teamCode){
         return ResponseEntity.ok(teamMembershipService.joinTeam(userId, teamCode));
-    }
-
-    @GetMapping
-    @Operation(summary = "Get the user's role in a team.")
-    @ApiResponse(responseCode = "200", description = "Get successfully.")
-    @ApiResponse(responseCode = "404", description = "Not found.",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<UserRoleInTeamResponseDto> getUserRoleInTeam(@AuthenticationPrincipal UUID userId,
-                                                                       @RequestParam UUID teamId){
-        return ResponseEntity.ok(teamMembershipService.getUserRoleInTeam(userId, teamId));
     }
 
     @GetMapping("/all")

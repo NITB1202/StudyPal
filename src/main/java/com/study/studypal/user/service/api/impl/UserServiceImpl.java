@@ -1,5 +1,6 @@
 package com.study.studypal.user.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
@@ -16,6 +17,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private static final String AVATAR_FOLDER = "users";
 
     @Override
+    @Cacheable(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserSummaryResponseDto getUserSummaryProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
                 ()-> new NotFoundException("User with id " + userId + " not found.")
@@ -70,6 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserDetailResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("User with id " + userId + " not found.")
@@ -83,6 +88,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
             throw new BusinessException("User's avatar must be an image.");

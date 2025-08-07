@@ -71,4 +71,10 @@ public interface TeamUserRepository extends JpaRepository<TeamUser, UUID> {
     @Modifying
     @Query("DELETE FROM TeamUser tu WHERE tu.id = :id")
     int deleteMemberById(UUID id);
+
+    @Query("""
+    SELECT tu.user.id FROM TeamUser tu
+    WHERE tu.team.id = :teamId
+    """)
+    List<UUID> getTeamMemberUserIds(@Param("teamId") UUID teamId);
 }

@@ -1,0 +1,4 @@
+quartz:
+  job-packages: com.study.studypal.team.job
+  jobs:
+    invitation-clean-up: "0 0 0 * * ?"

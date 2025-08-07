@@ -112,6 +112,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex) {
+        log.warn("Config error: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Config error",
+                ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         log.warn("Unhandled exception: {}", ex.getMessage(), ex);

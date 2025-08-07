@@ -19,4 +19,8 @@ public class TeamOverviewResponseDto {
     private String description;
 
     private String teamCode;
+
+    private int totalMembers;
+
+    private Boolean isCreator;
 }

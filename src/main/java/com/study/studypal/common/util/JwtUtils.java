@@ -8,7 +8,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 import java.security.Key;
-import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 
@@ -31,32 +30,16 @@ public class JwtUtils {
                 .compact();
     }
 
-    public static String generateRefreshToken(UUID accountId) {
+    public static String generateRefreshToken(UUID userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshTokenExpirationMs);
 
         return Jwts.builder()
-                .setSubject(accountId.toString())
+                .setSubject(userId.toString())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    public static String getAccessTokenRedisKey(UUID userId) {
-        return "access_token_" + userId.toString();
-    }
-
-    public static String getRefreshTokenRedisKey(UUID accountId) {
-        return "refresh_token_" + accountId.toString();
-    }
-
-    public static Duration getAccessTokenTTL() {
-        return Duration.ofMillis(accessTokenExpirationMs);
-    }
-
-    public static Duration getRefreshTokenTTL() {
-        return Duration.ofMillis(refreshTokenExpirationMs);
     }
 
     public static UUID extractId(String token) {

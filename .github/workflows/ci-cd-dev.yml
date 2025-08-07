@@ -42,6 +42,8 @@ jobs:
             curl -o docker-compose.yml https://raw.githubusercontent.com/NITB1202/StudyPal/main/docker-compose.staging.yml
             echo "${{ secrets.ENV_FILE }}" > .env
 
-            docker compose pull app
-            docker compose up -d redis postgres
+            docker compose down -v --remove-orphans
+            docker compose pull
+            docker compose up -d postgres
+            sleep 10
             docker compose up -d --no-deps --force-recreate app

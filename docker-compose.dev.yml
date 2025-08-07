@@ -1,19 +1,35 @@
 name: studypal_dev
 
 services:
-  redis:
-    image: redis:7.2
+  postgres:
+    image: postgres:15
     restart: unless-stopped
-    container_name: redis-studypal-dev
-    ports:
-      - "6380:6379"
+    container_name: postgres-studypal-dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - redis-data-dev:/data
+      - postgres-data-dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    command: >
+      postgres -c shared_buffers=256MB
+               -c work_mem=4MB
+               -c max_connections=20
     networks:
       - network-studypal-dev
 
 volumes:
-  redis-data-dev:
+  postgres-data-dev:
+    driver: local
+    driver_opts:
+        type: tmpfs
+        device: tmpfs
 
 networks:
   network-studypal-dev:

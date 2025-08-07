@@ -1,14 +1,16 @@
 package com.study.studypal.common.security;
 
 import com.study.studypal.auth.enums.AccountRole;
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.exception.UnauthorizedException;
+import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.common.util.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +24,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final RedisTemplate<String, Object> redis;
+    private final CacheManager cacheManager;
     private static final String AUTH_PREFIX = "/api/auth";
 
     @Override
@@ -37,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String path = request.getRequestURI();
             if (!path.startsWith(AUTH_PREFIX)) {
-                String storedAccessToken = (String) redis.opsForValue().get(JwtUtils.getAccessTokenRedisKey(userId));
+                String storedAccessToken = cacheManager.getCache(CacheNames.ACCESS_TOKENS).get(CacheKeyUtils.of(userId), String.class);
                 if (storedAccessToken == null) {
                     throw new UnauthorizedException("Invalid or expired token.");
                 }

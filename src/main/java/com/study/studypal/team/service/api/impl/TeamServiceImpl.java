@@ -1,5 +1,6 @@
 package com.study.studypal.team.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
@@ -20,7 +21,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -47,6 +52,10 @@ public class TeamServiceImpl implements TeamService {
     private static final String AVATAR_FOLDER = "teams";
 
     @Override
+    @CacheEvict(
+            value = CacheNames.USER_TEAMS,
+            key = "@keys.of(#userId)"
+    )
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
             throw new BusinessException("You have already created a team with the same name.");
@@ -75,20 +84,25 @@ public class TeamServiceImpl implements TeamService {
             }
             catch (DataIntegrityViolationException e){
                 retry++;
-                System.out.println("Retry: " + retry);
+                log.info("Create team retry: {}", retry);
             }
         }
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.TEAM_OVERVIEW,
+            key = "@keys.of(#userId, #teamId)"
+    )
     public TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                ()->new NotFoundException("Team not found.")
+                () -> new NotFoundException("Team not found.")
         );
 
         TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
 
         TeamUser membership = teamMembershipService.getMemberShip(teamId, userId);
+        overview.setIsCreator(membership.getRole() == TeamRole.CREATOR);
         if(membership.getRole() == TeamRole.MEMBER) {
             overview.setTeamCode(null);
         }
@@ -114,10 +128,18 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.USER_TEAMS,
+            key = "@keys.of(#userId)",
+            condition = "#cursor == null && #size == 10"
+    )
     public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
-        List<TeamSummaryResponseDto> teams = teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
+        List<TeamSummaryResponseDto> teams = cursor == null ?
+                teamRepository.findUserJoinedTeam(userId, pageable) :
+                teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
+
         long total = teamRepository.countUserJoinedTeam(userId);
 
         LocalDateTime nextCursor = null;
@@ -138,7 +160,10 @@ public class TeamServiceImpl implements TeamService {
         String handledKeyword = keyword.toLowerCase().trim();
         Pageable pageable = PageRequest.of(0, size);
 
-        List<TeamSummaryResponseDto> teams = teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
+        List<TeamSummaryResponseDto> teams = cursor == null ?
+                teamRepository.searchUserJoinedTeamByName(userId, handledKeyword, pageable) :
+                teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
+
         long total = teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
 
         LocalDateTime nextCursor = null;
@@ -173,10 +198,15 @@ public class TeamServiceImpl implements TeamService {
             if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
                 throw new BusinessException("You have already created a team with the same name.");
             }
+
+            //Evict the user's joined team cache only if the team's name has changed
+            teamMembershipService.evictUserJoinedTeamsCaches(teamId);
         }
 
         modelMapper.map(request, team);
         teamRepository.save(team);
+
+        teamMembershipService.evictTeamOverviewCaches(teamId);
 
         return modelMapper.map(team, TeamResponseDto.class);
     }
@@ -197,6 +227,8 @@ public class TeamServiceImpl implements TeamService {
         team.setTeamCode(teamCode);
         teamRepository.save(team);
 
+        teamMembershipService.evictTeamOverviewCaches(teamId);
+
         return ActionResponseDto.builder()
                 .success(true)
                 .message(teamCode)
@@ -214,6 +246,9 @@ public class TeamServiceImpl implements TeamService {
         if(team.getAvatarUrl() != null) {
             fileService.deleteFile(team.getId().toString(), "image");
         }
+
+        teamMembershipService.evictTeamOverviewCaches(teamId);
+        teamMembershipService.evictUserJoinedTeamsCaches(teamId);
 
         teamRepository.delete(team);
 
@@ -239,6 +274,9 @@ public class TeamServiceImpl implements TeamService {
 
             team.setAvatarUrl(avatarUrl);
             teamRepository.save(team);
+
+            teamMembershipService.evictTeamOverviewCaches(teamId);
+            teamMembershipService.evictUserJoinedTeamsCaches(teamId);
 
             return ActionResponseDto.builder()
                     .success(true)
