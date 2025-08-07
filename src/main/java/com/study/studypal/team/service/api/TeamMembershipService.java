@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface TeamMembershipService {
     ActionResponseDto joinTeam(UUID userId, String teamCode);
-    ListTeamMemberResponseDto getTeamMembers(UUID teamId, String cursor, int size);
+    ListTeamMemberResponseDto getTeamMembers(UUID userId, UUID teamId, String cursor, int size);
     ListTeamMemberResponseDto searchTeamMembersByName(UUID userId, UUID teamId, String keyword, UUID cursor, int size);
     ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request);
     ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request);

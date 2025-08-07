@@ -40,10 +40,11 @@ public class TeamMembershipController {
     @GetMapping("/all")
     @Operation(summary = "Get a list of team members.")
     @ApiResponse(responseCode = "200", description = "Get successfully.")
-    public ResponseEntity<ListTeamMemberResponseDto> getTeamMembers(@RequestParam UUID teamId,
+    public ResponseEntity<ListTeamMemberResponseDto> getTeamMembers(@AuthenticationPrincipal UUID userId,
+                                                                    @RequestParam UUID teamId,
                                                                     @RequestParam(required = false) String cursor,
                                                                     @RequestParam(defaultValue = "10") @Positive int size){
-        return ResponseEntity.ok(teamMembershipService.getTeamMembers(teamId, cursor, size));
+        return ResponseEntity.ok(teamMembershipService.getTeamMembers(userId, teamId, cursor, size));
     }
 
     @GetMapping("/search")

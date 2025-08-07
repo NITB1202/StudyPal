@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -87,7 +88,7 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
         Cache cache = cacheManager.getCache(CacheNames.TEAM_OVERVIEW);
         List<UUID> memberIds = teamUserRepository.getTeamMemberUserIds(teamId);
         for(UUID memberId : memberIds) {
-            cache.evictIfPresent(CacheKeyUtils.of(memberId, teamId));
+            Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(memberId, teamId));
         }
     }
 
@@ -96,7 +97,7 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
         Cache cache = cacheManager.getCache(CacheNames.USER_TEAMS);
         List<UUID> memberIds = teamUserRepository.getTeamMemberUserIds(teamId);
         for(UUID memberId : memberIds) {
-            cache.evictIfPresent(CacheKeyUtils.of(memberId));
+            Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(memberId));
         }
     }
 }
