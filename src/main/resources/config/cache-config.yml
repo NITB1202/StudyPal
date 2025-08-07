@@ -19,3 +19,7 @@ app:
       teamOverview:
         ttl: PT15M
         maxSize: 1000
+      teamMembers:
+        ttl: PT15M
+        maxSize: 1000
+

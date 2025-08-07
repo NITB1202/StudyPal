@@ -7,6 +7,7 @@ public final class CacheNames {
     public static final String USER_SUMMARY = "userSummary";
     public static final String USER_TEAMS = "userTeams";
     public static final String TEAM_OVERVIEW = "teamOverview";
+    public static final String TEAM_MEMBERS = "teamMembers";
 
     private CacheNames() {}
 }

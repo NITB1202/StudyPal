@@ -52,7 +52,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @CacheEvict(
             value = CacheNames.USER_TEAMS,
-            key = "@keys.of(#userId, 10)"
+            key = "@keys.of(#userId)"
     )
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
@@ -127,8 +127,8 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Cacheable(
             value = CacheNames.USER_TEAMS,
-            key = "@keys.of(#userId, 10)",
-            condition = "#cursor == null"
+            key = "@keys.of(#userId)",
+            condition = "#cursor == null && #size == 10"
     )
     public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
@@ -195,13 +195,15 @@ public class TeamServiceImpl implements TeamService {
             if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
                 throw new BusinessException("You have already created a team with the same name.");
             }
+
+            //Evict the user's joined team cache only if the team's name has changed
+            teamMembershipService.evictUserJoinedTeamsCaches(teamId);
         }
 
         modelMapper.map(request, team);
         teamRepository.save(team);
 
-        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
-        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.USER_TEAMS);
+        teamMembershipService.evictTeamOverviewCaches(teamId);
 
         return modelMapper.map(team, TeamResponseDto.class);
     }
@@ -222,7 +224,7 @@ public class TeamServiceImpl implements TeamService {
         team.setTeamCode(teamCode);
         teamRepository.save(team);
 
-        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
+        teamMembershipService.evictTeamOverviewCaches(teamId);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -244,8 +246,8 @@ public class TeamServiceImpl implements TeamService {
 
         teamRepository.delete(team);
 
-        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
-        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.USER_TEAMS);
+        teamMembershipService.evictTeamOverviewCaches(teamId);
+        teamMembershipService.evictUserJoinedTeamsCaches(teamId);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -270,8 +272,8 @@ public class TeamServiceImpl implements TeamService {
             team.setAvatarUrl(avatarUrl);
             teamRepository.save(team);
 
-            teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
-            teamMembershipService.evictTeamMembersCache(teamId, CacheNames.USER_TEAMS);
+            teamMembershipService.evictTeamOverviewCaches(teamId);
+            teamMembershipService.evictUserJoinedTeamsCaches(teamId);
 
             return ActionResponseDto.builder()
                     .success(true)

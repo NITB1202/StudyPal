@@ -12,5 +12,6 @@ public interface TeamMembershipInternalService {
     void validateInviteMemberPermission(UUID userId, UUID teamId, UUID inviteeId);
     TeamUser getMemberShip(UUID teamId, UUID userId);
     LocalDateTime getUserJoinedTeamsListCursor(UUID userId, UUID lastTeamId, int listSize, int size);
-    void evictTeamMembersCache(UUID teamId, String cacheName);
+    void evictTeamOverviewCaches(UUID teamId);
+    void evictUserJoinedTeamsCaches(UUID teamId);
 }

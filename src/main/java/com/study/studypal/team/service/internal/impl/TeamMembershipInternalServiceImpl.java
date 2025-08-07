@@ -1,5 +1,6 @@
 package com.study.studypal.team.service.internal.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.exception.BusinessException;
 import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.common.util.CacheKeyUtils;
@@ -82,15 +83,20 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
     }
 
     @Override
-    public void evictTeamMembersCache(UUID teamId, String cacheName) {
-        Cache cache = cacheManager.getCache(cacheName);
-        if(cache == null) {
-            throw new NotFoundException("Invalid cache name.");
-        }
-
+    public void evictTeamOverviewCaches(UUID teamId) {
+        Cache cache = cacheManager.getCache(CacheNames.TEAM_OVERVIEW);
         List<UUID> memberIds = teamUserRepository.getTeamMemberUserIds(teamId);
         for(UUID memberId : memberIds) {
             cache.evictIfPresent(CacheKeyUtils.of(memberId, teamId));
+        }
+    }
+
+    @Override
+    public void evictUserJoinedTeamsCaches(UUID teamId) {
+        Cache cache = cacheManager.getCache(CacheNames.USER_TEAMS);
+        List<UUID> memberIds = teamUserRepository.getTeamMemberUserIds(teamId);
+        for(UUID memberId : memberIds) {
+            cache.evictIfPresent(CacheKeyUtils.of(memberId));
         }
     }
 }
