@@ -1,5 +1,6 @@
 package com.study.studypal.team.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
@@ -21,6 +22,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +50,10 @@ public class TeamServiceImpl implements TeamService {
     private static final String AVATAR_FOLDER = "teams";
 
     @Override
+    @CacheEvict(
+            value = CacheNames.USER_TEAMS,
+            key = "@keys.of(#userId, 10)"
+    )
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
             throw new BusinessException("You have already created a team with the same name.");
@@ -81,9 +88,13 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.TEAM_OVERVIEW,
+            key = "@keys.of(userId, teamId)"
+    )
     public TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                ()->new NotFoundException("Team not found.")
+                () -> new NotFoundException("Team not found.")
         );
 
         TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
@@ -114,6 +125,11 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.USER_TEAMS,
+            key = "@keys.of(#userId, 10)",
+            condition = "#cursor == null"
+    )
     public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
@@ -184,6 +200,9 @@ public class TeamServiceImpl implements TeamService {
         modelMapper.map(request, team);
         teamRepository.save(team);
 
+        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
+        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.USER_TEAMS);
+
         return modelMapper.map(team, TeamResponseDto.class);
     }
 
@@ -202,6 +221,8 @@ public class TeamServiceImpl implements TeamService {
 
         team.setTeamCode(teamCode);
         teamRepository.save(team);
+
+        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -222,6 +243,9 @@ public class TeamServiceImpl implements TeamService {
         }
 
         teamRepository.delete(team);
+
+        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
+        teamMembershipService.evictTeamMembersCache(teamId, CacheNames.USER_TEAMS);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -245,6 +269,9 @@ public class TeamServiceImpl implements TeamService {
 
             team.setAvatarUrl(avatarUrl);
             teamRepository.save(team);
+
+            teamMembershipService.evictTeamMembersCache(teamId, CacheNames.TEAM_OVERVIEW);
+            teamMembershipService.evictTeamMembersCache(teamId, CacheNames.USER_TEAMS);
 
             return ActionResponseDto.builder()
                     .success(true)
