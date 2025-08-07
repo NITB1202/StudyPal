@@ -36,7 +36,7 @@ VALUES
 
 INSERT INTO teams (id, name, description, team_code, created_at, creator_id, total_members, avatar_url)
 VALUES
-    ('111e8400-e29b-41d4-a716-446655440001', 'Biology', '', 'AQhTe',
+    ('111e8400-e29b-41d4-a716-446655440001', 'Biology', null, 'AQhTe',
      '2024-12-01 00:00:00', '041c77e0-ae77-4005-b745-ea12dca9bec6', 2, 'https://res.cloudinary.com/drvyagz4w/image/upload/v1750258950/111e8400-e29b-41d4-a716-446655440001.jpg'),
     ('555e8400-e29b-41d4-a716-446655440006', 'Software devs', 'demo', 'fDjQA',
      '2024-07-08 00:00:00', '9f5d79f2-83a2-411d-bb66-caeb640a62b0', 1, 'https://res.cloudinary.com/drvyagz4w/image/upload/v1750258952/555e8400-e29b-41d4-a716-446655440006.jpg');

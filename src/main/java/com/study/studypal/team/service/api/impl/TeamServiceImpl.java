@@ -92,7 +92,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Cacheable(
             value = CacheNames.TEAM_OVERVIEW,
-            key = "@keys.of(userId, teamId)"
+            key = "@keys.of(#userId, #teamId)"
     )
     public TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
@@ -102,6 +102,7 @@ public class TeamServiceImpl implements TeamService {
         TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
 
         TeamUser membership = teamMembershipService.getMemberShip(teamId, userId);
+        overview.setIsCreator(membership.getRole() == TeamRole.CREATOR);
         if(membership.getRole() == TeamRole.MEMBER) {
             overview.setTeamCode(null);
         }
@@ -246,10 +247,10 @@ public class TeamServiceImpl implements TeamService {
             fileService.deleteFile(team.getId().toString(), "image");
         }
 
-        teamRepository.delete(team);
-
         teamMembershipService.evictTeamOverviewCaches(teamId);
         teamMembershipService.evictUserJoinedTeamsCaches(teamId);
+
+        teamRepository.delete(team);
 
         return ActionResponseDto.builder()
                 .success(true)

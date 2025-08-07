@@ -22,6 +22,7 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -100,10 +101,10 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
-    @CacheEvict(
-            value = CacheNames.INVITATIONS,
-            key = "@keys.of(#userId)"
-    )
+    @Caching(evict = {
+            @CacheEvict(value = CacheNames.INVITATIONS, key = "@keys.of(#userId)"),
+            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
+    })
     public ActionResponseDto replyToInvitation(UUID invitationId, UUID userId, boolean accept) {
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow(
                 () -> new NotFoundException("Invitation not found.")

@@ -14,6 +14,8 @@ import java.util.UUID;
 public class InvitationResponseDto {
     private UUID id;
 
+    private UUID inviteeId;
+
     private String inviterName;
 
     private String inviterAvatarUrl;
