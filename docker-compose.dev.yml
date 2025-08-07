@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     deploy:
@@ -21,6 +23,13 @@ services:
                -c max_connections=20
     networks:
       - network-studypal-dev
+
+volumes:
+  postgres-data-dev:
+    driver: local
+    driver_opts:
+        type: tmpfs
+        device: tmpfs
 
 networks:
   network-studypal-dev:
