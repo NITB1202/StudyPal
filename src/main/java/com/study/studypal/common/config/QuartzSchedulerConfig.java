@@ -2,6 +2,7 @@ package com.study.studypal.common.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class QuartzSchedulerConfig {
@@ -39,9 +41,9 @@ public class QuartzSchedulerConfig {
 
                     if (cronExpression != null) {
                         registerJob(jobClass, jobKey, cronExpression);
-                        System.out.printf("Registered Job: %s (cron: %s)%n", jobKey, cronExpression);
+                        log.info("Registered Job: {} (cron: {})", jobKey, cronExpression);
                     } else {
-                        System.out.printf("No cron expression for job: %s%n", jobKey);
+                        log.info("No cron expression for job: {}", jobKey);
                     }
                 }
             }
