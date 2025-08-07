@@ -112,8 +112,8 @@ public class TeamController {
     @ApiResponse(responseCode = "200", description = "Delete successfully.")
     @ApiResponse(responseCode = "404", description = "Not found.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<ActionResponseDto> deleteTeam(@PathVariable UUID teamId,
-                                                        @AuthenticationPrincipal UUID userId){
+    public ResponseEntity<ActionResponseDto> deleteTeam(@AuthenticationPrincipal UUID userId,
+                                                        @PathVariable UUID teamId){
         return ResponseEntity.ok(teamService.deleteTeam(teamId, userId));
     }
 

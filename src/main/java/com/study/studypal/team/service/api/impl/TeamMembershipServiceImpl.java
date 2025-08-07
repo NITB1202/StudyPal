@@ -20,14 +20,16 @@ import com.study.studypal.team.service.api.TeamMembershipService;
 import com.study.studypal.team.util.CursorUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -37,6 +39,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     private final TeamUserRepository teamUserRepository;
     private final TeamMembershipInternalService internalService;
     private final TeamInternalService teamService;
+    private final CacheManager cacheManager;
 
     /**
      * Note: Cache eviction for teamMembers is already handled inside
@@ -62,12 +65,20 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     }
 
     @Override
-    @Cacheable(
-            value = CacheNames.TEAM_MEMBERS,
-            key = "@keys.of(#teamId)",
-            condition = "#cursor == null && #size == 10"
-    )
-    public ListTeamMemberResponseDto getTeamMembers(UUID teamId, String cursor, int size) {
+    public ListTeamMemberResponseDto getTeamMembers(UUID userId, UUID teamId, String cursor, int size) {
+        if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+            throw new NotFoundException("You are not in the team.");
+        }
+
+        //Handle cache with default condition
+        Cache cache = cacheManager.getCache(CacheNames.TEAM_MEMBERS);
+        boolean cacheResponse = false;
+        if(cursor == null && size == 10) {
+            ListTeamMemberResponseDto list = Objects.requireNonNull(cache).get(CacheKeyUtils.of(teamId), ListTeamMemberResponseDto.class);
+            if(list != null) return list;
+            else cacheResponse = true;
+        }
+
         Pageable pageable = PageRequest.of(0, size);
 
         List<TeamUser> memberships;
@@ -106,15 +117,23 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
             nextCursor = CursorUtils.encodeCursor(lastMember.getRole().ordinal() + 1, lastMember.getName(), lastMember.getUserId());
         }
 
-        return ListTeamMemberResponseDto.builder()
+        ListTeamMemberResponseDto response = ListTeamMemberResponseDto.builder()
                 .members(members)
                 .total(total)
                 .nextCursor(nextCursor)
                 .build();
+
+        if(cacheResponse) cache.put(CacheKeyUtils.of(teamId), response);
+
+        return response;
     }
 
     @Override
     public ListTeamMemberResponseDto searchTeamMembersByName(UUID userId, UUID teamId, String keyword, UUID cursor, int size) {
+        if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+            throw new NotFoundException("You are not in the team.");
+        }
+
         String handledKeyword = keyword.toLowerCase().trim();
         Pageable pageable = PageRequest.of(0, size);
 
