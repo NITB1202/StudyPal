@@ -4,11 +4,11 @@ import com.study.studypal.auth.dto.internal.OAuthUserInfoDto;
 import com.study.studypal.auth.dto.request.*;
 import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
-import com.study.studypal.auth.exception.InvalidAccessTokenException;
-import com.study.studypal.auth.exception.InvalidRefreshTokenException;
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.auth.service.AuthService;
 import com.study.studypal.common.cache.CacheNames;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.MailService;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if(userInfo == null) {
-            throw new InvalidAccessTokenException();
+            throw new BaseException(AuthErrorCode.INVALID_ACCESS_TOKEN);
         }
 
         if(!accountService.isEmailRegistered(userInfo.getEmail())) {
@@ -222,7 +222,7 @@ public class AuthServiceImpl implements AuthService {
                     .build();
 
         } else {
-            throw new InvalidRefreshTokenException();
+            throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
     }
 }

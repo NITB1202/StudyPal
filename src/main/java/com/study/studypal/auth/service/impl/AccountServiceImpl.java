@@ -8,6 +8,7 @@ import com.study.studypal.auth.enums.AuthProvider;
 import com.study.studypal.auth.enums.ExternalAuthProvider;
 import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -48,7 +49,7 @@ public class AccountServiceImpl implements AccountService {
         try {
             accountRepository.save(account);
         } catch (DataIntegrityViolationException e) {
-            throw new EmailAlreadyExistsException();
+            throw new BaseException(AuthErrorCode.EMAIL_ALREADY_EXISTS);
         }
     }
 
@@ -67,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
         try {
             accountRepository.save(account);
         } catch (DataIntegrityViolationException e) {
-            throw new EmailAlreadyExistsException();
+            throw new BaseException(AuthErrorCode.EMAIL_ALREADY_EXISTS);
         }
     }
 
@@ -86,7 +87,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getAccountByUserId(UUID userId) {
         return accountRepository.findByUserId(userId).orElseThrow(
-                () -> new AccountNotFoundException(userId)
+                () -> new BaseException(AuthErrorCode.ACCOUNT_NOT_FOUND)
         );
     }
 
@@ -95,15 +96,15 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findByEmail(email);
 
         if(account == null) {
-            throw new EmailNotFoundException();
+            throw new BaseException(AuthErrorCode.EMAIL_NOT_FOUND);
         }
 
         if(!account.getProviders().contains(AuthProvider.LOCAL)) {
-            throw new ThirdPartyLoginException();
+            throw new BaseException(AuthErrorCode.AUTH_METHOD_MISMATCH);
         }
 
         if(!passwordEncoder.matches(password, account.getHashedPassword())) {
-            throw new IncorrectPasswordException();
+            throw new BaseException(AuthErrorCode.INCORRECT_PASSWORD);
         }
 
         account.setLastLoginAt(LocalDateTime.now());
