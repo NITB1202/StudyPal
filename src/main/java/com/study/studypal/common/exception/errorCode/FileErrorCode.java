@@ -1,4 +1,4 @@
-package com.study.studypal.common.exception.file;
+package com.study.studypal.common.exception.errorCode;
 
 import com.study.studypal.common.exception.ErrorCode;
 import lombok.Getter;

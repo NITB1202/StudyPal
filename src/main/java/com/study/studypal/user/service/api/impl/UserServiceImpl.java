@@ -3,7 +3,7 @@ package com.study.studypal.user.service.api.impl;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.file.FileErrorCode;
+import com.study.studypal.common.exception.errorCode.FileErrorCode;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
