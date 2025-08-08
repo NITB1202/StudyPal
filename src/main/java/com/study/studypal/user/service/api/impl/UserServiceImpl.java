@@ -3,8 +3,7 @@ package com.study.studypal.user.service.api.impl;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.file.FileProcessingException;
-import com.study.studypal.common.exception.file.InvalidImageException;
+import com.study.studypal.common.exception.file.FileErrorCode;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
@@ -93,7 +92,7 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
-            throw new InvalidImageException();
+            throw new BaseException(FileErrorCode.INVALID_IMAGE_FILE);
         }
 
         try {
@@ -111,7 +110,7 @@ public class UserServiceImpl implements UserService {
                     .build();
 
         } catch (IOException e) {
-            throw new FileProcessingException(e);
+            throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
         }
     }
 }
