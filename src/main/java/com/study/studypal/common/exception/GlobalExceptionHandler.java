@@ -55,8 +55,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex) {
+    @ExceptionHandler(CustomUnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(CustomUnauthorizedException ex) {
         log.warn("Unauthorized exception occurred: {}", ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(
