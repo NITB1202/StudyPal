@@ -2,14 +2,15 @@ package com.study.studypal.user.service.api.impl;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.file.FileProcessingException;
 import com.study.studypal.common.exception.file.InvalidImageException;
-import com.study.studypal.user.exception.UserNotFoundException;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
+import com.study.studypal.user.exception.UserErrorCode;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.user.service.api.UserService;
@@ -41,7 +42,7 @@ public class UserServiceImpl implements UserService {
     @Cacheable(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserSummaryResponseDto getUserSummaryProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                UserNotFoundException::new
+                () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
         );
 
         return modelMapper.map(user, UserSummaryResponseDto.class);
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponseDto getUserProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                UserNotFoundException::new
+                () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
         );
 
         return modelMapper.map(user, UserDetailResponseDto.class);
@@ -78,7 +79,7 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserDetailResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
         User user = userRepository.findById(userId).orElseThrow(
-                UserNotFoundException::new
+                () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
         );
 
         modelMapper.map(request, user);
@@ -98,7 +99,7 @@ public class UserServiceImpl implements UserService {
         try {
             String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, userId.toString(), file.getBytes()).getUrl();
             User user = userRepository.findById(userId).orElseThrow(
-                    UserNotFoundException::new
+                    () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
             );
 
             user.setAvatarUrl(avatarUrl);

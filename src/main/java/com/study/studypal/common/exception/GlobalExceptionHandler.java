@@ -1,6 +1,5 @@
 package com.study.studypal.common.exception;
 
-import com.study.studypal.common.exception.base.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -20,13 +19,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBaseException(BaseException ex) {
         log.warn("Exception occurred: {}", ex.getMessage());
 
+        int httpStatus = ex.getErrorCode().getHttpStatus().value();
+        String code = ex.getErrorCode().getCode();
+        String message = ex.getErrorCode().getMessage();
+
         ErrorResponse errorResponse = new ErrorResponse(
-                ex.getStatusCode().value(),
-                ex.getErrorCode(),
-                ex.getMessage()
+                httpStatus,
+                code,
+                message
         );
 
-        return ResponseEntity.status(ex.getStatusCode()).body(errorResponse);
+        return ResponseEntity.status(httpStatus).body(errorResponse);
     }
 
     @ExceptionHandler(CustomBusinessException.class)
@@ -143,7 +146,7 @@ public class GlobalExceptionHandler {
         log.warn("Unhandled exception: {}", ex.getMessage(), ex);
 
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Unhandled exception",
                 ex.getMessage()
         );
