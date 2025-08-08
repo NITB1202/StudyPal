@@ -1,5 +1,6 @@
 package com.study.studypal.common.exception;
 
+import com.study.studypal.common.exception.base.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,21 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ErrorResponse> handleBaseException(BaseException ex) {
+        log.warn("Exception occurred: {}", ex.getMessage());
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                ex.getStatusCode().value(),
+                ex.getErrorCode(),
+                ex.getMessage()
+        );
+
+        return ResponseEntity.status(ex.getStatusCode()).body(errorResponse);
+    }
+
+    @ExceptionHandler(CustomBusinessException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessException(CustomBusinessException ex) {
         log.warn("Business exception occurred: {}", ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(
@@ -29,8 +42,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
+    @ExceptionHandler(CustomNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(CustomNotFoundException ex) {
         log.warn("Not found exception occurred: {}", ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(

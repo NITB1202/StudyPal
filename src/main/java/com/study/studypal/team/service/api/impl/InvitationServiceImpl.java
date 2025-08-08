@@ -2,8 +2,8 @@ package com.study.studypal.team.service.api.impl;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
+import com.study.studypal.common.exception.CustomBusinessException;
+import com.study.studypal.common.exception.CustomNotFoundException;
 import com.study.studypal.team.dto.Invitation.request.SendInvitationRequestDto;
 import com.study.studypal.team.dto.Invitation.response.InvitationResponseDto;
 import com.study.studypal.team.dto.Invitation.response.ListInvitationResponseDto;
@@ -52,7 +52,7 @@ public class InvitationServiceImpl implements InvitationService {
         teamMembershipService.validateInviteMemberPermission(userId, request.getTeamId(), request.getInviteeId());
 
         if(invitationRepository.existsByInviteeIdAndTeamId(request.getInviteeId(), request.getTeamId())) {
-            throw new BusinessException("The invitee has already been invited to this team.");
+            throw new CustomBusinessException("The invitee has already been invited to this team.");
         }
 
         User inviter = entityManager.getReference(User.class, userId);
@@ -70,7 +70,7 @@ public class InvitationServiceImpl implements InvitationService {
         try {
             invitationRepository.save(invitation);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("The invitee has already been invited to this team.");
+            throw new CustomBusinessException("The invitee has already been invited to this team.");
         }
 
         return modelMapper.map(invitation, InvitationResponseDto.class);
@@ -107,11 +107,11 @@ public class InvitationServiceImpl implements InvitationService {
     })
     public ActionResponseDto replyToInvitation(UUID invitationId, UUID userId, boolean accept) {
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow(
-                () -> new NotFoundException("Invitation not found.")
+                () -> new CustomNotFoundException("Invitation not found.")
         );
 
         if(!userId.equals(invitation.getInvitee().getId())) {
-            throw new BusinessException("You are not allowed to reply this invitation.");
+            throw new CustomBusinessException("You are not allowed to reply this invitation.");
         }
 
         if(accept) {

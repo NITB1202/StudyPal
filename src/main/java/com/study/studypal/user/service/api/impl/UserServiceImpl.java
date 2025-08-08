@@ -2,13 +2,14 @@ package com.study.studypal.user.service.api.impl;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
+import com.study.studypal.common.exception.domain.file.FileProcessingException;
+import com.study.studypal.common.exception.domain.file.InvalidImageException;
+import com.study.studypal.common.exception.domain.user.UserNotFoundException;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.user.service.api.UserService;
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
     @Cacheable(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserSummaryResponseDto getUserSummaryProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new NotFoundException("User with id " + userId + " not found.")
+                ()-> new UserNotFoundException(userId)
         );
 
         return modelMapper.map(user, UserSummaryResponseDto.class);
@@ -49,7 +50,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponseDto getUserProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new NotFoundException("User with id " + userId + " not found.")
+                ()-> new UserNotFoundException(userId)
         );
 
         return modelMapper.map(user, UserDetailResponseDto.class);
@@ -77,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserDetailResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("User with id " + userId + " not found.")
+                () -> new UserNotFoundException(userId)
         );
 
         modelMapper.map(request, user);
@@ -91,13 +92,13 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
-            throw new BusinessException("User's avatar must be an image.");
+            throw new InvalidImageException();
         }
 
         try {
             String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, userId.toString(), file.getBytes()).getUrl();
             User user = userRepository.findById(userId).orElseThrow(
-                    () -> new NotFoundException("User with id " + userId + " not found.")
+                    () -> new UserNotFoundException(userId)
             );
 
             user.setAvatarUrl(avatarUrl);
@@ -109,7 +110,7 @@ public class UserServiceImpl implements UserService {
                     .build();
 
         } catch (IOException e) {
-            throw new BusinessException("Reading file failed.");
+            throw new FileProcessingException(e);
         }
     }
 }

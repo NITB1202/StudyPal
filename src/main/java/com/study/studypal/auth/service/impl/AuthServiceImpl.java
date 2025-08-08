@@ -12,7 +12,7 @@ import com.study.studypal.common.service.MailService;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.VerificationType;
-import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.exception.CustomBusinessException;
 import com.study.studypal.common.exception.UnauthorizedException;
 import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.common.util.JwtUtils;
@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if(userInfo == null) {
-            throw new BusinessException("Invalid access token.");
+            throw new CustomBusinessException("Invalid access token.");
         }
 
         if(!accountService.isEmailRegistered(userInfo.getEmail())) {

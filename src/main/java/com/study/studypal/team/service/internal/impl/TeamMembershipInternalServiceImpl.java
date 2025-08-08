@@ -1,8 +1,8 @@
 package com.study.studypal.team.service.internal.impl;
 
 import com.study.studypal.common.cache.CacheNames;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
+import com.study.studypal.common.exception.CustomBusinessException;
+import com.study.studypal.common.exception.CustomNotFoundException;
 import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
@@ -49,11 +49,11 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
     @Override
     public void validateUpdateTeamPermission(UUID userId, UUID teamId) {
         TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
-                ()->new NotFoundException("You are not a member of this team.")
+                ()->new CustomNotFoundException("You are not a member of this team.")
         );
 
         if(membership.getRole() != TeamRole.CREATOR) {
-            throw new BusinessException("Only creator has permission to update the team.");
+            throw new CustomBusinessException("Only creator has permission to update the team.");
         }
     }
 
@@ -62,18 +62,18 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
         TeamUser membership = getMemberShip(teamId, userId);
 
         if(membership.getRole() == TeamRole.MEMBER) {
-            throw new BusinessException("You don’t have permission to invite members to this team.");
+            throw new CustomBusinessException("You don’t have permission to invite members to this team.");
         }
 
         if(teamUserRepository.existsByUserIdAndTeamId(inviteeId, teamId)) {
-            throw new BusinessException("The invitee is already in the team.");
+            throw new CustomBusinessException("The invitee is already in the team.");
         }
     }
 
     @Override
     public TeamUser getMemberShip(UUID teamId, UUID userId) {
         return teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
-                ()->new NotFoundException("You are not a member of this team.")
+                ()->new CustomNotFoundException("You are not a member of this team.")
         );
     }
 

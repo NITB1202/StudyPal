@@ -1,6 +1,6 @@
 package com.study.studypal.common.service.impl;
 
-import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.exception.CustomBusinessException;
 import com.study.studypal.common.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -33,7 +33,7 @@ public class MailServiceImpl implements MailService {
 
     private void sendHtmlMail(String email, String subject, String htmlContent) {
         if(email == null || email.isEmpty()) {
-            throw new BusinessException("This user hasn't provided an email yet.");
+            throw new CustomBusinessException("This user hasn't provided an email yet.");
         }
 
         try {
@@ -46,7 +46,7 @@ public class MailServiceImpl implements MailService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new BusinessException("Failed to send email " + email);
+            throw new CustomBusinessException("Failed to send email " + email);
         }
     }
 }

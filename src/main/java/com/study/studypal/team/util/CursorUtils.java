@@ -1,7 +1,7 @@
 package com.study.studypal.team.util;
 
 import com.study.studypal.team.dto.TeamUser.internal.DecodedCursor;
-import com.study.studypal.common.exception.BusinessException;
+import com.study.studypal.common.exception.CustomBusinessException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -20,7 +20,7 @@ public class CursorUtils {
             String[] parts = decoded.split("\\|", 3);
             return new DecodedCursor(Integer.parseInt(parts[0]), parts[1], UUID.fromString(parts[2]));
         } catch (Exception e) {
-            throw new BusinessException("Failed to decode cursor: " + e.getMessage());
+            throw new CustomBusinessException("Failed to decode cursor: " + e.getMessage());
         }
     }
 }

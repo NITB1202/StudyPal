@@ -13,8 +13,8 @@ import com.study.studypal.team.service.internal.TeamInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.team.enums.TeamRole;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
+import com.study.studypal.common.exception.CustomBusinessException;
+import com.study.studypal.common.exception.CustomNotFoundException;
 import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.team.service.api.TeamMembershipService;
 import com.study.studypal.team.util.CursorUtils;
@@ -52,7 +52,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         UUID teamId = teamService.getTeamIdByTeamCode(teamCode);
 
         if(teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
-            throw new BusinessException("You are already in the team.");
+            throw new CustomBusinessException("You are already in the team.");
         }
 
         internalService.createMembership(teamId, userId, TeamRole.MEMBER);
@@ -67,7 +67,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     @Override
     public ListTeamMemberResponseDto getTeamMembers(UUID userId, UUID teamId, String cursor, int size) {
         if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
-            throw new NotFoundException("You are not in the team.");
+            throw new CustomNotFoundException("You are not in the team.");
         }
 
         //Handle cache with default condition
@@ -131,7 +131,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     @Override
     public ListTeamMemberResponseDto searchTeamMembersByName(UUID userId, UUID teamId, String keyword, UUID cursor, int size) {
         if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
-            throw new NotFoundException("You are not in the team.");
+            throw new CustomNotFoundException("You are not in the team.");
         }
 
         String handledKeyword = keyword.toLowerCase().trim();
@@ -169,19 +169,19 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     })
     public ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request) {
         if(userId.equals(request.getMemberId())) {
-            throw new BusinessException("You can't update your own role.");
+            throw new CustomBusinessException("You can't update your own role.");
         }
 
         TeamUser userInfo = teamUserRepository.findByUserIdAndTeamId(userId, request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("User's membership not found.")
+                ()-> new CustomNotFoundException("User's membership not found.")
         );
 
         TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamId(request.getMemberId(), request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("Member's membership not found.")
+                ()-> new CustomNotFoundException("Member's membership not found.")
         );
 
         if(userInfo.getRole() != TeamRole.CREATOR) {
-            throw new BusinessException("Only the creator can update another member's role.");
+            throw new CustomBusinessException("Only the creator can update another member's role.");
         }
 
         //Each group can have only one creator
@@ -206,17 +206,17 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     })
     public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
         if(userId.equals(request.getMemberId())) {
-            throw new BusinessException("You can't remove yourself from the team.");
+            throw new CustomBusinessException("You can't remove yourself from the team.");
         }
 
         //Lock user performing action
         TeamUser userInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(userId, request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("User's membership not found.")
+                ()-> new CustomNotFoundException("User's membership not found.")
         );
 
         //Lock member being removed
         TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(request.getMemberId(), request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("Member's membership not found.")
+                ()-> new CustomNotFoundException("Member's membership not found.")
         );
 
         //Permission check
@@ -229,18 +229,18 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                     break;
                 }
                 else {
-                    throw new BusinessException("Administrators can only remove members.");
+                    throw new CustomBusinessException("Administrators can only remove members.");
                 }
             }
             case MEMBER: {
-                throw new BusinessException("You don't have permission to remove another member.");
+                throw new CustomBusinessException("You don't have permission to remove another member.");
             }
         }
 
         // Safe delete (only one transaction can proceed at a time due to lock)
         int rowsDeleted = teamUserRepository.deleteMemberById(memberInfo.getId());
         if (rowsDeleted == 0) {
-            throw new BusinessException("Member has already been removed.");
+            throw new CustomBusinessException("Member has already been removed.");
         }
 
         teamService.decreaseMember(request.getTeamId());
@@ -258,7 +258,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     })
     public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
         TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
-                () -> new NotFoundException("Membership not found.")
+                () -> new CustomNotFoundException("Membership not found.")
         );
 
         teamUserRepository.delete(membership);
@@ -266,7 +266,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         int totalMembers = teamUserRepository.getTotalMembers(teamId) - 1;
 
         if (totalMembers > 0 && membership.getRole() == TeamRole.CREATOR) {
-            throw new BusinessException("You are the creator of the team." +
+            throw new CustomBusinessException("You are the creator of the team." +
                     " Please hand over your responsibilities before leaving.");
         }
 

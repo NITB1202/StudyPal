@@ -5,8 +5,8 @@ import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.enums.AuthProvider;
 import com.study.studypal.auth.enums.ExternalAuthProvider;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
+import com.study.studypal.common.exception.CustomBusinessException;
+import com.study.studypal.common.exception.CustomNotFoundException;
 import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.user.entity.User;
@@ -49,7 +49,7 @@ public class AccountServiceImpl implements AccountService {
         try {
             accountRepository.save(account);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Email is already registered.");
+            throw new CustomBusinessException("Email is already registered.");
         }
 
     }
@@ -86,7 +86,7 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findByUserId(userId);
 
         if (account == null) {
-            throw new NotFoundException("Account not found.");
+            throw new CustomNotFoundException("Account not found.");
         }
 
         return account;
@@ -97,15 +97,15 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findByEmail(email);
 
         if(account == null) {
-            throw new NotFoundException("Email is not registered.");
+            throw new CustomNotFoundException("Email is not registered.");
         }
 
         if(!account.getProviders().contains(AuthProvider.LOCAL)) {
-            throw new BusinessException("This account was created through a third-party login. Please sign in using your linked provider.");
+            throw new CustomBusinessException("This account was created through a third-party login. Please sign in using your linked provider.");
         }
 
         if(!passwordEncoder.matches(password, account.getHashedPassword())) {
-            throw new BusinessException("Incorrect password.");
+            throw new CustomBusinessException("Incorrect password.");
         }
 
         account.setLastLoginAt(LocalDateTime.now());
