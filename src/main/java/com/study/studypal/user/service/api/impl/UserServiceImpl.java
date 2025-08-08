@@ -4,7 +4,7 @@ import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.domain.file.FileProcessingException;
 import com.study.studypal.common.exception.domain.file.InvalidImageException;
-import com.study.studypal.common.exception.domain.user.UserNotFoundException;
+import com.study.studypal.user.exception.UserNotFoundException;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;

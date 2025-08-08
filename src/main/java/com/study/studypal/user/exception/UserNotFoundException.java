@@ -1,4 +1,4 @@
-package com.study.studypal.common.exception.domain.user;
+package com.study.studypal.user.exception;
 
 import com.study.studypal.common.exception.base.NotFoundException;
 
