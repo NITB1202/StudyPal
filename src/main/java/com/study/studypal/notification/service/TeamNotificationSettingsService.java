@@ -1,7 +1,7 @@
 package com.study.studypal.notification.service;
 
-import com.study.studypal.notification.dto.TeamNotificationSettings.request.UpdateTeamNotificationSettingsRequestDto;
-import com.study.studypal.notification.dto.TeamNotificationSettings.response.TeamNotificationSettingsResponseDto;
+import com.study.studypal.notification.dto.setting.request.UpdateTeamNotificationSettingsRequestDto;
+import com.study.studypal.notification.dto.setting.response.TeamNotificationSettingsResponseDto;
 
 import java.util.UUID;
 

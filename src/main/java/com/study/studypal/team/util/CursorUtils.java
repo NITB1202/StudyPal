@@ -1,7 +1,7 @@
 package com.study.studypal.team.util;
 
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.team.dto.TeamUser.internal.DecodedCursor;
+import com.study.studypal.team.dto.membership.internal.DecodedCursor;
 import com.study.studypal.team.exception.TeamMembershipErrorCode;
 
 import java.nio.charset.StandardCharsets;

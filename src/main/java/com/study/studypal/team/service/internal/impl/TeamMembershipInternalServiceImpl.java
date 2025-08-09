@@ -13,8 +13,10 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeamMembershipInternalServiceImpl implements TeamMembershipInternalService {
@@ -83,15 +86,19 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
         return listSize > 0 && listSize == size ? membership.getJoinedAt() : null;
     }
 
+    @Async
     @Override
     public void evictTeamOverviewCaches(UUID teamId) {
+        log.info("Start evictTeamOverviewCaches for teamId {}", teamId);
         Cache cache = cacheManager.getCache(CacheNames.TEAM_OVERVIEW);
         List<UUID> memberIds = teamUserRepository.getTeamMemberUserIds(teamId);
         for(UUID memberId : memberIds) {
             Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(memberId, teamId));
         }
+        log.info("End evictTeamOverviewCaches for teamId {}", teamId);
     }
 
+    @Async
     @Override
     public void evictUserJoinedTeamsCaches(UUID teamId) {
         Cache cache = cacheManager.getCache(CacheNames.USER_TEAMS);

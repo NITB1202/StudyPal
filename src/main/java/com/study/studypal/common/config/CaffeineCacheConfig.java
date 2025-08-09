@@ -3,7 +3,7 @@ package com.study.studypal.common.config;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.study.studypal.common.cache.CacheSpec;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.errorCode.ConfigErrorCode;
+import com.study.studypal.common.exception.code.ConfigErrorCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
