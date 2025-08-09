@@ -11,8 +11,6 @@ public enum TeamErrorCode implements ErrorCode {
     DUPLICATE_TEAM_NAME(HttpStatus.CONFLICT, "TEAM_003", "You have already created a team with the same name."),
     TEAM_NAME_UNCHANGED(HttpStatus.BAD_REQUEST, "TEAM_004", "The new team name is the same as the current name.");
 
-
-
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

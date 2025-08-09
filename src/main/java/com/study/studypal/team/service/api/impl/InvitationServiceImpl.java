@@ -2,14 +2,14 @@ package com.study.studypal.team.service.api.impl;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.common.exception.CustomBusinessException;
-import com.study.studypal.common.exception.CustomNotFoundException;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.team.dto.Invitation.request.SendInvitationRequestDto;
 import com.study.studypal.team.dto.Invitation.response.InvitationResponseDto;
 import com.study.studypal.team.dto.Invitation.response.ListInvitationResponseDto;
 import com.study.studypal.team.entity.Invitation;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.exception.InvitationErrorCode;
 import com.study.studypal.team.repository.InvitationRepository;
 import com.study.studypal.team.service.api.InvitationService;
 import com.study.studypal.team.service.internal.TeamInternalService;
@@ -52,7 +52,7 @@ public class InvitationServiceImpl implements InvitationService {
         teamMembershipService.validateInviteMemberPermission(userId, request.getTeamId(), request.getInviteeId());
 
         if(invitationRepository.existsByInviteeIdAndTeamId(request.getInviteeId(), request.getTeamId())) {
-            throw new CustomBusinessException("The invitee has already been invited to this team.");
+            throw new BaseException(InvitationErrorCode.INVITEE_ALREADY_INVITED);
         }
 
         User inviter = entityManager.getReference(User.class, userId);
@@ -70,7 +70,7 @@ public class InvitationServiceImpl implements InvitationService {
         try {
             invitationRepository.save(invitation);
         } catch (DataIntegrityViolationException e) {
-            throw new CustomBusinessException("The invitee has already been invited to this team.");
+            throw new BaseException(InvitationErrorCode.INVITEE_ALREADY_INVITED);
         }
 
         return modelMapper.map(invitation, InvitationResponseDto.class);
@@ -107,11 +107,11 @@ public class InvitationServiceImpl implements InvitationService {
     })
     public ActionResponseDto replyToInvitation(UUID invitationId, UUID userId, boolean accept) {
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow(
-                () -> new CustomNotFoundException("Invitation not found.")
+                () -> new BaseException(InvitationErrorCode.INVITATION_NOT_FOUND)
         );
 
         if(!userId.equals(invitation.getInvitee().getId())) {
-            throw new CustomBusinessException("You are not allowed to reply this invitation.");
+            throw new BaseException(InvitationErrorCode.INVITATION_REPLY_FORBIDDEN);
         }
 
         if(accept) {
