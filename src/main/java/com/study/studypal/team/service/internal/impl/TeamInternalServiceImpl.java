@@ -1,8 +1,9 @@
 package com.study.studypal.team.service.internal.impl;
 
 import com.study.studypal.common.cache.CacheNames;
-import com.study.studypal.common.exception.CustomNotFoundException;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.team.entity.Team;
+import com.study.studypal.team.exception.TeamErrorCode;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.service.internal.TeamInternalService;
 import jakarta.transaction.Transactional;
@@ -22,7 +23,7 @@ public class TeamInternalServiceImpl implements TeamInternalService {
         Team team = teamRepository.findByTeamCode(teamCode);
 
         if(team == null) {
-            throw new CustomNotFoundException("Team code is incorrect.");
+            throw new BaseException(TeamErrorCode.INVALID_TEAM_CODE);
         }
 
         return team.getId();
@@ -35,7 +36,7 @@ public class TeamInternalServiceImpl implements TeamInternalService {
     )
     public void increaseMember(UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                () -> new CustomNotFoundException("Team not found.")
+                () -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND)
         );
 
         team.setTotalMembers(team.getTotalMembers() + 1);
@@ -50,7 +51,7 @@ public class TeamInternalServiceImpl implements TeamInternalService {
     )
     public void decreaseMember(UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                () -> new CustomNotFoundException("Team not found.")
+                () -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND)
         );
 
         team.setTotalMembers(team.getTotalMembers() - 1);
