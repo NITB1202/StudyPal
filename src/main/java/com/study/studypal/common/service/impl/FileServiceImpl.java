@@ -3,7 +3,8 @@ package com.study.studypal.common.service.impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.study.studypal.common.dto.FileResponseDto;
-import com.study.studypal.common.exception.CustomBusinessException;
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.errorCode.FileErrorCode;
 import com.study.studypal.common.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class FileServiceImpl implements FileService {
                     .build();
         }
         catch (IOException e) {
-            throw new CustomBusinessException("Error while uploading file.");
+            throw new BaseException(FileErrorCode.UPLOAD_FILE_FAILED);
         }
     }
 
@@ -52,21 +53,21 @@ public class FileServiceImpl implements FileService {
 
             cloudinary.api().update(publicId, params);
         } catch (Exception e) {
-            throw new CustomBusinessException("Error while moving file.");
+            throw new BaseException(FileErrorCode.MOVING_FILE_FAILED);
         }
     }
 
     @Override
     public void deleteFile(String publicId, String resourceType) {
         if(!validResourceTypes.contains(resourceType)){
-            throw new CustomBusinessException("Invalid resource type.");
+            throw new BaseException(FileErrorCode.INVALID_RESOURCE_TYPE);
         }
 
         try {
             cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
         }
         catch (IOException e) {
-            throw new CustomBusinessException("Error while deleting file.");
+            throw new BaseException(FileErrorCode.DELETE_FILE_FAILED);
         }
     }
 }
