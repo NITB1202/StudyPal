@@ -1,11 +1,11 @@
-package com.study.studypal.common.security;
+package com.study.studypal.auth.filter;
 
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.CacheKeyUtils;
-import com.study.studypal.common.util.JwtUtils;
+import com.study.studypal.auth.util.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

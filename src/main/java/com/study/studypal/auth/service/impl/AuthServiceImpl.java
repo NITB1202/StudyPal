@@ -15,7 +15,7 @@ import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.VerificationType;
 import com.study.studypal.common.util.CacheKeyUtils;
-import com.study.studypal.common.util.JwtUtils;
+import com.study.studypal.auth.util.JwtUtils;
 import com.study.studypal.user.service.internal.UserInternalService;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
