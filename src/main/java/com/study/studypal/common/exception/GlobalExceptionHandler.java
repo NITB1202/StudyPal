@@ -58,19 +58,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler(CustomUnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(CustomUnauthorizedException ex) {
-        log.warn("Unauthorized exception occurred: {}", ex.getMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized exception",
-                ex.getMessage()
-        );
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-    }
-
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         log.warn("Invalid request format: {}", ex.getMessage());

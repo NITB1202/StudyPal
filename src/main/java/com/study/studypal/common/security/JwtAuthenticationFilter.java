@@ -1,8 +1,9 @@
 package com.study.studypal.common.security;
 
 import com.study.studypal.auth.enums.AccountRole;
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.common.cache.CacheNames;
-import com.study.studypal.common.exception.CustomUnauthorizedException;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.common.util.JwtUtils;
 import jakarta.servlet.FilterChain;
@@ -41,11 +42,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (!path.startsWith(AUTH_PREFIX)) {
                 String storedAccessToken = cacheManager.getCache(CacheNames.ACCESS_TOKENS).get(CacheKeyUtils.of(userId), String.class);
                 if (storedAccessToken == null) {
-                    throw new CustomUnauthorizedException("Invalid or expired token.");
+                    throw new BaseException(AuthErrorCode.INVALID_ACCESS_TOKEN);
                 }
 
                 if(!storedAccessToken.equals(accessToken)) {
-                    throw new CustomUnauthorizedException("Account logged in from another device.");
+                    throw new BaseException(AuthErrorCode.ACCOUNT_LOGGED_IN_ANOTHER_DEVICE);
                 }
             }
 
