@@ -1,5 +1,7 @@
 package com.study.studypal.common.config;
 
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.errorCode.ConfigErrorCode;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
+import java.util.Set;
+
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -18,36 +22,59 @@ public class QuartzSchedulerConfig {
     private final Environment environment;
 
     @PostConstruct
-    public void scheduleJobs() throws Exception {
-        //Get job packages from config
-        String[] jobPackages = environment.getProperty("quartz.job-packages").split(",");
-
-        // Scanner Quartz Job
-        ClassPathScanningCandidateComponentProvider scanner =
-                new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AssignableTypeFilter(Job.class));
+    public void scheduleJobs() {
+        String[] jobPackages = getJobPackagesFromConfig();
+        ClassPathScanningCandidateComponentProvider scanner = createJobClassScanner();
 
         for (String pkg : jobPackages) {
-            for (BeanDefinition bd : scanner.findCandidateComponents(pkg.trim())) {
-                Class<?> clazz = Class.forName(bd.getBeanClassName());
+            Set<BeanDefinition> candidateComponents = scanner.findCandidateComponents(pkg.trim());
 
-                if (Job.class.isAssignableFrom(clazz)) {
-                    @SuppressWarnings("unchecked")
-                    Class<? extends Job> jobClass = (Class<? extends Job>) clazz;
+            for (BeanDefinition bd : candidateComponents) {
+                Class<? extends Job> jobClass = loadJobClass(bd);
+                String jobKey = toJobKey(jobClass.getSimpleName());
+                String cronExpression = getCronExpression(jobKey);
 
-                    //Create jobKey from class name
-                    String jobKey = toJobKey(clazz.getSimpleName());
-                    String cronExpression = environment.getProperty("quartz.jobs." + jobKey);
-
-                    if (cronExpression != null) {
-                        registerJob(jobClass, jobKey, cronExpression);
-                        log.info("Registered Job: {} (cron: {})", jobKey, cronExpression);
-                    } else {
-                        log.info("No cron expression for job: {}", jobKey);
-                    }
+                if(cronExpression != null) {
+                    registerJob(jobClass, jobKey, cronExpression);
+                    log.info("Registered Job: {} (cron: {})", jobKey, cronExpression);
+                }
+                else {
+                    log.info("No cron expression for job: {}", jobKey);
                 }
             }
         }
+    }
+
+    private String[] getJobPackagesFromConfig() {
+        String packages = environment.getProperty("quartz.job-packages");
+        if (packages == null || packages.isBlank()) {
+            throw new BaseException(ConfigErrorCode.MISSING_JOB_PACKAGES);
+        }
+        return packages.split(",");
+    }
+
+    private ClassPathScanningCandidateComponentProvider createJobClassScanner() {
+        ClassPathScanningCandidateComponentProvider scanner =
+                new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AssignableTypeFilter(Job.class));
+        return scanner;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<? extends Job> loadJobClass(BeanDefinition bd) {
+        try {
+            Class<?> clazz = Class.forName(bd.getBeanClassName());
+            if (!Job.class.isAssignableFrom(clazz)) {
+                throw new BaseException(ConfigErrorCode.INVALID_JOB_CLASS, bd.getBeanClassName());
+            }
+            return (Class<? extends Job>) clazz;
+        } catch (ClassNotFoundException e) {
+            throw new BaseException(ConfigErrorCode.CLASS_NOT_FOUND, bd.getBeanClassName());
+        }
+    }
+
+    private String getCronExpression(String jobKey) {
+        return environment.getProperty("quartz.jobs." + jobKey);
     }
 
     private String toJobKey(String className) {
@@ -58,25 +85,31 @@ public class QuartzSchedulerConfig {
                 .toLowerCase();
     }
 
-    private void registerJob(Class<? extends Job> jobClass, String jobName, String cronExpression) throws SchedulerException {
-        //If the job already exists, skip the registration
+    private void registerJob(Class<? extends Job> jobClass, String jobName, String cronExpression) {
         JobKey jobKey = new JobKey(jobName);
-        if (scheduler.checkExists(jobKey)) {
-            System.out.printf("Job %s already exists. Skipping registration.%n", jobName);
-            return;
+
+        try {
+            // If the job already exists, skip the registration
+            if (scheduler.checkExists(jobKey)) {
+                log.info("Job {} already exists. Skipping registration.", jobName);
+                return;
+            }
+
+            JobDetail jobDetail = JobBuilder.newJob(jobClass)
+                    .withIdentity(jobName)
+                    .storeDurably()
+                    .build();
+
+            Trigger trigger = TriggerBuilder.newTrigger()
+                    .forJob(jobDetail)
+                    .withIdentity(jobName + "Trigger")
+                    .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
+                    .build();
+
+            scheduler.scheduleJob(jobDetail, trigger);
+
+        } catch (SchedulerException e) {
+            throw new BaseException(ConfigErrorCode.REGISTER_JOB_FAILED, jobName);
         }
-
-        JobDetail jobDetail = JobBuilder.newJob(jobClass)
-                .withIdentity(jobName)
-                .storeDurably()
-                .build();
-
-        Trigger trigger = TriggerBuilder.newTrigger()
-                .forJob(jobDetail)
-                .withIdentity(jobName + "Trigger")
-                .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
-                .build();
-
-        scheduler.scheduleJob(jobDetail, trigger);
     }
 }

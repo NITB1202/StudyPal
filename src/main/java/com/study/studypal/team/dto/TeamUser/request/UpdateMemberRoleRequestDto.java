@@ -14,13 +14,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class UpdateMemberRoleRequestDto {
-    @NotNull(message = "Team id is required.")
+    @NotNull(message = "Team id is required")
     private UUID teamId;
 
-    @NotNull(message = "Member id is required.")
+    @NotNull(message = "Member id is required")
     private UUID memberId;
 
-    @NotNull(message = "Role is required.")
+    @NotNull(message = "Role is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private TeamRole role;
 }

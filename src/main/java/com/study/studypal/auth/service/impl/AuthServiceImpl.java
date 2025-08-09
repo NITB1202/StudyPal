@@ -4,16 +4,16 @@ import com.study.studypal.auth.dto.internal.OAuthUserInfoDto;
 import com.study.studypal.auth.dto.request.*;
 import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.auth.service.AuthService;
 import com.study.studypal.common.cache.CacheNames;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.MailService;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.VerificationType;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.UnauthorizedException;
 import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.common.util.JwtUtils;
 import com.study.studypal.user.service.internal.UserInternalService;
@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if(userInfo == null) {
-            throw new BusinessException("Invalid access token.");
+            throw new BaseException(AuthErrorCode.INVALID_ACCESS_TOKEN);
         }
 
         if(!accountService.isEmailRegistered(userInfo.getEmail())) {
@@ -222,7 +222,7 @@ public class AuthServiceImpl implements AuthService {
                     .build();
 
         } else {
-            throw new UnauthorizedException("Invalid refresh token.");
+            throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
     }
 }

@@ -11,9 +11,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class RemoveTeamMemberRequestDto {
-    @NotNull(message = "Team id is required.")
+    @NotNull(message = "Team id is required")
     private UUID teamId;
 
-    @NotNull(message = "Member id is required.")
+    @NotNull(message = "Member id is required")
     private UUID memberId;
 }

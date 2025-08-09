@@ -2,6 +2,8 @@ package com.study.studypal.common.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.study.studypal.common.cache.CacheSpec;
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.errorCode.ConfigErrorCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,7 +29,7 @@ public class CaffeineCacheConfig {
     @Bean
     public CacheManager cacheManager() {
         if (cacheSpecs == null || cacheSpecs.isEmpty()) {
-            throw new IllegalStateException("No cache specs configured!");
+            throw new BaseException(ConfigErrorCode.MISSING_CACHE_CONFIG);
         }
 
         List<CaffeineCache> caches = cacheSpecs.entrySet()

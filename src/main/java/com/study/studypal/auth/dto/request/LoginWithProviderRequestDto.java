@@ -10,9 +10,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class LoginWithProviderRequestDto {
-    @NotNull(message = "Provider is required.")
+    @NotNull(message = "Provider is required")
     private ExternalAuthProvider provider;
 
-    @NotNull(message = "Access token is required.")
+    @NotNull(message = "Access token is required")
     private String accessToken;
 }

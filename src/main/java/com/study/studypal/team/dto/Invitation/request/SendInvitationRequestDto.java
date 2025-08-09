@@ -11,9 +11,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class SendInvitationRequestDto {
-    @NotNull(message = "Team id is required.")
+    @NotNull(message = "Team id is required")
     private UUID teamId;
 
-    @NotNull(message = "Invitee id is required.")
+    @NotNull(message = "Invitee id is required")
     private UUID inviteeId;
 }
