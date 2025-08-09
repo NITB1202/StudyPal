@@ -3,13 +3,16 @@ package com.study.studypal.team.service.api.impl;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.errorCode.FileErrorCode;
-import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
-import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
-import com.study.studypal.team.dto.Team.response.*;
+import com.study.studypal.common.exception.code.FileErrorCode;
+import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
+import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
+import com.study.studypal.team.dto.team.response.*;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.event.team.TeamCodeResetEvent;
+import com.study.studypal.team.event.team.TeamDeletedEvent;
+import com.study.studypal.team.event.team.TeamUpdatedEvent;
 import com.study.studypal.team.exception.TeamErrorCode;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -26,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +51,7 @@ public class TeamServiceImpl implements TeamService {
     private final CodeService codeService;
     private final FileService fileService;
     private final ModelMapper modelMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -195,15 +200,20 @@ public class TeamServiceImpl implements TeamService {
             if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
                 throw new BaseException(TeamErrorCode.DUPLICATE_TEAM_NAME);
             }
-
-            //Evict the user's joined team cache only if the team's name has changed
-            teamMembershipService.evictUserJoinedTeamsCaches(teamId);
         }
 
         modelMapper.map(request, team);
         teamRepository.save(team);
 
-        teamMembershipService.evictTeamOverviewCaches(teamId);
+        TeamUpdatedEvent event = TeamUpdatedEvent.builder()
+                .teamId(teamId)
+                .teamName(team.getName())
+                .updatedBy(userId)
+                .memberIds(teamMembershipService.getMemberIds(teamId))
+                .shouldEvictCache(request.getName() != null)
+                .build();
+
+        eventPublisher.publishEvent(event);
 
         return modelMapper.map(team, TeamResponseDto.class);
     }
@@ -224,7 +234,12 @@ public class TeamServiceImpl implements TeamService {
         team.setTeamCode(teamCode);
         teamRepository.save(team);
 
-        teamMembershipService.evictTeamOverviewCaches(teamId);
+        TeamCodeResetEvent event = TeamCodeResetEvent.builder()
+                .teamId(teamId)
+                .memberIds(teamMembershipService.getMemberIds(teamId))
+                .build();
+
+        eventPublisher.publishEvent(event);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -244,10 +259,15 @@ public class TeamServiceImpl implements TeamService {
             fileService.deleteFile(team.getId().toString(), "image");
         }
 
-        teamMembershipService.evictTeamOverviewCaches(teamId);
-        teamMembershipService.evictUserJoinedTeamsCaches(teamId);
+        TeamDeletedEvent event = TeamDeletedEvent.builder()
+                .teamId(teamId)
+                .teamName(team.getName())
+                .deletedBy(userId)
+                .memberIds(teamMembershipService.getMemberIds(teamId))
+                .build();
 
         teamRepository.delete(team);
+        eventPublisher.publishEvent(event);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -272,8 +292,15 @@ public class TeamServiceImpl implements TeamService {
             team.setAvatarUrl(avatarUrl);
             teamRepository.save(team);
 
-            teamMembershipService.evictTeamOverviewCaches(teamId);
-            teamMembershipService.evictUserJoinedTeamsCaches(teamId);
+            TeamUpdatedEvent event = TeamUpdatedEvent.builder()
+                    .teamId(teamId)
+                    .teamName(team.getName())
+                    .updatedBy(userId)
+                    .memberIds(teamMembershipService.getMemberIds(teamId))
+                    .shouldEvictCache(true)
+                    .build();
+
+            eventPublisher.publishEvent(event);
 
             return ActionResponseDto.builder()
                     .success(true)

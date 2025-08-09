@@ -4,6 +4,7 @@ import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public interface TeamMembershipInternalService {
@@ -12,6 +13,5 @@ public interface TeamMembershipInternalService {
     void validateInviteMemberPermission(UUID userId, UUID teamId, UUID inviteeId);
     TeamUser getMemberShip(UUID teamId, UUID userId);
     LocalDateTime getUserJoinedTeamsListCursor(UUID userId, UUID lastTeamId, int listSize, int size);
-    void evictTeamOverviewCaches(UUID teamId);
-    void evictUserJoinedTeamsCaches(UUID teamId);
+    List<UUID> getMemberIds(UUID teamId);
 }

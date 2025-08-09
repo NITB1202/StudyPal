@@ -4,7 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.study.studypal.common.dto.FileResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.errorCode.FileErrorCode;
+import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

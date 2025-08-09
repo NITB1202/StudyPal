@@ -1,6 +1,6 @@
 package com.study.studypal.team.repository;
 
-import com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto;
+import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +16,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     Team findByTeamCode(String teamCode);
     boolean existsByTeamCode(String teamCode);
     @Query("""
-    SELECT new com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto(
+    SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
         t.id,
         t.name,
         t.avatarUrl,
@@ -28,7 +28,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     """)
     List<TeamSummaryResponseDto> findUserJoinedTeam(@Param("userId") UUID userId, Pageable pageable);
     @Query("""
-    SELECT new com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto(
+    SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
         t.id,
         t.name,
         t.avatarUrl,
@@ -49,7 +49,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     """)
     long countUserJoinedTeam(@Param("userId") UUID userId);
     @Query("""
-    SELECT new com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto(
+    SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
         t.id,
         t.name,
         t.avatarUrl,
@@ -64,7 +64,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
                                                             @Param("keyword") String keyword,
                                                             Pageable pageable);
     @Query("""
-    SELECT new com.study.studypal.team.dto.Team.response.TeamSummaryResponseDto(
+    SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
         t.id,
         t.name,
         t.avatarUrl,

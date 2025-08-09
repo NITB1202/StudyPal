@@ -1,7 +1,7 @@
 package com.study.studypal.common.service.impl;
 
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.errorCode.MailErrorCode;
+import com.study.studypal.common.exception.code.MailErrorCode;
 import com.study.studypal.common.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

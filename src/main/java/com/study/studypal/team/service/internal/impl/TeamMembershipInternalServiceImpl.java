@@ -1,8 +1,6 @@
 package com.study.studypal.team.service.internal.impl;
 
-import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
@@ -13,20 +11,18 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeamMembershipInternalServiceImpl implements TeamMembershipInternalService {
     private final TeamUserRepository teamUserRepository;
-    private final CacheManager cacheManager;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -84,20 +80,7 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
     }
 
     @Override
-    public void evictTeamOverviewCaches(UUID teamId) {
-        Cache cache = cacheManager.getCache(CacheNames.TEAM_OVERVIEW);
-        List<UUID> memberIds = teamUserRepository.getTeamMemberUserIds(teamId);
-        for(UUID memberId : memberIds) {
-            Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(memberId, teamId));
-        }
-    }
-
-    @Override
-    public void evictUserJoinedTeamsCaches(UUID teamId) {
-        Cache cache = cacheManager.getCache(CacheNames.USER_TEAMS);
-        List<UUID> memberIds = teamUserRepository.getTeamMemberUserIds(teamId);
-        for(UUID memberId : memberIds) {
-            Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(memberId));
-        }
+    public List<UUID> getMemberIds(UUID teamId) {
+        return teamUserRepository.getTeamMemberUserIds(teamId);
     }
 }

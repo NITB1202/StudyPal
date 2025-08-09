@@ -1,7 +1,7 @@
 package com.study.studypal.common.config;
 
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.errorCode.ConfigErrorCode;
+import com.study.studypal.common.exception.code.ConfigErrorCode;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
