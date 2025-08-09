@@ -10,10 +10,10 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class LoginWithCredentialsRequestDto {
-    @NotEmpty(message = "Email is required.")
-    @Email(message = "Invalid email format.")
+    @NotEmpty(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @NotEmpty(message = "Password is required.")
+    @NotEmpty(message = "Password is required")
     private String password;
 }

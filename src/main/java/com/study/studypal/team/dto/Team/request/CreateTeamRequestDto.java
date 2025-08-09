@@ -10,8 +10,8 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class CreateTeamRequestDto {
-    @NotEmpty(message = "Name is required.")
-    @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters.")
+    @NotEmpty(message = "Name is required")
+    @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters")
     private String name;
 
     private String description;

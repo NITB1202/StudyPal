@@ -9,14 +9,14 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ValidateRegisterInfoRequestDto {
-    @NotEmpty(message = "Name is required.")
-    @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters.")
+    @NotEmpty(message = "Name is required")
+    @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters")
     private String name;
 
-    @NotEmpty(message = "Email is required.")
-    @Email(message = "Invalid email format.")
+    @NotEmpty(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @NotEmpty(message = "Password is required.")
+    @NotEmpty(message = "Password is required")
     private String password;
 }
