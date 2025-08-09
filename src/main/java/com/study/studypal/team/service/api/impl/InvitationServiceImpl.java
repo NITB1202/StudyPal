@@ -111,7 +111,7 @@ public class InvitationServiceImpl implements InvitationService {
         );
 
         if(!userId.equals(invitation.getInvitee().getId())) {
-            throw new BaseException(InvitationErrorCode.INVITATION_REPLY_FORBIDDEN);
+            throw new BaseException(InvitationErrorCode.PERMISSION_REPLY_INVITATION_DENIED);
         }
 
         if(accept) {

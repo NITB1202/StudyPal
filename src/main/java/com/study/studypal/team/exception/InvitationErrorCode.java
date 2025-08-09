@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum InvitationErrorCode implements ErrorCode {
     INVITATION_NOT_FOUND(HttpStatus.NOT_FOUND, "INV_001", "Invitation not found."),
-    INVITATION_REPLY_FORBIDDEN(HttpStatus.FORBIDDEN, "INV_002", "You are not allowed to reply to this invitation."),
-    INVITEE_ALREADY_INVITED(HttpStatus.CONFLICT, "INV_003", "The invitee has already been invited to this team.");
+    INVITEE_ALREADY_INVITED(HttpStatus.CONFLICT, "INV_002", "The invitee has already been invited to this team."),
+    PERMISSION_REPLY_INVITATION_DENIED(HttpStatus.FORBIDDEN, "INV_003", "You cannot respond to someone else's invitation.");
 
     private final HttpStatus httpStatus;
     private final String code;
