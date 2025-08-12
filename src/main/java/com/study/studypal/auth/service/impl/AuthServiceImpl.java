@@ -147,22 +147,22 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ActionResponseDto sendVerificationCode(VerificationType type, String email) {
+    public ActionResponseDto sendVerificationCode(SendVerificationCodeRequestDto request) {
         boolean isValid = false;
 
-        switch (type) {
+        switch (request.getType()) {
             case REGISTER: {
-                RegisterWithCredentialsRequestDto request = registerCache.get(CacheKeyUtils.of(email), RegisterWithCredentialsRequestDto.class);
-                if(request != null) {
+                RegisterWithCredentialsRequestDto info = registerCache.get(CacheKeyUtils.of(request.getEmail()), RegisterWithCredentialsRequestDto.class);
+                if(info != null) {
                     //Reset TTL when user resends verification code for a validated registration request.
-                    registerCache.put(CacheKeyUtils.of(email), request);
+                    registerCache.put(CacheKeyUtils.of(request.getEmail()), request);
                     isValid = true;
                 }
 
                 break;
             }
             case RESET_PASSWORD: {
-                if(accountService.isEmailRegistered(email)) {
+                if(accountService.isEmailRegistered(request.getEmail())) {
                     isValid = true;
                 }
 
@@ -171,8 +171,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if(isValid) {
-            String verificationCode = codeService.generateVerificationCode(email, type);
-            mailService.sendVerificationEmail(email, verificationCode);
+            String verificationCode = codeService.generateVerificationCode(request.getEmail(), request.getType());
+            mailService.sendVerificationEmail(request.getEmail(), verificationCode);
 
             return ActionResponseDto.builder()
                     .success(true)
@@ -180,6 +180,7 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
         else {
+
             return ActionResponseDto.builder()
                     .success(false)
                     .message("Email is not registered.")
@@ -188,23 +189,23 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ActionResponseDto verifyRegistrationCode(String email, String code) {
-        if(codeService.verifyCode(email, code, VerificationType.REGISTER)) {
-            RegisterWithCredentialsRequestDto request = registerCache.get(CacheKeyUtils.of(email), RegisterWithCredentialsRequestDto.class);
+    public ActionResponseDto verifyRegistrationCode(VerifyCodeRequestDto request) {
+        if(codeService.verifyCode(request.getEmail(), request.getCode(), VerificationType.REGISTER)) {
+            RegisterWithCredentialsRequestDto info = registerCache.get(CacheKeyUtils.of(request.getEmail()), RegisterWithCredentialsRequestDto.class);
 
-            if(request == null) {
+            if(info == null) {
                 throw new BaseException(AuthErrorCode.REGISTRATION_INFO_NOT_FOUND);
             }
 
-            if(!accountService.isEmailRegistered(email)) {
-                UUID userId = userService.createDefaultProfile(request.getName());
-                accountService.registerWithCredentials(userId, request.getEmail(), request.getPassword());
+            if(!accountService.isEmailRegistered(request.getEmail())) {
+                UUID userId = userService.createDefaultProfile(info.getName());
+                accountService.registerWithCredentials(userId, request.getEmail(), info.getPassword());
             }
             else {
-                accountService.linkLocalLogin(email, request.getPassword());
+                accountService.linkLocalLogin(request.getEmail(), info.getPassword());
             }
 
-            registerCache.evict(CacheKeyUtils.of(email));
+            registerCache.evict(CacheKeyUtils.of(request.getEmail()));
 
             return ActionResponseDto.builder()
                     .success(true)
@@ -212,6 +213,7 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
         else {
+
             return ActionResponseDto.builder()
                     .success(false)
                     .message("Invalid verification code.")
@@ -220,9 +222,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ActionResponseDto verifyResetPasswordCode(String email, String code) {
-        if(codeService.verifyCode(email, code, VerificationType.RESET_PASSWORD)) {
-            resetPasswordCache.put(CacheKeyUtils.of(email), true);
+    public ActionResponseDto verifyResetPasswordCode(VerifyCodeRequestDto request) {
+        if(codeService.verifyCode(request.getEmail(), request.getCode(), VerificationType.RESET_PASSWORD)) {
+            resetPasswordCache.put(CacheKeyUtils.of(request.getEmail()), true);
 
             return ActionResponseDto.builder()
                     .success(true)
@@ -230,6 +232,7 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
         else {
+
             return ActionResponseDto.builder()
                     .success(false)
                     .message("Invalid verification code.")
@@ -243,6 +246,7 @@ public class AuthServiceImpl implements AuthService {
             return accountService.resetPassword(request.getEmail(), request.getNewPassword());
         }
         else{
+
             return ActionResponseDto.builder()
                     .success(false)
                     .message("This email isn't verified.")

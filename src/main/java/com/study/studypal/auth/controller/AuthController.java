@@ -3,7 +3,6 @@ package com.study.studypal.auth.controller;
 import com.study.studypal.auth.dto.request.*;
 import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
-import com.study.studypal.auth.enums.VerificationType;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.auth.service.AuthService;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -62,28 +60,25 @@ public class AuthController {
         return ResponseEntity.ok(authService.registerWithCredentials(request));
     }
 
-    @PostMapping("/verification")
+    @PostMapping("/code")
     @Operation(summary = "Send the verification code to the registered email address.")
     @ApiResponse(responseCode = "200", description = "Send successfully.")
-    public ResponseEntity<ActionResponseDto> sendVerificationCode(@RequestParam VerificationType type,
-                                                                  @RequestParam @Email String email) {
-        return ResponseEntity.ok(authService.sendVerificationCode(type, email));
+    public ResponseEntity<ActionResponseDto> sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequestDto request) {
+        return ResponseEntity.ok(authService.sendVerificationCode(request));
     }
 
-    @PostMapping("/verification/registration")
+    @PostMapping("/verify/register")
     @Operation(summary = "Verify registration code.")
     @ApiResponse(responseCode = "200", description = "Verify successfully.")
-    public ResponseEntity<ActionResponseDto> verifyRegistrationCode(@RequestParam @Email String email,
-                                                                    @RequestParam String code) {
-        return ResponseEntity.ok(authService.verifyRegistrationCode(email, code));
+    public ResponseEntity<ActionResponseDto> verifyRegistrationCode(@Valid @RequestBody VerifyCodeRequestDto request) {
+        return ResponseEntity.ok(authService.verifyRegistrationCode(request));
     }
 
-    @PostMapping("/verification/reset-password")
+    @PostMapping("/verify/reset")
     @Operation(summary = "Verify reset password code.")
     @ApiResponse(responseCode = "200", description = "Verify successfully.")
-    public ResponseEntity<ActionResponseDto> verifyResetPasswordCode(@RequestParam @Email String email,
-                                                                     @RequestParam String code) {
-        return ResponseEntity.ok(authService.verifyResetPasswordCode(email, code));
+    public ResponseEntity<ActionResponseDto> verifyResetPasswordCode(@Valid @RequestBody VerifyCodeRequestDto request) {
+        return ResponseEntity.ok(authService.verifyResetPasswordCode(request));
     }
 
     @PostMapping("/reset")
