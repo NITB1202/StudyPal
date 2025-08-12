@@ -1,12 +1,12 @@
 package com.study.studypal.team.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
-import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
-import com.study.studypal.team.dto.Team.response.ListTeamResponseDto;
-import com.study.studypal.team.dto.Team.response.TeamOverviewResponseDto;
-import com.study.studypal.team.dto.Team.response.TeamProfileResponseDto;
-import com.study.studypal.team.dto.Team.response.TeamResponseDto;
+import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
+import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
+import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;

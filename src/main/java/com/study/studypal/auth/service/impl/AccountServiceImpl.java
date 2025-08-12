@@ -1,14 +1,14 @@
 package com.study.studypal.auth.service.impl;
 
+import com.study.studypal.auth.exception.*;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.enums.AuthProvider;
 import com.study.studypal.auth.enums.ExternalAuthProvider;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -49,9 +49,8 @@ public class AccountServiceImpl implements AccountService {
         try {
             accountRepository.save(account);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Email is already registered.");
+            throw new BaseException(AuthErrorCode.EMAIL_ALREADY_EXISTS);
         }
-
     }
 
     @Override
@@ -66,7 +65,11 @@ public class AccountServiceImpl implements AccountService {
                 .providers(List.of(authProvider))
                 .build();
 
-        accountRepository.save(account);
+        try {
+            accountRepository.save(account);
+        } catch (DataIntegrityViolationException e) {
+            throw new BaseException(AuthErrorCode.EMAIL_ALREADY_EXISTS);
+        }
     }
 
     @Override
@@ -82,9 +85,9 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccountById(UUID id) {
-        return accountRepository.findById(id).orElseThrow(
-                () -> new NotFoundException("Account with id " + id + " not found.")
+    public Account getAccountByUserId(UUID userId) {
+        return accountRepository.findByUserId(userId).orElseThrow(
+                () -> new BaseException(AuthErrorCode.ACCOUNT_NOT_FOUND)
         );
     }
 
@@ -93,15 +96,15 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findByEmail(email);
 
         if(account == null) {
-            throw new NotFoundException("Email is not registered.");
+            throw new BaseException(AuthErrorCode.EMAIL_NOT_FOUND);
         }
 
         if(!account.getProviders().contains(AuthProvider.LOCAL)) {
-            throw new BusinessException("This account was created through a third-party login. Please sign in using your linked provider.");
+            throw new BaseException(AuthErrorCode.AUTH_METHOD_MISMATCH);
         }
 
         if(!passwordEncoder.matches(password, account.getHashedPassword())) {
-            throw new BusinessException("Incorrect password.");
+            throw new BaseException(AuthErrorCode.INCORRECT_PASSWORD);
         }
 
         account.setLastLoginAt(LocalDateTime.now());

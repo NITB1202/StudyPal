@@ -9,13 +9,13 @@ import java.time.format.DateTimeFormatter;
 @Getter @Setter
 public class ErrorResponse {
     private int statusCode;
-    private String errorType;
+    private String errorCode;
     private String message;
     private String timestamp;
 
-    public ErrorResponse(int statusCode, String errorType, String message) {
+    public ErrorResponse(int statusCode, String errorCode, String message) {
         this.statusCode = statusCode;
-        this.errorType = errorType;
+        this.errorCode = errorCode;
         this.message = message;
         this.timestamp = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
     }

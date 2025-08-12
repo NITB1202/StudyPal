@@ -1,16 +1,21 @@
 package com.study.studypal.team.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
-import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
-import com.study.studypal.team.dto.Team.response.*;
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.code.FileErrorCode;
+import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
+import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
+import com.study.studypal.team.dto.team.response.*;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.event.team.TeamCodeResetEvent;
+import com.study.studypal.team.event.team.TeamDeletedEvent;
+import com.study.studypal.team.event.team.TeamUpdatedEvent;
+import com.study.studypal.team.exception.TeamErrorCode;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.FileService;
@@ -20,7 +25,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +41,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -41,15 +51,20 @@ public class TeamServiceImpl implements TeamService {
     private final CodeService codeService;
     private final FileService fileService;
     private final ModelMapper modelMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @PersistenceContext
     private final EntityManager entityManager;
     private static final String AVATAR_FOLDER = "teams";
 
     @Override
+    @CacheEvict(
+            value = CacheNames.USER_TEAMS,
+            key = "@keys.of(#userId)"
+    )
     public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
         if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
-            throw new BusinessException("You have already created a team with the same name.");
+            throw new BaseException(TeamErrorCode.DUPLICATE_TEAM_NAME);
         }
 
         int retry = 0;
@@ -75,20 +90,25 @@ public class TeamServiceImpl implements TeamService {
             }
             catch (DataIntegrityViolationException e){
                 retry++;
-                System.out.println("Retry: " + retry);
+                log.info("Create team retry: {}", retry);
             }
         }
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.TEAM_OVERVIEW,
+            key = "@keys.of(#userId, #teamId)"
+    )
     public TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                ()->new NotFoundException("Team not found.")
+                () -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND)
         );
 
         TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
 
         TeamUser membership = teamMembershipService.getMemberShip(teamId, userId);
+        overview.setIsCreator(membership.getRole() == TeamRole.CREATOR);
         if(membership.getRole() == TeamRole.MEMBER) {
             overview.setTeamCode(null);
         }
@@ -101,7 +121,7 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findByTeamCode(teamCode);
 
         if(team == null){
-            throw new NotFoundException("Team not found.");
+            throw new BaseException(TeamErrorCode.INVALID_TEAM_CODE);
         }
 
         User creator = team.getCreator();
@@ -114,10 +134,18 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.USER_TEAMS,
+            key = "@keys.of(#userId)",
+            condition = "#cursor == null && #size == 10"
+    )
     public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
-        List<TeamSummaryResponseDto> teams = teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
+        List<TeamSummaryResponseDto> teams = cursor == null ?
+                teamRepository.findUserJoinedTeam(userId, pageable) :
+                teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
+
         long total = teamRepository.countUserJoinedTeam(userId);
 
         LocalDateTime nextCursor = null;
@@ -138,7 +166,10 @@ public class TeamServiceImpl implements TeamService {
         String handledKeyword = keyword.toLowerCase().trim();
         Pageable pageable = PageRequest.of(0, size);
 
-        List<TeamSummaryResponseDto> teams = teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
+        List<TeamSummaryResponseDto> teams = cursor == null ?
+                teamRepository.searchUserJoinedTeamByName(userId, handledKeyword, pageable) :
+                teamRepository.searchUserJoinedTeamByNameWithCursor(userId, handledKeyword, cursor, pageable);
+
         long total = teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
 
         LocalDateTime nextCursor = null;
@@ -157,26 +188,32 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public TeamResponseDto updateTeam(UUID userId, UUID teamId, UpdateTeamRequestDto request) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                () -> new NotFoundException("Team not found.")
+                () -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND)
         );
 
         teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
         if(request.getName() != null) {
-            if(request.getName().isEmpty()) {
-                throw new BusinessException("Name cannot be empty.");
-            }
-
             if(request.getName().equals(team.getName()))
-                throw new BusinessException("The new name is the same as the old one.");
+                throw new BaseException(TeamErrorCode.TEAM_NAME_UNCHANGED);
 
             if(teamRepository.existsByNameAndCreatorId(request.getName(), userId)){
-                throw new BusinessException("You have already created a team with the same name.");
+                throw new BaseException(TeamErrorCode.DUPLICATE_TEAM_NAME);
             }
         }
 
         modelMapper.map(request, team);
         teamRepository.save(team);
+
+        TeamUpdatedEvent event = TeamUpdatedEvent.builder()
+                .teamId(teamId)
+                .teamName(team.getName())
+                .updatedBy(userId)
+                .memberIds(teamMembershipService.getMemberIds(teamId))
+                .shouldEvictCache(request.getName() != null)
+                .build();
+
+        eventPublisher.publishEvent(event);
 
         return modelMapper.map(team, TeamResponseDto.class);
     }
@@ -184,7 +221,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public ActionResponseDto resetTeamCode(UUID userId, UUID teamId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                () -> new NotFoundException("Team not found.")
+                () -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND)
         );
 
         teamMembershipService.validateUpdateTeamPermission(userId, teamId);
@@ -197,6 +234,13 @@ public class TeamServiceImpl implements TeamService {
         team.setTeamCode(teamCode);
         teamRepository.save(team);
 
+        TeamCodeResetEvent event = TeamCodeResetEvent.builder()
+                .teamId(teamId)
+                .memberIds(teamMembershipService.getMemberIds(teamId))
+                .build();
+
+        eventPublisher.publishEvent(event);
+
         return ActionResponseDto.builder()
                 .success(true)
                 .message(teamCode)
@@ -206,7 +250,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public ActionResponseDto deleteTeam(UUID teamId, UUID userId) {
         Team team = teamRepository.findById(teamId).orElseThrow(
-                ()-> new NotFoundException("Team not found.")
+                ()-> new BaseException(TeamErrorCode.TEAM_NOT_FOUND)
         );
 
         teamMembershipService.validateUpdateTeamPermission(userId, teamId);
@@ -215,7 +259,15 @@ public class TeamServiceImpl implements TeamService {
             fileService.deleteFile(team.getId().toString(), "image");
         }
 
+        TeamDeletedEvent event = TeamDeletedEvent.builder()
+                .teamId(teamId)
+                .teamName(team.getName())
+                .deletedBy(userId)
+                .memberIds(teamMembershipService.getMemberIds(teamId))
+                .build();
+
         teamRepository.delete(team);
+        eventPublisher.publishEvent(event);
 
         return ActionResponseDto.builder()
                 .success(true)
@@ -226,7 +278,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public ActionResponseDto uploadTeamAvatar(UUID userId, UUID teamId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
-            throw new BusinessException("Team's avatar must be an image.");
+            throw new BaseException(FileErrorCode.INVALID_IMAGE_FILE);
         }
 
         teamMembershipService.validateUpdateTeamPermission(userId, teamId);
@@ -234,11 +286,21 @@ public class TeamServiceImpl implements TeamService {
         try {
             String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
             Team team = teamRepository.findById(teamId).orElseThrow(
-                    () -> new NotFoundException("Team not found.")
+                    () -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND)
             );
 
             team.setAvatarUrl(avatarUrl);
             teamRepository.save(team);
+
+            TeamUpdatedEvent event = TeamUpdatedEvent.builder()
+                    .teamId(teamId)
+                    .teamName(team.getName())
+                    .updatedBy(userId)
+                    .memberIds(teamMembershipService.getMemberIds(teamId))
+                    .shouldEvictCache(true)
+                    .build();
+
+            eventPublisher.publishEvent(event);
 
             return ActionResponseDto.builder()
                     .success(true)
@@ -246,7 +308,7 @@ public class TeamServiceImpl implements TeamService {
                     .build();
 
         } catch (IOException e) {
-            throw new BusinessException("Reading file failed.");
+            throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
         }
     }
 }

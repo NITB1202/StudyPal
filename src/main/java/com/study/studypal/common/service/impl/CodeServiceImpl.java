@@ -1,50 +1,49 @@
 package com.study.studypal.common.service.impl;
 
 import com.study.studypal.auth.enums.VerificationType;
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.service.CodeService;
+import com.study.studypal.common.util.CacheKeyUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
 public class CodeServiceImpl implements CodeService {
-    private final RedisTemplate<String, Object> redis;
+    private final CacheManager cacheManager;
+    private Cache cache;
     private static final int LENGTH = 6;
-    private static final int MINUTES = 5;
+
+    @PostConstruct
+    public void initCaches() {
+        this.cache = cacheManager.getCache(CacheNames.VERIFICATION_CODES);
+    }
 
     @Override
     public String generateVerificationCode(String email, VerificationType type) {
         String code = generateRandomCode();
-        String key = generateKey(email, type);
-
-        redis.opsForValue().set(key, code, Duration.ofMinutes(MINUTES));
-
+        cache.put(CacheKeyUtils.of(email), code);
         return code;
     }
 
     @Override
     public boolean verifyCode(String email, String code, VerificationType type) {
-        String key = generateKey(email, type);
-        String storedCode = (String) redis.opsForValue().get(key);
+        String storedCode = cache.get(CacheKeyUtils.of(email), String.class);
 
         if(storedCode == null || !storedCode.equals(code)) {
             return false;
         }
 
-        redis.delete(key);
+        cache.evict(CacheKeyUtils.of(email));
         return true;
     }
 
     @Override
     public String generateTeamCode() {
         return generateRandomCode();
-    }
-
-    private String generateKey(String email, VerificationType type) {
-        return type + ":" + email.toLowerCase();
     }
 
     private String generateRandomCode() {

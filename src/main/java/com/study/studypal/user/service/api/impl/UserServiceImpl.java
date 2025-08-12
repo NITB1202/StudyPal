@@ -1,13 +1,15 @@
 package com.study.studypal.user.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
+import com.study.studypal.user.exception.UserErrorCode;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.user.service.api.UserService;
@@ -16,6 +18,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,9 +38,10 @@ public class UserServiceImpl implements UserService {
     private static final String AVATAR_FOLDER = "users";
 
     @Override
+    @Cacheable(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserSummaryResponseDto getUserSummaryProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new NotFoundException("User with id " + userId + " not found.")
+                () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
         );
 
         return modelMapper.map(user, UserSummaryResponseDto.class);
@@ -45,7 +50,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponseDto getUserProfile(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new NotFoundException("User with id " + userId + " not found.")
+                () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
         );
 
         return modelMapper.map(user, UserDetailResponseDto.class);
@@ -70,9 +75,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public UserDetailResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("User with id " + userId + " not found.")
+                () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
         );
 
         modelMapper.map(request, user);
@@ -83,15 +89,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
     public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
         if(!FileUtils.isImage(file)) {
-            throw new BusinessException("User's avatar must be an image.");
+            throw new BaseException(FileErrorCode.INVALID_IMAGE_FILE);
         }
 
         try {
             String avatarUrl = fileService.uploadFile(AVATAR_FOLDER, userId.toString(), file.getBytes()).getUrl();
             User user = userRepository.findById(userId).orElseThrow(
-                    () -> new NotFoundException("User with id " + userId + " not found.")
+                    () -> new BaseException(UserErrorCode.USER_NOT_FOUND)
             );
 
             user.setAvatarUrl(avatarUrl);
@@ -103,7 +110,7 @@ public class UserServiceImpl implements UserService {
                     .build();
 
         } catch (IOException e) {
-            throw new BusinessException("Reading file failed.");
+            throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
         }
     }
 }

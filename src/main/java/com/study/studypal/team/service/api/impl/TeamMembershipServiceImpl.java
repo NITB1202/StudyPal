@@ -1,30 +1,35 @@
 package com.study.studypal.team.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.team.dto.TeamUser.internal.DecodedCursor;
-import com.study.studypal.team.dto.TeamUser.request.RemoveTeamMemberRequestDto;
-import com.study.studypal.team.dto.TeamUser.request.UpdateMemberRoleRequestDto;
-import com.study.studypal.team.dto.TeamUser.response.ListTeamMemberResponseDto;
-import com.study.studypal.team.dto.TeamUser.response.TeamMemberResponseDto;
-import com.study.studypal.team.dto.TeamUser.response.UserRoleInTeamResponseDto;
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.util.CacheKeyUtils;
+import com.study.studypal.team.dto.membership.internal.DecodedCursor;
+import com.study.studypal.team.dto.membership.request.RemoveTeamMemberRequestDto;
+import com.study.studypal.team.dto.membership.request.UpdateMemberRoleRequestDto;
+import com.study.studypal.team.dto.membership.response.ListTeamMemberResponseDto;
+import com.study.studypal.team.dto.membership.response.TeamMemberResponseDto;
 import com.study.studypal.team.entity.TeamUser;
+import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import com.study.studypal.team.service.internal.TeamInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.team.enums.TeamRole;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
 import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.team.service.api.TeamMembershipService;
 import com.study.studypal.team.util.CursorUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -34,14 +39,20 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     private final TeamUserRepository teamUserRepository;
     private final TeamMembershipInternalService internalService;
     private final TeamInternalService teamService;
-    private final ModelMapper modelMapper;
+    private final CacheManager cacheManager;
+
+    /**
+     * Note: Cache eviction for teamMembers is already handled inside
+     * TeamInternalService's increaseMember and decreaseMember methods.
+     */
 
     @Override
+    @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
     public ActionResponseDto joinTeam(UUID userId, String teamCode) {
         UUID teamId = teamService.getTeamIdByTeamCode(teamCode);
 
         if(teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
-            throw new BusinessException("You are already in the team.");
+            throw new BaseException(TeamMembershipErrorCode.USER_ALREADY_IN_TEAM);
         }
 
         internalService.createMembership(teamId, userId, TeamRole.MEMBER);
@@ -54,16 +65,20 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     }
 
     @Override
-    public UserRoleInTeamResponseDto getUserRoleInTeam(UUID userId, UUID teamId) {
-        TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
-                () -> new NotFoundException("You are not in this team.")
-        );
+    public ListTeamMemberResponseDto getTeamMembers(UUID userId, UUID teamId, String cursor, int size) {
+        if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+            throw new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND);
+        }
 
-        return modelMapper.map(membership, UserRoleInTeamResponseDto.class);
-    }
+        //Handle cache with default condition
+        Cache cache = cacheManager.getCache(CacheNames.TEAM_MEMBERS);
+        boolean cacheResponse = false;
+        if(cursor == null && size == 10) {
+            ListTeamMemberResponseDto list = Objects.requireNonNull(cache).get(CacheKeyUtils.of(teamId), ListTeamMemberResponseDto.class);
+            if(list != null) return list;
+            else cacheResponse = true;
+        }
 
-    @Override
-    public ListTeamMemberResponseDto getTeamMembers(UUID teamId, String cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
         List<TeamUser> memberships;
@@ -102,15 +117,23 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
             nextCursor = CursorUtils.encodeCursor(lastMember.getRole().ordinal() + 1, lastMember.getName(), lastMember.getUserId());
         }
 
-        return ListTeamMemberResponseDto.builder()
+        ListTeamMemberResponseDto response = ListTeamMemberResponseDto.builder()
                 .members(members)
                 .total(total)
                 .nextCursor(nextCursor)
                 .build();
+
+        if(cacheResponse) cache.put(CacheKeyUtils.of(teamId), response);
+
+        return response;
     }
 
     @Override
     public ListTeamMemberResponseDto searchTeamMembersByName(UUID userId, UUID teamId, String keyword, UUID cursor, int size) {
+        if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+            throw new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND);
+        }
+
         String handledKeyword = keyword.toLowerCase().trim();
         Pageable pageable = PageRequest.of(0, size);
 
@@ -139,21 +162,26 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
+            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#request.memberId, #request.teamId)"),
+            @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#request.teamId)")
+    })
     public ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request) {
         if(userId.equals(request.getMemberId())) {
-            throw new BusinessException("You can't update your own role.");
+            throw new BaseException(TeamMembershipErrorCode.CANNOT_UPDATE_OWN_ROLE);
         }
 
         TeamUser userInfo = teamUserRepository.findByUserIdAndTeamId(userId, request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("User's membership not found.")
+                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND)
         );
 
         TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamId(request.getMemberId(), request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("Member's membership not found.")
+                ()-> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND)
         );
 
         if(userInfo.getRole() != TeamRole.CREATOR) {
-            throw new BusinessException("Only the creator can update another member's role.");
+            throw new BaseException(TeamMembershipErrorCode.PERMISSION_UPDATE_MEMBER_ROLE_DENIED);
         }
 
         //Each group can have only one creator
@@ -172,19 +200,23 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
+            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#request.memberId, #request.teamId)")
+    })
     public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
         if(userId.equals(request.getMemberId())) {
-            throw new BusinessException("You can't remove yourself from the team.");
+            throw new BaseException(TeamMembershipErrorCode.CANNOT_REMOVE_SELF);
         }
 
         //Lock user performing action
         TeamUser userInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(userId, request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("User's membership not found.")
+                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND)
         );
 
         //Lock member being removed
         TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(request.getMemberId(), request.getTeamId()).orElseThrow(
-                ()-> new NotFoundException("Member's membership not found.")
+                () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND)
         );
 
         //Permission check
@@ -197,18 +229,18 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
                     break;
                 }
                 else {
-                    throw new BusinessException("Administrators can only remove members.");
+                    throw new BaseException(TeamMembershipErrorCode.PERMISSION_REMOVE_MEMBER_RESTRICTED);
                 }
             }
             case MEMBER: {
-                throw new BusinessException("You don't have permission to remove another member.");
+                throw new BaseException(TeamMembershipErrorCode.PERMISSION_REMOVE_MEMBER_RESTRICTED);
             }
         }
 
         // Safe delete (only one transaction can proceed at a time due to lock)
         int rowsDeleted = teamUserRepository.deleteMemberById(memberInfo.getId());
         if (rowsDeleted == 0) {
-            throw new BusinessException("Member has already been removed.");
+            throw new BaseException(TeamMembershipErrorCode.MEMBER_ALREADY_REMOVED);
         }
 
         teamService.decreaseMember(request.getTeamId());
@@ -220,9 +252,13 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)"),
+            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#userId, #teamId)")
+    })
     public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
         TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
-                () -> new NotFoundException("Membership not found.")
+                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND)
         );
 
         teamUserRepository.delete(membership);
@@ -230,8 +266,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         int totalMembers = teamUserRepository.getTotalMembers(teamId) - 1;
 
         if (totalMembers > 0 && membership.getRole() == TeamRole.CREATOR) {
-            throw new BusinessException("You are the creator of the team." +
-                    " Please hand over your responsibilities before leaving.");
+            throw new BaseException(TeamMembershipErrorCode.CANNOT_LEAVE_AS_CREATOR);
         }
 
         teamService.decreaseMember(teamId);

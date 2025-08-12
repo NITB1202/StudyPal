@@ -1,12 +1,12 @@
 package com.study.studypal.team.controller;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.team.dto.Team.request.CreateTeamRequestDto;
-import com.study.studypal.team.dto.Team.request.UpdateTeamRequestDto;
-import com.study.studypal.team.dto.Team.response.ListTeamResponseDto;
-import com.study.studypal.team.dto.Team.response.TeamOverviewResponseDto;
-import com.study.studypal.team.dto.Team.response.TeamProfileResponseDto;
-import com.study.studypal.team.dto.Team.response.TeamResponseDto;
+import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
+import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
+import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.team.service.api.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -112,8 +112,8 @@ public class TeamController {
     @ApiResponse(responseCode = "200", description = "Delete successfully.")
     @ApiResponse(responseCode = "404", description = "Not found.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<ActionResponseDto> deleteTeam(@PathVariable UUID teamId,
-                                                        @AuthenticationPrincipal UUID userId){
+    public ResponseEntity<ActionResponseDto> deleteTeam(@AuthenticationPrincipal UUID userId,
+                                                        @PathVariable UUID teamId){
         return ResponseEntity.ok(teamService.deleteTeam(teamId, userId));
     }
 

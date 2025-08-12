@@ -1,14 +1,15 @@
 package com.study.studypal.team.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.common.exception.BusinessException;
-import com.study.studypal.common.exception.NotFoundException;
-import com.study.studypal.team.dto.Invitation.request.SendInvitationRequestDto;
-import com.study.studypal.team.dto.Invitation.response.InvitationResponseDto;
-import com.study.studypal.team.dto.Invitation.response.ListInvitationResponseDto;
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.team.dto.invitation.request.SendInvitationRequestDto;
+import com.study.studypal.team.dto.invitation.response.InvitationResponseDto;
+import com.study.studypal.team.dto.invitation.response.ListInvitationResponseDto;
 import com.study.studypal.team.entity.Invitation;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.exception.InvitationErrorCode;
 import com.study.studypal.team.repository.InvitationRepository;
 import com.study.studypal.team.service.api.InvitationService;
 import com.study.studypal.team.service.internal.TeamInternalService;
@@ -19,6 +20,9 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,11 +44,15 @@ public class InvitationServiceImpl implements InvitationService {
     private final EntityManager entityManager;
 
     @Override
+    @CacheEvict(
+            value = CacheNames.INVITATIONS,
+            key = "@keys.of(#request.inviteeId)"
+    )
     public InvitationResponseDto sendInvitation(UUID userId, SendInvitationRequestDto request) {
         teamMembershipService.validateInviteMemberPermission(userId, request.getTeamId(), request.getInviteeId());
 
         if(invitationRepository.existsByInviteeIdAndTeamId(request.getInviteeId(), request.getTeamId())) {
-            throw new BusinessException("The invitee has already been invited to this team.");
+            throw new BaseException(InvitationErrorCode.INVITEE_ALREADY_INVITED);
         }
 
         User inviter = entityManager.getReference(User.class, userId);
@@ -62,13 +70,18 @@ public class InvitationServiceImpl implements InvitationService {
         try {
             invitationRepository.save(invitation);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("The invitee has already been invited to this team.");
+            throw new BaseException(InvitationErrorCode.INVITEE_ALREADY_INVITED);
         }
 
         return modelMapper.map(invitation, InvitationResponseDto.class);
     }
 
     @Override
+    @Cacheable(
+            value = CacheNames.INVITATIONS,
+            key = "@keys.of(#userId)",
+            condition = "#cursor == null && #size == 10"
+    )
     public ListInvitationResponseDto getInvitations(UUID userId, LocalDateTime cursor, int size) {
         Pageable pageable = PageRequest.of(0, size);
 
@@ -88,13 +101,17 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = CacheNames.INVITATIONS, key = "@keys.of(#userId)"),
+            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
+    })
     public ActionResponseDto replyToInvitation(UUID invitationId, UUID userId, boolean accept) {
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow(
-                () -> new NotFoundException("Invitation not found.")
+                () -> new BaseException(InvitationErrorCode.INVITATION_NOT_FOUND)
         );
 
         if(!userId.equals(invitation.getInvitee().getId())) {
-            throw new BusinessException("You are not allowed to reply this invitation.");
+            throw new BaseException(InvitationErrorCode.PERMISSION_REPLY_INVITATION_DENIED);
         }
 
         if(accept) {
