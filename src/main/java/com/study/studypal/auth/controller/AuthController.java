@@ -90,12 +90,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.resetPassword(request));
     }
 
-    @GetMapping("/access")
+    @PostMapping("/access")
     @Operation(summary = "Generate a new access token from refresh token.")
     @ApiResponse(responseCode = "200", description = "Generate successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid refresh token.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<GenerateAccessTokenResponseDto> generateAccessToken(@RequestParam String refreshToken) {
-        return ResponseEntity.ok(authService.generateAccessToken(refreshToken));
+    public ResponseEntity<GenerateAccessTokenResponseDto> generateAccessToken(@Valid @RequestBody GenerateAccessTokenRequestDto request) {
+        return ResponseEntity.ok(authService.generateAccessToken(request));
     }
 }

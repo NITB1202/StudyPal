@@ -255,13 +255,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public GenerateAccessTokenResponseDto generateAccessToken(String refreshToken) {
-        UUID userId = JwtUtils.extractId(refreshToken);
+    public GenerateAccessTokenResponseDto generateAccessToken(GenerateAccessTokenRequestDto request) {
+        UUID userId = JwtUtils.extractId(request.getRefreshToken());
         Account account = accountService.getAccountByUserId(userId);
 
         String storedRefreshToken = refreshTokenCache.get(CacheKeyUtils.of(userId), String.class);
 
-        if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
+        if (storedRefreshToken != null && storedRefreshToken.equals(request.getRefreshToken())) {
             String newAccessToken = JwtUtils.generateAccessToken(userId, account.getRole());
             accessTokenCache.put(CacheKeyUtils.of(userId), newAccessToken);
 

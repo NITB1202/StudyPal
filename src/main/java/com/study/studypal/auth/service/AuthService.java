@@ -16,5 +16,5 @@ public interface AuthService {
     ActionResponseDto verifyRegistrationCode(VerifyCodeRequestDto request);
     ActionResponseDto verifyResetPasswordCode(VerifyCodeRequestDto request);
     ActionResponseDto resetPassword(ResetPasswordRequestDto request);
-    GenerateAccessTokenResponseDto generateAccessToken(String refreshToken);
+    GenerateAccessTokenResponseDto generateAccessToken(GenerateAccessTokenRequestDto request);
 }
