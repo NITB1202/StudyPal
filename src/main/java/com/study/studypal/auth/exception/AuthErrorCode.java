@@ -13,7 +13,8 @@ public enum AuthErrorCode implements ErrorCode {
     INCORRECT_PASSWORD(HttpStatus.UNAUTHORIZED, "AUTH_005", "Incorrect password."),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_006", "Invalid or expired access token."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_007", "Invalid refresh token."),
-    ACCOUNT_LOGGED_IN_ANOTHER_DEVICE(HttpStatus.UNAUTHORIZED, "AUTH_008", "Account has been logged in from another device.");
+    ACCOUNT_LOGGED_IN_ANOTHER_DEVICE(HttpStatus.UNAUTHORIZED, "AUTH_008", "Account has been logged in from another device."),
+    REGISTRATION_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "AUTH_009", "Registration information not found in cache.");
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -19,7 +19,4 @@ public class RegisterWithCredentialsRequestDto {
 
     @NotEmpty(message = "Password is required")
     private String password;
-
-    @NotEmpty(message = "Verification code is required")
-    private String verificationCode;
 }

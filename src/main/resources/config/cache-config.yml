@@ -1,6 +1,12 @@
 app:
   caches:
     cacheSpecs:
+      register:
+        ttl: PT10M
+        maxSize: 1000
+      resetPassword:
+        ttl: PT5M
+        maxSize: 1000
       verificationCodes:
         ttl: PT5M
         maxSize: 100
