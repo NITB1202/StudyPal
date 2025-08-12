@@ -40,11 +40,15 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final CodeService codeService;
     private final CacheManager cacheManager;
+    private Cache registerCache;
+    private Cache resetPasswordCache;
     private Cache accessTokenCache;
     private Cache refreshTokenCache;
 
     @PostConstruct
     public void initCaches() {
+        this.registerCache = cacheManager.getCache(CacheNames.REGISTER);
+        this.resetPasswordCache = cacheManager.getCache(CacheNames.RESET_PASSWORD);
         this.accessTokenCache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
         this.refreshTokenCache = cacheManager.getCache(CacheNames.REFRESH_TOKENS);
     }
@@ -130,55 +134,44 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ActionResponseDto validateRegisterInfo(ValidateRegisterInfoRequestDto request) {
-        ActionResponseDto validateResponse = accountService.validateAccount(request.getEmail(), request.getPassword());
+    public ActionResponseDto registerWithCredentials(RegisterWithCredentialsRequestDto request) {
+        ActionResponseDto response = accountService.validateAccount(request.getEmail(), request.getPassword());
 
-        if(validateResponse.isSuccess()) {
+        if(response.isSuccess()) {
+            registerCache.put(CacheKeyUtils.of(request.getEmail()), request);
             String verificationCode = codeService.generateVerificationCode(request.getEmail(), VerificationType.REGISTER);
             mailService.sendVerificationEmail(request.getEmail(), verificationCode);
-
-            String message = " A verification code has been sent to the registered email.";
-            validateResponse.setMessage(validateResponse.getMessage() + message);
         }
 
-        return validateResponse;
+        return response;
     }
 
     @Override
-    public ActionResponseDto registerWithCredentials(RegisterWithCredentialsRequestDto request) {
-        ActionResponseDto validateResponse = accountService.validateAccount(request.getEmail(), request.getPassword());
+    public ActionResponseDto sendVerificationCode(VerificationType type, String email) {
+        boolean isValid = false;
 
-        if(!validateResponse.isSuccess()) {
-            return validateResponse;
-        }
+        switch (type) {
+            case REGISTER: {
+                RegisterWithCredentialsRequestDto request = registerCache.get(CacheKeyUtils.of(email), RegisterWithCredentialsRequestDto.class);
+                if(request != null) {
+                    //Reset TTL when user resends verification code for a validated registration request.
+                    registerCache.put(CacheKeyUtils.of(email), request);
+                    isValid = true;
+                }
 
-        if(codeService.verifyCode(request.getEmail(), request.getVerificationCode(), VerificationType.REGISTER)) {
-            if(!accountService.isEmailRegistered(request.getEmail())) {
-                UUID userId = userService.createDefaultProfile(request.getName());
-                accountService.registerWithCredentials(userId, request.getEmail(), request.getPassword());
+                break;
             }
-            else {
-                accountService.linkLocalLogin(request.getEmail(), request.getPassword());
+            case RESET_PASSWORD: {
+                if(accountService.isEmailRegistered(email)) {
+                    isValid = true;
+                }
+
+                break;
             }
-
-            return ActionResponseDto.builder()
-                    .success(true)
-                    .message("Successfully registered.")
-                    .build();
         }
-        else {
 
-            return ActionResponseDto.builder()
-                    .success(false)
-                    .message("Invalid verification code.")
-                    .build();
-        }
-    }
-
-    @Override
-    public ActionResponseDto sendResetPasswordCode(String email) {
-        if(accountService.isEmailRegistered(email)) {
-            String verificationCode = codeService.generateVerificationCode(email, VerificationType.RESET_PASSWORD);
+        if(isValid) {
+            String verificationCode = codeService.generateVerificationCode(email, type);
             mailService.sendVerificationEmail(email, verificationCode);
 
             return ActionResponseDto.builder()
@@ -186,22 +179,73 @@ public class AuthServiceImpl implements AuthService {
                     .message("A verification code has been sent to the registered email.")
                     .build();
         }
+        else {
+            return ActionResponseDto.builder()
+                    .success(false)
+                    .message("Email is not registered.")
+                    .build();
+        }
+    }
 
-        return ActionResponseDto.builder()
-                .success(false)
-                .message("Email is not registered.")
-                .build();
+    @Override
+    public ActionResponseDto verifyRegistrationCode(String email, String code) {
+        if(codeService.verifyCode(email, code, VerificationType.REGISTER)) {
+            RegisterWithCredentialsRequestDto request = registerCache.get(CacheKeyUtils.of(email), RegisterWithCredentialsRequestDto.class);
+
+            if(request == null) {
+                throw new BaseException(AuthErrorCode.REGISTRATION_INFO_NOT_FOUND);
+            }
+
+            if(!accountService.isEmailRegistered(email)) {
+                UUID userId = userService.createDefaultProfile(request.getName());
+                accountService.registerWithCredentials(userId, request.getEmail(), request.getPassword());
+            }
+            else {
+                accountService.linkLocalLogin(email, request.getPassword());
+            }
+
+            registerCache.evict(CacheKeyUtils.of(email));
+
+            return ActionResponseDto.builder()
+                    .success(true)
+                    .message("Register successfully.")
+                    .build();
+        }
+        else {
+            return ActionResponseDto.builder()
+                    .success(false)
+                    .message("Invalid verification code.")
+                    .build();
+        }
+    }
+
+    @Override
+    public ActionResponseDto verifyResetPasswordCode(String email, String code) {
+        if(codeService.verifyCode(email, code, VerificationType.RESET_PASSWORD)) {
+            resetPasswordCache.put(CacheKeyUtils.of(email), true);
+
+            return ActionResponseDto.builder()
+                    .success(true)
+                    .message("Verify email successfully.")
+                    .build();
+        }
+        else {
+            return ActionResponseDto.builder()
+                    .success(false)
+                    .message("Invalid verification code.")
+                    .build();
+        }
     }
 
     @Override
     public ActionResponseDto resetPassword(ResetPasswordRequestDto request) {
-        if(codeService.verifyCode(request.getEmail(), request.getVerificationCode(), VerificationType.RESET_PASSWORD)){
+        if(resetPasswordCache.evictIfPresent(CacheKeyUtils.of(request.getEmail()))) {
             return accountService.resetPassword(request.getEmail(), request.getNewPassword());
         }
         else{
             return ActionResponseDto.builder()
                     .success(false)
-                    .message("Invalid verification code.")
+                    .message("This email isn't verified.")
                     .build();
         }
     }

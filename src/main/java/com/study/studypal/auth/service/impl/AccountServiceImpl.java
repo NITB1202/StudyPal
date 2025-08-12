@@ -153,7 +153,7 @@ public class AccountServiceImpl implements AccountService {
 
         return ActionResponseDto.builder()
                 .success(true)
-                .message("Validate successfully.")
+                .message("Validate successfully. A verification code has been sent to the registered email.")
                 .build();
     }
 
