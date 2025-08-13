@@ -155,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
                 RegisterWithCredentialsRequestDto info = registerCache.get(CacheKeyUtils.of(request.getEmail()), RegisterWithCredentialsRequestDto.class);
                 if(info != null) {
                     //Reset TTL when user resends verification code for a validated registration request.
-                    registerCache.put(CacheKeyUtils.of(request.getEmail()), request);
+                    registerCache.put(CacheKeyUtils.of(request.getEmail()), info);
                     isValid = true;
                 }
 
