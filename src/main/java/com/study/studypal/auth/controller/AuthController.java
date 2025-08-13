@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -52,15 +51,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.logout(userId));
     }
 
-    @PostMapping("/validate")
-    @Operation(summary = "Validate account information before registering.")
-    @ApiResponse(responseCode = "200", description = "Validate successfully.")
-    @ApiResponse(responseCode = "400", description = "Invalid request body.",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<ActionResponseDto> validateRegisterInfo(@Valid @RequestBody ValidateRegisterInfoRequestDto request) {
-        return ResponseEntity.ok(authService.validateRegisterInfo(request));
-    }
-
     @PostMapping("/register")
     @Operation(summary = "Register.")
     @ApiResponse(responseCode = "200", description = "Register successfully.")
@@ -70,11 +60,25 @@ public class AuthController {
         return ResponseEntity.ok(authService.registerWithCredentials(request));
     }
 
-    @GetMapping("/reset")
-    @Operation(summary = "Send a verification code to the email address to reset the password.")
+    @PostMapping("/code")
+    @Operation(summary = "Send the verification code to the registered email address.")
     @ApiResponse(responseCode = "200", description = "Send successfully.")
-    public ResponseEntity<ActionResponseDto> sendResetPasswordCode(@Email @RequestParam String email) {
-        return ResponseEntity.ok(authService.sendResetPasswordCode(email));
+    public ResponseEntity<ActionResponseDto> sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequestDto request) {
+        return ResponseEntity.ok(authService.sendVerificationCode(request));
+    }
+
+    @PostMapping("/verify/register")
+    @Operation(summary = "Verify registration code.")
+    @ApiResponse(responseCode = "200", description = "Verify successfully.")
+    public ResponseEntity<ActionResponseDto> verifyRegistrationCode(@Valid @RequestBody VerifyCodeRequestDto request) {
+        return ResponseEntity.ok(authService.verifyRegistrationCode(request));
+    }
+
+    @PostMapping("/verify/reset")
+    @Operation(summary = "Verify reset password code.")
+    @ApiResponse(responseCode = "200", description = "Verify successfully.")
+    public ResponseEntity<ActionResponseDto> verifyResetPasswordCode(@Valid @RequestBody VerifyCodeRequestDto request) {
+        return ResponseEntity.ok(authService.verifyResetPasswordCode(request));
     }
 
     @PostMapping("/reset")
@@ -86,12 +90,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.resetPassword(request));
     }
 
-    @GetMapping("/access")
+    @PostMapping("/access")
     @Operation(summary = "Generate a new access token from refresh token.")
     @ApiResponse(responseCode = "200", description = "Generate successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid refresh token.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<GenerateAccessTokenResponseDto> generateAccessToken(@RequestParam String refreshToken) {
-        return ResponseEntity.ok(authService.generateAccessToken(refreshToken));
+    public ResponseEntity<GenerateAccessTokenResponseDto> generateAccessToken(@Valid @RequestBody GenerateAccessTokenRequestDto request) {
+        return ResponseEntity.ok(authService.generateAccessToken(request));
     }
 }

@@ -1,7 +1,9 @@
 package com.study.studypal.auth.dto.request;
 
+import com.study.studypal.auth.enums.VerificationType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -9,11 +11,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResetPasswordRequestDto {
+public class SendVerificationCodeRequestDto {
+    @NotNull(message = "Verification type is required")
+    private VerificationType type;
+
     @NotEmpty(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
-
-    @NotEmpty(message = "New password is required")
-    private String newPassword;
 }

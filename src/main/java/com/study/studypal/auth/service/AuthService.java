@@ -11,9 +11,10 @@ public interface AuthService {
     LoginResponseDto loginWithCredentials(LoginWithCredentialsRequestDto request);
     LoginResponseDto loginWithProvider(LoginWithProviderRequestDto request);
     ActionResponseDto logout(UUID userId);
-    ActionResponseDto validateRegisterInfo(ValidateRegisterInfoRequestDto request);
     ActionResponseDto registerWithCredentials(RegisterWithCredentialsRequestDto request);
-    ActionResponseDto sendResetPasswordCode(String email);
+    ActionResponseDto sendVerificationCode(SendVerificationCodeRequestDto request);
+    ActionResponseDto verifyRegistrationCode(VerifyCodeRequestDto request);
+    ActionResponseDto verifyResetPasswordCode(VerifyCodeRequestDto request);
     ActionResponseDto resetPassword(ResetPasswordRequestDto request);
-    GenerateAccessTokenResponseDto generateAccessToken(String refreshToken);
+    GenerateAccessTokenResponseDto generateAccessToken(GenerateAccessTokenRequestDto request);
 }

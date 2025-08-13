@@ -40,11 +40,15 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final CodeService codeService;
     private final CacheManager cacheManager;
+    private Cache registerCache;
+    private Cache resetPasswordCache;
     private Cache accessTokenCache;
     private Cache refreshTokenCache;
 
     @PostConstruct
     public void initCaches() {
+        this.registerCache = cacheManager.getCache(CacheNames.REGISTER);
+        this.resetPasswordCache = cacheManager.getCache(CacheNames.RESET_PASSWORD);
         this.accessTokenCache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
         this.refreshTokenCache = cacheManager.getCache(CacheNames.REFRESH_TOKENS);
     }
@@ -130,40 +134,82 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ActionResponseDto validateRegisterInfo(ValidateRegisterInfoRequestDto request) {
-        ActionResponseDto validateResponse = accountService.validateAccount(request.getEmail(), request.getPassword());
+    public ActionResponseDto registerWithCredentials(RegisterWithCredentialsRequestDto request) {
+        ActionResponseDto response = accountService.validateAccount(request.getEmail(), request.getPassword());
 
-        if(validateResponse.isSuccess()) {
+        if(response.isSuccess()) {
+            registerCache.put(CacheKeyUtils.of(request.getEmail()), request);
             String verificationCode = codeService.generateVerificationCode(request.getEmail(), VerificationType.REGISTER);
             mailService.sendVerificationEmail(request.getEmail(), verificationCode);
-
-            String message = " A verification code has been sent to the registered email.";
-            validateResponse.setMessage(validateResponse.getMessage() + message);
         }
 
-        return validateResponse;
+        return response;
     }
 
     @Override
-    public ActionResponseDto registerWithCredentials(RegisterWithCredentialsRequestDto request) {
-        ActionResponseDto validateResponse = accountService.validateAccount(request.getEmail(), request.getPassword());
+    public ActionResponseDto sendVerificationCode(SendVerificationCodeRequestDto request) {
+        boolean isValid = false;
 
-        if(!validateResponse.isSuccess()) {
-            return validateResponse;
+        switch (request.getType()) {
+            case REGISTER: {
+                RegisterWithCredentialsRequestDto info = registerCache.get(CacheKeyUtils.of(request.getEmail()), RegisterWithCredentialsRequestDto.class);
+                if(info != null) {
+                    //Reset TTL when user resends verification code for a validated registration request.
+                    registerCache.put(CacheKeyUtils.of(request.getEmail()), info);
+                    isValid = true;
+                }
+
+                break;
+            }
+            case RESET_PASSWORD: {
+                if(accountService.isEmailRegistered(request.getEmail())) {
+                    isValid = true;
+                }
+
+                break;
+            }
         }
 
-        if(codeService.verifyCode(request.getEmail(), request.getVerificationCode(), VerificationType.REGISTER)) {
-            if(!accountService.isEmailRegistered(request.getEmail())) {
-                UUID userId = userService.createDefaultProfile(request.getName());
-                accountService.registerWithCredentials(userId, request.getEmail(), request.getPassword());
-            }
-            else {
-                accountService.linkLocalLogin(request.getEmail(), request.getPassword());
-            }
+        if(isValid) {
+            String verificationCode = codeService.generateVerificationCode(request.getEmail(), request.getType());
+            mailService.sendVerificationEmail(request.getEmail(), verificationCode);
 
             return ActionResponseDto.builder()
                     .success(true)
-                    .message("Successfully registered.")
+                    .message("A verification code has been sent to the registered email.")
+                    .build();
+        }
+        else {
+
+            return ActionResponseDto.builder()
+                    .success(false)
+                    .message("Email is not registered.")
+                    .build();
+        }
+    }
+
+    @Override
+    public ActionResponseDto verifyRegistrationCode(VerifyCodeRequestDto request) {
+        if(codeService.verifyCode(request.getEmail(), request.getCode(), VerificationType.REGISTER)) {
+            RegisterWithCredentialsRequestDto info = registerCache.get(CacheKeyUtils.of(request.getEmail()), RegisterWithCredentialsRequestDto.class);
+
+            if(info == null) {
+                throw new BaseException(AuthErrorCode.REGISTRATION_INFO_NOT_FOUND);
+            }
+
+            if(!accountService.isEmailRegistered(request.getEmail())) {
+                UUID userId = userService.createDefaultProfile(info.getName());
+                accountService.registerWithCredentials(userId, request.getEmail(), info.getPassword());
+            }
+            else {
+                accountService.linkLocalLogin(request.getEmail(), info.getPassword());
+            }
+
+            registerCache.evict(CacheKeyUtils.of(request.getEmail()));
+
+            return ActionResponseDto.builder()
+                    .success(true)
+                    .message("Register successfully.")
                     .build();
         }
         else {
@@ -176,29 +222,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ActionResponseDto sendResetPasswordCode(String email) {
-        if(accountService.isEmailRegistered(email)) {
-            String verificationCode = codeService.generateVerificationCode(email, VerificationType.RESET_PASSWORD);
-            mailService.sendVerificationEmail(email, verificationCode);
+    public ActionResponseDto verifyResetPasswordCode(VerifyCodeRequestDto request) {
+        if(codeService.verifyCode(request.getEmail(), request.getCode(), VerificationType.RESET_PASSWORD)) {
+            resetPasswordCache.put(CacheKeyUtils.of(request.getEmail()), true);
 
             return ActionResponseDto.builder()
                     .success(true)
-                    .message("A verification code has been sent to the registered email.")
+                    .message("Verify email successfully.")
                     .build();
         }
+        else {
 
-        return ActionResponseDto.builder()
-                .success(false)
-                .message("Email is not registered.")
-                .build();
-    }
-
-    @Override
-    public ActionResponseDto resetPassword(ResetPasswordRequestDto request) {
-        if(codeService.verifyCode(request.getEmail(), request.getVerificationCode(), VerificationType.RESET_PASSWORD)){
-            return accountService.resetPassword(request.getEmail(), request.getNewPassword());
-        }
-        else{
             return ActionResponseDto.builder()
                     .success(false)
                     .message("Invalid verification code.")
@@ -207,13 +241,27 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public GenerateAccessTokenResponseDto generateAccessToken(String refreshToken) {
-        UUID userId = JwtUtils.extractId(refreshToken);
+    public ActionResponseDto resetPassword(ResetPasswordRequestDto request) {
+        if(resetPasswordCache.evictIfPresent(CacheKeyUtils.of(request.getEmail()))) {
+            return accountService.resetPassword(request.getEmail(), request.getNewPassword());
+        }
+        else{
+
+            return ActionResponseDto.builder()
+                    .success(false)
+                    .message("This email isn't verified.")
+                    .build();
+        }
+    }
+
+    @Override
+    public GenerateAccessTokenResponseDto generateAccessToken(GenerateAccessTokenRequestDto request) {
+        UUID userId = JwtUtils.extractId(request.getRefreshToken());
         Account account = accountService.getAccountByUserId(userId);
 
         String storedRefreshToken = refreshTokenCache.get(CacheKeyUtils.of(userId), String.class);
 
-        if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
+        if (storedRefreshToken != null && storedRefreshToken.equals(request.getRefreshToken())) {
             String newAccessToken = JwtUtils.generateAccessToken(userId, account.getRole());
             accessTokenCache.put(CacheKeyUtils.of(userId), newAccessToken);
 

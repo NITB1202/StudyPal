@@ -9,11 +9,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResetPasswordRequestDto {
+public class VerifyCodeRequestDto {
     @NotEmpty(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 
-    @NotEmpty(message = "New password is required")
-    private String newPassword;
+    @NotEmpty(message = "Code is required")
+    private String code;
 }
