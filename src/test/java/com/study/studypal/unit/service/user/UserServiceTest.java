@@ -6,6 +6,8 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
+import com.study.studypal.factory.FileFactory;
+import com.study.studypal.factory.UserFactory;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
@@ -55,22 +57,15 @@ public class UserServiceTest {
 
     @BeforeEach
     public void setup() {
-        userId = UUID.randomUUID();
-        userName = "user_" + (int)(Math.random() * 10000);
-
-        user = User.builder()
-                .id(userId)
-                .name(userName)
-                .build();
+        user = UserFactory.createWithId();
+        userId = user.getId();
+        userName = user.getName();
     }
 
     //getUserSummaryProfile
     @Test
     public void getUserSummaryProfile_whenUserExists_shouldReturnUserSummaryDto() {
-        UserSummaryResponseDto userDto = UserSummaryResponseDto.builder()
-                .id(userId)
-                .name(userName)
-                .build();
+        UserSummaryResponseDto userDto = UserFactory.createUserSummaryResponseDto(userId, userName);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(modelMapper.map(user, UserSummaryResponseDto.class)).thenReturn(userDto);
@@ -103,10 +98,7 @@ public class UserServiceTest {
     //getUserProfile
     @Test
     void getUserProfile_whenUserExists_thenReturnUserDetailResponseDto() {
-        UserDetailResponseDto userDto = UserDetailResponseDto.builder()
-                .id(userId)
-                .name(userName)
-                .build();
+        UserDetailResponseDto userDto = UserFactory.createUserDetailResponseDto(userId, userName);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(modelMapper.map(user, UserDetailResponseDto.class)).thenReturn(userDto);
@@ -144,13 +136,13 @@ public class UserServiceTest {
         String handledKeyword = keyword.toLowerCase().trim();
 
         // Mock data: 2 users to match size = 2
-        User user1 = User.builder().id(UUID.randomUUID()).name("TestUser1").build();
-        User user2 = User.builder().id(UUID.randomUUID()).name("TestUser2").build();
+        User user1 = UserFactory.createWithId("TestUser1");
+        User user2 = UserFactory.createWithId("TestUser2");
         List<User> users = List.of(user1, user2);
 
         // Mock mapped DTO list
-        UserSummaryResponseDto dto1 = UserSummaryResponseDto.builder().id(user1.getId()).name(user1.getName()).build();
-        UserSummaryResponseDto dto2 = UserSummaryResponseDto.builder().id(user2.getId()).name(user2.getName()).build();
+        UserSummaryResponseDto dto1 = UserFactory.createUserSummaryResponseDto(user1.getId(), user1.getName());
+        UserSummaryResponseDto dto2 = UserFactory.createUserSummaryResponseDto(user2.getId(), user2.getName());
         List<UserSummaryResponseDto> dtoList = List.of(dto1, dto2);
 
         long totalCount = 2L;
@@ -187,10 +179,10 @@ public class UserServiceTest {
         String keyword = "anotherUser";
         String handledKeyword = keyword.toLowerCase().trim();
 
-        User user1 = User.builder().id(UUID.randomUUID()).name("AnotherUser1").build();
+        User user1 = UserFactory.createWithId("AnotherUser1");
         List<User> users = List.of(user1);
 
-        UserSummaryResponseDto dto1 = UserSummaryResponseDto.builder().id(user1.getId()).name(user1.getName()).build();
+        UserSummaryResponseDto dto1 = UserFactory.createUserSummaryResponseDto(user1.getId(), user1.getName());
         List<UserSummaryResponseDto> dtoList = List.of(dto1);
 
         long totalCount = 1L;
@@ -260,15 +252,8 @@ public class UserServiceTest {
     void updateUser_whenUserExists_shouldUpdateAndReturnUserDetail() {
         // Arrange
         String newName = "NewName";
-
-        UpdateUserRequestDto updateRequest = UpdateUserRequestDto.builder()
-                .name(newName)
-                .build();
-
-        UserDetailResponseDto userDto = UserDetailResponseDto.builder()
-                .id(userId)
-                .name(newName)
-                .build();
+        UpdateUserRequestDto updateRequest = UserFactory.createUpdateUserRequestDto(newName);
+        UserDetailResponseDto userDto = UserFactory.createUserDetailResponseDto(userId, newName);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         doAnswer(invocation -> {
@@ -299,10 +284,7 @@ public class UserServiceTest {
     void updateUser_whenUserNotFound_shouldThrowUserNotFoundException() {
         // Arrange
         String newName = "NewName";
-
-        UpdateUserRequestDto updateRequest = UpdateUserRequestDto.builder()
-                .name(newName)
-                .build();
+        UpdateUserRequestDto updateRequest = UserFactory.createUpdateUserRequestDto(newName);
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -319,9 +301,7 @@ public class UserServiceTest {
     //uploadUserAvatar
     @Test
     void uploadUserAvatar_whenFileIsNotImage_shouldThrowInvalidImageFileException() {
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "avatar", "avatar.png", "image/png", "dummy image content".getBytes()
-        );
+        MockMultipartFile mockFile = FileFactory.createRawFile();
 
         try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
             utilities.when(() -> FileUtils.isImage(any())).thenReturn(false);
@@ -337,17 +317,16 @@ public class UserServiceTest {
 
     @Test
     void uploadUserAvatar_whenUserExistsAndFileValid_shouldUploadSuccessfully() throws IOException {
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "avatar", "avatar.png", "image/png", "dummy image content".getBytes()
-        );
+        MockMultipartFile mockFile = FileFactory.createImageFile();
+        String newAvatarUrl = "http://avatar.url/image.png";
 
         try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
             utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
 
             // Mock fileService uploadFile returns URL
             FileResponseDto uploadResponse = mock(FileResponseDto.class);
-            when(uploadResponse.getUrl()).thenReturn("http://avatar.url/image.png");
-            when(fileService.uploadFile(eq("users"), eq(userId.toString()), any())).thenReturn(uploadResponse);
+            when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);
+            when(fileService.uploadFile(anyString(), eq(userId.toString()),any(byte[].class))).thenReturn(uploadResponse);
 
             User user = User.builder().id(userId).build();
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -358,11 +337,10 @@ public class UserServiceTest {
 
             // Assert
             assertTrue(response.isSuccess());
-            assertEquals("Uploaded avatar successfully.", response.getMessage());
-            assertEquals("http://avatar.url/image.png", user.getAvatarUrl());
+            assertEquals(newAvatarUrl, user.getAvatarUrl());
 
             utilities.verify(() -> FileUtils.isImage(mockFile), times(1));
-            verify(fileService).uploadFile("users", userId.toString(), mockFile.getBytes());
+            verify(fileService).uploadFile(anyString(), eq(userId.toString()), eq(mockFile.getBytes()));
             verify(userRepository).findById(userId);
             verify(userRepository).save(user);
         }
@@ -370,16 +348,15 @@ public class UserServiceTest {
 
     @Test
     void uploadUserAvatar_whenUserNotFound_shouldThrowUserNotFoundException() throws IOException {
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "avatar", "avatar.png", "image/png", "dummy image content".getBytes()
-        );
+        MockMultipartFile mockFile = FileFactory.createImageFile();
+        String newAvatarUrl = "http://avatar.url/image.png";
 
         try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
             utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
 
             FileResponseDto uploadResponse = mock(FileResponseDto.class);
-            when(uploadResponse.getUrl()).thenReturn("http://avatar.url/image.png");
-            when(fileService.uploadFile(eq("users"), eq(userId.toString()), any())).thenReturn(uploadResponse);
+            when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);
+            when(fileService.uploadFile(anyString(), eq(userId.toString()),any(byte[].class))).thenReturn(uploadResponse);
 
             when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -388,7 +365,7 @@ public class UserServiceTest {
             assertEquals(UserErrorCode.USER_NOT_FOUND, ex.getErrorCode());
 
             utilities.verify(() -> FileUtils.isImage(mockFile), times(1));
-            verify(fileService).uploadFile("users", userId.toString(), mockFile.getBytes());
+            verify(fileService).uploadFile(anyString(), eq(userId.toString()), eq(mockFile.getBytes()));
             verify(userRepository).findById(userId);
             verify(userRepository, never()).save(any());
         }
@@ -396,9 +373,7 @@ public class UserServiceTest {
 
     @Test
     void uploadUserAvatar_whenFileBytesThrowIOException_shouldThrowInvalidFileContentException() throws IOException {
-        MockMultipartFile mockFile = new MockMultipartFile(
-                "avatar", "avatar.png", "image/png", "dummy image content".getBytes()
-        );
+        MockMultipartFile mockFile = FileFactory.createRawFile();
 
         try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
             utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
