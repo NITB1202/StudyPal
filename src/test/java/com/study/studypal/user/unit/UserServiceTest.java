@@ -1,4 +1,4 @@
-package com.study.studypal.unit.service.user;
+package com.study.studypal.user.unit;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.dto.FileResponseDto;
@@ -6,8 +6,8 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
-import com.study.studypal.factory.FileFactory;
-import com.study.studypal.factory.UserFactory;
+import com.study.studypal.common.factory.FileFactory;
+import com.study.studypal.user.factory.UserFactory;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;

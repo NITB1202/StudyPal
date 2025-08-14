@@ -1,4 +1,4 @@
-package com.study.studypal.factory;
+package com.study.studypal.user.factory;
 
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;

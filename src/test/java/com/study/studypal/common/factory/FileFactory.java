@@ -1,4 +1,4 @@
-package com.study.studypal.factory;
+package com.study.studypal.common.factory;
 
 import org.springframework.mock.web.MockMultipartFile;
 

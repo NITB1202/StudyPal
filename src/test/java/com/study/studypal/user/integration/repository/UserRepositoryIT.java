@@ -1,6 +1,6 @@
-package com.study.studypal.integration.repository;
+package com.study.studypal.user.integration.repository;
 
-import com.study.studypal.factory.UserFactory;
+import com.study.studypal.user.factory.UserFactory;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.repository.UserRepository;
 import jakarta.transaction.Transactional;

@@ -1,11 +1,11 @@
-package com.study.studypal.integration.service;
+package com.study.studypal.user.integration.service;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.dto.FileResponseDto;
 import com.study.studypal.common.service.FileService;
-import com.study.studypal.config.TestBeansConfig;
-import com.study.studypal.factory.FileFactory;
-import com.study.studypal.factory.UserFactory;
+import com.study.studypal.common.config.TestBeansConfig;
+import com.study.studypal.common.factory.FileFactory;
+import com.study.studypal.user.factory.UserFactory;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;

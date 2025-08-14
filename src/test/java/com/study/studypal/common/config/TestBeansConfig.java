@@ -1,4 +1,4 @@
-package com.study.studypal.config;
+package com.study.studypal.common.config;
 
 import com.study.studypal.common.service.FileService;
 import org.modelmapper.ModelMapper;
