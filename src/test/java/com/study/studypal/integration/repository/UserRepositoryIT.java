@@ -3,8 +3,10 @@ package com.study.studypal.integration.repository;
 import com.study.studypal.factory.UserFactory;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 @DataJpaTest
+@Transactional
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class UserRepositoryIT {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
@@ -28,17 +32,17 @@ class UserRepositoryIT {
             .withUsername("user")
             .withPassword("password");
 
-    @Autowired
-    private UserRepository userRepository;
-
-    private UUID currentUserId;
-
     @DynamicPropertySource
     static void overrideProps(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
     }
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private UUID currentUserId;
 
     @BeforeEach
     void setUp() {
@@ -63,6 +67,8 @@ class UserRepositoryIT {
         assertThat(results)
                 .extracting(User::getName)
                 .containsExactlyInAnyOrder("Alice", "alex", "Alfred");
+        assertThat(results)
+                .allSatisfy(user -> assertThat(user.getId()).isNotEqualTo(currentUserId));
     }
 
     @Test
