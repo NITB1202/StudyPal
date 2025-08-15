@@ -1,4 +1,4 @@
-package com.study.studypal.user.unit;
+package com.study.studypal.user.service;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.dto.FileResponseDto;

@@ -1,8 +1,7 @@
-package com.study.studypal.user.integration.repository;
+package com.study.studypal.user.repository;
 
 import com.study.studypal.user.factory.UserFactory;
 import com.study.studypal.user.entity.User;
-import com.study.studypal.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +55,7 @@ class UserRepositoryIT {
     }
 
     @Test
-    void searchByNameWithCursor_shouldReturnMatchingUsersIgnoringCase_andExcludeCurrentUser() {
+    void searchByNameWithCursor_whenKeywordMatchesIgnoringCase_shouldReturnMatchingUsersExcludingCurrentUser() {
         List<User> results = userRepository.searchByNameWithCursor(
                 currentUserId,
                 "al",
@@ -72,7 +71,7 @@ class UserRepositoryIT {
     }
 
     @Test
-    void searchByNameWithCursor_shouldApplyCursorPagination() {
+    void searchByNameWithCursor_whenCursorProvided_shouldReturnNextPage() {
         List<User> allResults = userRepository.searchByNameWithCursor(
                 currentUserId,
                 "al",
@@ -95,7 +94,7 @@ class UserRepositoryIT {
     }
 
     @Test
-    void searchByNameWithCursor_shouldReturnEmptyListIfNoMatch() {
+    void searchByNameWithCursor_whenNoUserMatches_shouldReturnEmptyList() {
         List<User> results = userRepository.searchByNameWithCursor(
                 currentUserId,
                 "zzz",
@@ -107,13 +106,13 @@ class UserRepositoryIT {
     }
 
     @Test
-    void countByName_shouldReturnNumberOfMatchesExcludingCurrentUser() {
+    void countByName_whenKeywordMatches_shouldReturnNumberOfMatchesExcludingCurrentUser() {
         long count = userRepository.countByName(currentUserId, "al");
         assertThat(count).isEqualTo(3);
     }
 
     @Test
-    void countByName_shouldReturnZeroIfNoMatch() {
+    void countByName_whenNoUserMatches_shouldReturnZero() {
         long count = userRepository.countByName(currentUserId, "zzz");
         assertThat(count).isZero();
     }
