@@ -9,6 +9,6 @@ public class FileFactory {
     }
 
     public static MockMultipartFile createImageFile() {
-        return new MockMultipartFile("avatar", "avatar.png", MediaType.IMAGE_PNG_VALUE, "dummy image content".getBytes());
+        return new MockMultipartFile("file", "avatar.png", MediaType.IMAGE_PNG_VALUE, "dummy image content".getBytes());
     }
 }
