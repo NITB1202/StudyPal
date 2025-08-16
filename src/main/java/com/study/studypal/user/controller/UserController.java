@@ -33,8 +33,6 @@ public class UserController {
     @GetMapping
     @Operation(summary = "Get user's profile.")
     @ApiResponse(responseCode = "200", description = "Get successfully.")
-    @ApiResponse(responseCode = "404", description = "Not found.",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<UserDetailResponseDto> getUserProfile(@AuthenticationPrincipal UUID userId) {
         return ResponseEntity.ok(userService.getUserProfile(userId));
     }
@@ -42,8 +40,6 @@ public class UserController {
     @GetMapping("/summary")
     @Operation(summary = "Get user's summary profile.")
     @ApiResponse(responseCode = "200", description = "Get successfully.")
-    @ApiResponse(responseCode = "404", description = "Not found.",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<UserSummaryResponseDto> getUserSummaryProfile(@AuthenticationPrincipal UUID userId) {
         return ResponseEntity.ok(userService.getUserSummaryProfile(userId));
     }
@@ -63,8 +59,6 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "Update successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid request body.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Not found.",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<UserDetailResponseDto> updateUser(@AuthenticationPrincipal UUID userId,
                                                             @Valid @RequestBody UpdateUserRequestDto request) {
         return ResponseEntity.ok(userService.updateUser(userId, request));
@@ -74,8 +68,6 @@ public class UserController {
     @Operation(summary = "Upload user's avatar.")
     @ApiResponse(responseCode = "200", description = "Upload successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid request body.",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Not found.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ActionResponseDto> uploadUserAvatar(@AuthenticationPrincipal UUID userId,
                                                               @RequestParam("file") MultipartFile file) {

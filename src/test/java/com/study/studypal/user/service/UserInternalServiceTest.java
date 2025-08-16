@@ -1,4 +1,4 @@
-package com.study.studypal.unit.service.user;
+package com.study.studypal.user.service;
 
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.repository.UserRepository;

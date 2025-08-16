@@ -25,9 +25,9 @@ public class UserInternalServiceImpl implements UserInternalService {
                 .gender(Gender.UNSPECIFIED)
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return user.getId();
+        return savedUser.getId();
     }
 
     @Override
@@ -39,8 +39,8 @@ public class UserInternalServiceImpl implements UserInternalService {
                 .avatarUrl(avatarUrl)
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return user.getId();
+        return savedUser.getId();
     }
 }
