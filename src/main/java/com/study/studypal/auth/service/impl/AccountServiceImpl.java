@@ -181,7 +181,7 @@ public class AccountServiceImpl implements AccountService {
 
     private boolean validatePassword(String password) {
         //Must be at least 3 characters long and contain both letters and numbers.
-        String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{3,}$";
+        String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d).{3,}$";
         return password.matches(passwordRegex);
     }
 
