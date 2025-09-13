@@ -1,7 +1,11 @@
 package com.study.studypal.team.dto.membership.response;
 
 import com.study.studypal.team.enums.TeamRole;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
