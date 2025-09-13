@@ -108,7 +108,7 @@ public class TeamServiceImpl implements TeamService {
         TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
 
         TeamUser membership = teamMembershipService.getMemberShip(teamId, userId);
-        overview.setIsCreator(membership.getRole() == TeamRole.CREATOR);
+        overview.setRole(membership.getRole());
         if(membership.getRole() == TeamRole.MEMBER) {
             overview.setTeamCode(null);
         }

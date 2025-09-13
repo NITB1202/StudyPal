@@ -1,5 +1,7 @@
 package com.study.studypal.team.dto.team.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.study.studypal.team.enums.TeamRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +20,9 @@ public class TeamOverviewResponseDto {
 
     private String name;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private TeamRole role;
+
     private String avatarUrl;
 
     private String description;
@@ -25,6 +30,4 @@ public class TeamOverviewResponseDto {
     private String teamCode;
 
     private int totalMembers;
-
-    private Boolean isCreator;
 }
