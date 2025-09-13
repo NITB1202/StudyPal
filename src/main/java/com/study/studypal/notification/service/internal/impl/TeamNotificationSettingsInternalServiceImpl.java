@@ -5,12 +5,14 @@ import com.study.studypal.notification.repository.TeamNotificationSettingsReposi
 import com.study.studypal.notification.service.internal.TeamNotificationSettingsInternalService;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TeamNotificationSettingsInternalServiceImpl implements TeamNotificationSettingsInternalService {
     private final TeamNotificationSettingsRepository teamNotificationSettingsRepository;

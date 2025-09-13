@@ -4,6 +4,7 @@ import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
+import com.study.studypal.notification.service.internal.TeamNotificationSettingsInternalService;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.*;
@@ -48,6 +49,7 @@ import java.util.UUID;
 public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
     private final TeamMembershipInternalService teamMembershipService;
+    private final TeamNotificationSettingsInternalService teamNotificationSettingsService;
     private final CodeService codeService;
     private final FileService fileService;
     private final ModelMapper modelMapper;
@@ -85,6 +87,7 @@ public class TeamServiceImpl implements TeamService {
 
                 teamRepository.save(team);
                 teamMembershipService.createMembership(team.getId(), userId, TeamRole.CREATOR);
+                teamNotificationSettingsService.createSettings(userId, team.getId());
                 
                 return modelMapper.map(team, TeamResponseDto.class);
             }

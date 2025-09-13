@@ -4,6 +4,7 @@ import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.CacheKeyUtils;
+import com.study.studypal.notification.service.internal.TeamNotificationSettingsInternalService;
 import com.study.studypal.team.dto.membership.internal.DecodedCursor;
 import com.study.studypal.team.dto.membership.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.team.dto.membership.request.UpdateMemberRoleRequestDto;
@@ -39,6 +40,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     private final TeamUserRepository teamUserRepository;
     private final TeamMembershipInternalService internalService;
     private final TeamInternalService teamService;
+    private final TeamNotificationSettingsInternalService teamNotificationSettingsService;
     private final CacheManager cacheManager;
 
     /**
@@ -57,6 +59,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
         internalService.createMembership(teamId, userId, TeamRole.MEMBER);
         teamService.increaseMember(teamId);
+        teamNotificationSettingsService.createSettings(userId, teamId);
 
         return ActionResponseDto.builder()
                 .success(true)
