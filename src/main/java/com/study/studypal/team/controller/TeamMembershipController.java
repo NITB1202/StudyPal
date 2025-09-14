@@ -1,14 +1,14 @@
 package com.study.studypal.team.controller;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.common.exception.ErrorResponse;
+import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
+import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
+import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.team.dto.membership.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.team.dto.membership.request.UpdateMemberRoleRequestDto;
 import com.study.studypal.team.dto.membership.response.ListTeamMemberResponseDto;
 import com.study.studypal.team.service.api.TeamMembershipService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -29,10 +29,7 @@ public class TeamMembershipController {
   @PostMapping
   @Operation(summary = "Join a team by team code.")
   @ApiResponse(responseCode = "200", description = "Join successfully.")
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> joinTeam(
       @AuthenticationPrincipal UUID userId, @RequestParam String teamCode) {
     return ResponseEntity.ok(teamMembershipService.joinTeam(userId, teamCode));
@@ -65,14 +62,9 @@ public class TeamMembershipController {
   @PatchMapping
   @Operation(summary = "Update the role of a specific team member.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
-  @ApiResponse(
-      responseCode = "400",
-      description = "Invalid request body.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> updateTeamMemberRole(
       @AuthenticationPrincipal UUID userId,
       @Valid @RequestBody UpdateMemberRoleRequestDto request) {
@@ -82,10 +74,9 @@ public class TeamMembershipController {
   @DeleteMapping
   @Operation(summary = "Remove a member from the team.")
   @ApiResponse(responseCode = "200", description = "Delete successfully.")
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> removeTeamMember(
       @AuthenticationPrincipal UUID userId,
       @Valid @RequestBody RemoveTeamMemberRequestDto request) {
@@ -95,10 +86,7 @@ public class TeamMembershipController {
   @DeleteMapping("/leave")
   @Operation(summary = "Leave a team.")
   @ApiResponse(responseCode = "200", description = "Leave successfully.")
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> leaveTeam(
       @AuthenticationPrincipal UUID userId, @RequestParam UUID teamId) {
     return ResponseEntity.ok(teamMembershipService.leaveTeam(userId, teamId));

@@ -27,7 +27,8 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
   private final AccountRepository accountRepository;
   private final PasswordEncoder passwordEncoder;
-  private static final String PASSWORD_RULE = "Password must be at least 3 characters long and contain both letters and numbers.";
+  private static final String PASSWORD_RULE =
+      "Password must be at least 3 characters long and contain both letters and numbers.";
 
   @PersistenceContext private final EntityManager entityManager;
 

@@ -1,12 +1,11 @@
 package com.study.studypal.notification.controller;
 
-import com.study.studypal.common.exception.ErrorResponse;
+import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
+import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.notification.dto.setting.request.UpdateTeamNotificationSettingsRequestDto;
 import com.study.studypal.notification.dto.setting.response.TeamNotificationSettingsResponseDto;
 import com.study.studypal.notification.service.api.TeamNotificationSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -29,10 +28,7 @@ public class TeamNotificationSettingsController {
   @GetMapping("/{teamId}")
   @Operation(summary = "Get notification settings of a user in a team.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @NotFoundApiResponse
   public ResponseEntity<TeamNotificationSettingsResponseDto> getTeamNotificationSettings(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID teamId) {
     return ResponseEntity.ok(
@@ -42,14 +38,8 @@ public class TeamNotificationSettingsController {
   @PatchMapping("/{settingId}")
   @Operation(summary = "Update team notification settings.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
-  @ApiResponse(
-      responseCode = "401",
-      description = "Unauthorized.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
   public ResponseEntity<TeamNotificationSettingsResponseDto> updateTeamNotificationSettings(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID settingId,

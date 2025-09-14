@@ -1,14 +1,14 @@
 package com.study.studypal.team.controller;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.common.exception.ErrorResponse;
+import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
+import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
+import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.team.dto.invitation.request.SendInvitationRequestDto;
 import com.study.studypal.team.dto.invitation.response.InvitationResponseDto;
 import com.study.studypal.team.dto.invitation.response.ListInvitationResponseDto;
 import com.study.studypal.team.service.api.InvitationService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
@@ -28,10 +28,8 @@ public class InvitationController {
   @PostMapping
   @Operation(summary = "Invite a user to the team.")
   @ApiResponse(responseCode = "200", description = "Invite successfully.")
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @BadRequestApiResponse
+  @NotFoundApiResponse
   public ResponseEntity<InvitationResponseDto> sendInvitation(
       @AuthenticationPrincipal UUID userId, @Valid @RequestBody SendInvitationRequestDto request) {
     return ResponseEntity.ok(invitationService.sendInvitation(userId, request));
@@ -51,14 +49,8 @@ public class InvitationController {
   @PostMapping("/{invitationId}")
   @Operation(summary = "Reply to the invitation.")
   @ApiResponse(responseCode = "200", description = "Reply successfully.")
-  @ApiResponse(
-      responseCode = "401",
-      description = "Unauthorized.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-  @ApiResponse(
-      responseCode = "404",
-      description = "Not found.",
-      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> replyToInvitation(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID invitationId,
