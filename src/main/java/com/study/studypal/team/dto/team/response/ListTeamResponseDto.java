@@ -1,14 +1,13 @@
 package com.study.studypal.team.dto.team.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
@@ -16,10 +15,10 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ListTeamResponseDto {
-    private List<TeamSummaryResponseDto> teams;
+  private List<TeamSummaryResponseDto> teams;
 
-    private Long total;
+  private Long total;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime nextCursor;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+  private LocalDateTime nextCursor;
 }

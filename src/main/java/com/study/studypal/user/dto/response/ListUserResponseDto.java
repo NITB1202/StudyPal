@@ -1,9 +1,8 @@
 package com.study.studypal.user.dto.response;
 
-import lombok.*;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.*;
 
 @Getter
 @Setter
@@ -11,9 +10,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class ListUserResponseDto {
-    private List<UserSummaryResponseDto> users;
+  private List<UserSummaryResponseDto> users;
 
-    private long total;
+  private long total;
 
-    private UUID nextCursor;
+  private UUID nextCursor;
 }

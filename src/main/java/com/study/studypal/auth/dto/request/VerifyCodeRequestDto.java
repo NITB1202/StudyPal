@@ -14,10 +14,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class VerifyCodeRequestDto {
-    @NotEmpty(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String email;
+  @NotEmpty(message = "Email is required")
+  @Email(message = "Invalid email format")
+  private String email;
 
-    @NotEmpty(message = "Code is required")
-    private String code;
+  @NotEmpty(message = "Code is required")
+  private String code;
 }

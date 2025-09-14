@@ -11,14 +11,11 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 public class StudypalMonolithApplication {
 
-	public static void main(String[] args) {
-		// Load .env file
-		Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-		dotenv.entries().forEach(entry ->
-				System.setProperty(entry.getKey(), entry.getValue())
-		);
+  public static void main(String[] args) {
+    // Load .env file
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+    dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
-		SpringApplication.run(StudypalMonolithApplication.class, args);
-	}
-
+    SpringApplication.run(StudypalMonolithApplication.class, args);
+  }
 }

@@ -1,16 +1,14 @@
 package com.study.studypal.team.dto.membership.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import com.study.studypal.team.enums.TeamRole;
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -18,13 +16,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class UpdateMemberRoleRequestDto {
-    @NotNull(message = "Team id is required")
-    private UUID teamId;
+  @NotNull(message = "Team id is required")
+  private UUID teamId;
 
-    @NotNull(message = "Member id is required")
-    private UUID memberId;
+  @NotNull(message = "Member id is required")
+  private UUID memberId;
 
-    @NotNull(message = "Role is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private TeamRole role;
+  @NotNull(message = "Role is required")
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private TeamRole role;
 }

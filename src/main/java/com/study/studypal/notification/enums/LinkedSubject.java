@@ -1,5 +1,8 @@
 package com.study.studypal.notification.enums;
 
 public enum LinkedSubject {
-    PLAN, TEAM, INVITATION, CHAT
+  PLAN,
+  TEAM,
+  INVITATION,
+  CHAT
 }

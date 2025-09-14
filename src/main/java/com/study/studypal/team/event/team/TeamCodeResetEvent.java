@@ -1,14 +1,13 @@
 package com.study.studypal.team.event.team;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder
 public class TeamCodeResetEvent {
-    private UUID teamId;
-    private List<UUID> memberIds;
+  private UUID teamId;
+  private List<UUID> memberIds;
 }

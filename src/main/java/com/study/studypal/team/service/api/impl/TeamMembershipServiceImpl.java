@@ -11,15 +11,18 @@ import com.study.studypal.team.dto.membership.request.UpdateMemberRoleRequestDto
 import com.study.studypal.team.dto.membership.response.ListTeamMemberResponseDto;
 import com.study.studypal.team.dto.membership.response.TeamMemberResponseDto;
 import com.study.studypal.team.entity.TeamUser;
-import com.study.studypal.team.exception.TeamMembershipErrorCode;
-import com.study.studypal.team.service.internal.TeamInternalService;
-import com.study.studypal.team.service.internal.TeamMembershipInternalService;
-import com.study.studypal.user.entity.User;
 import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.team.service.api.TeamMembershipService;
+import com.study.studypal.team.service.internal.TeamInternalService;
+import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.team.util.CursorUtils;
+import com.study.studypal.user.entity.User;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -29,254 +32,272 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class TeamMembershipServiceImpl implements TeamMembershipService {
-    private final TeamUserRepository teamUserRepository;
-    private final TeamMembershipInternalService internalService;
-    private final TeamInternalService teamService;
-    private final TeamNotificationSettingsInternalService teamNotificationSettingsService;
-    private final CacheManager cacheManager;
+  private final TeamUserRepository teamUserRepository;
+  private final TeamMembershipInternalService internalService;
+  private final TeamInternalService teamService;
+  private final TeamNotificationSettingsInternalService teamNotificationSettingsService;
+  private final CacheManager cacheManager;
 
-    /**
-     * Note: Cache eviction for teamMembers is already handled inside
-     * TeamInternalService's increaseMember and decreaseMember methods.
-     */
+  /**
+   * Note: Cache eviction for teamMembers is already handled inside TeamInternalService's
+   * increaseMember and decreaseMember methods.
+   */
+  @Override
+  @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
+  public ActionResponseDto joinTeam(UUID userId, String teamCode) {
+    UUID teamId = teamService.getTeamIdByTeamCode(teamCode);
 
-    @Override
-    @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
-    public ActionResponseDto joinTeam(UUID userId, String teamCode) {
-        UUID teamId = teamService.getTeamIdByTeamCode(teamCode);
-
-        if(teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
-            throw new BaseException(TeamMembershipErrorCode.USER_ALREADY_IN_TEAM);
-        }
-
-        internalService.createMembership(teamId, userId, TeamRole.MEMBER);
-        teamService.increaseMember(teamId);
-        teamNotificationSettingsService.createSettings(userId, teamId);
-
-        return ActionResponseDto.builder()
-                .success(true)
-                .message("Join team successfully.")
-                .build();
+    if (teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+      throw new BaseException(TeamMembershipErrorCode.USER_ALREADY_IN_TEAM);
     }
 
-    @Override
-    public ListTeamMemberResponseDto getTeamMembers(UUID userId, UUID teamId, String cursor, int size) {
-        if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
-            throw new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND);
-        }
+    internalService.createMembership(teamId, userId, TeamRole.MEMBER);
+    teamService.increaseMember(teamId);
+    teamNotificationSettingsService.createSettings(userId, teamId);
 
-        //Handle cache with default condition
-        Cache cache = cacheManager.getCache(CacheNames.TEAM_MEMBERS);
-        boolean cacheResponse = false;
-        if(cursor == null && size == 10) {
-            ListTeamMemberResponseDto list = Objects.requireNonNull(cache).get(CacheKeyUtils.of(teamId), ListTeamMemberResponseDto.class);
-            if(list != null) return list;
-            else cacheResponse = true;
-        }
+    return ActionResponseDto.builder().success(true).message("Join team successfully.").build();
+  }
 
-        Pageable pageable = PageRequest.of(0, size);
-
-        List<TeamUser> memberships;
-        if (cursor != null && !cursor.isEmpty()) {
-            DecodedCursor decodedCursor = CursorUtils.decodeCursor(cursor);
-            memberships = teamUserRepository.findTeamMembersWithCursor(
-                    teamId,
-                    decodedCursor.getRolePriority(),
-                    decodedCursor.getName(),
-                    decodedCursor.getUserId(),
-                    pageable
-            );
-        }
-        else {
-            memberships = teamUserRepository.findTeamMembers(teamId, pageable);
-        }
-
-        List<TeamMemberResponseDto> members = memberships.stream()
-                .map(m -> {
-                        User userInfo = m.getUser();
-                        return TeamMemberResponseDto.builder()
-                                .userId(userInfo.getId())
-                                .name(userInfo.getName())
-                                .avatarUrl(userInfo.getAvatarUrl())
-                                .role(m.getRole())
-                                .build();
-                    }
-                )
-                .toList();
-
-        long total = teamUserRepository.getTotalMembers(teamId);
-
-        String nextCursor = null;
-        if(!members.isEmpty() && members.size() == size) {
-            TeamMemberResponseDto lastMember = members.get(members.size() - 1);
-            nextCursor = CursorUtils.encodeCursor(lastMember.getRole().ordinal() + 1, lastMember.getName(), lastMember.getUserId());
-        }
-
-        ListTeamMemberResponseDto response = ListTeamMemberResponseDto.builder()
-                .members(members)
-                .total(total)
-                .nextCursor(nextCursor)
-                .build();
-
-        if(cacheResponse) cache.put(CacheKeyUtils.of(teamId), response);
-
-        return response;
+  @Override
+  public ListTeamMemberResponseDto getTeamMembers(
+      UUID userId, UUID teamId, String cursor, int size) {
+    if (!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+      throw new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND);
     }
 
-    @Override
-    public ListTeamMemberResponseDto searchTeamMembersByName(UUID userId, UUID teamId, String keyword, UUID cursor, int size) {
-        if(!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
-            throw new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND);
-        }
-
-        String handledKeyword = keyword.toLowerCase().trim();
-        Pageable pageable = PageRequest.of(0, size);
-
-        List<TeamUser> memberships = teamUserRepository.searchTeamMembersWithCursor(userId, teamId, handledKeyword, cursor, pageable);
-        List<TeamMemberResponseDto> members = memberships.stream()
-                .map(m -> {
-                            User userInfo = m.getUser();
-                            return TeamMemberResponseDto.builder()
-                                    .userId(userInfo.getId())
-                                    .name(userInfo.getName())
-                                    .avatarUrl(userInfo.getAvatarUrl())
-                                    .role(m.getRole())
-                                    .build();
-                        }
-                )
-                .toList();
-
-        long total = teamUserRepository.countTeamMembersByName(userId, teamId, handledKeyword);
-        String nextCursor = !members.isEmpty() && members.size() == size ? members.get(members.size() - 1).getUserId().toString() : null;
-
-        return ListTeamMemberResponseDto.builder()
-                .members(members)
-                .total(total)
-                .nextCursor(nextCursor)
-                .build();
+    // Handle cache with default condition
+    Cache cache = cacheManager.getCache(CacheNames.TEAM_MEMBERS);
+    boolean cacheResponse = false;
+    if (cursor == null && size == 10) {
+      ListTeamMemberResponseDto list =
+          Objects.requireNonNull(cache)
+              .get(CacheKeyUtils.of(teamId), ListTeamMemberResponseDto.class);
+      if (list != null) return list;
+      else cacheResponse = true;
     }
 
-    @Override
-    @Caching(evict = {
-            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
-            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#request.memberId, #request.teamId)"),
-            @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#request.teamId)")
-    })
-    public ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request) {
-        if(userId.equals(request.getMemberId())) {
-            throw new BaseException(TeamMembershipErrorCode.CANNOT_UPDATE_OWN_ROLE);
-        }
+    Pageable pageable = PageRequest.of(0, size);
 
-        TeamUser userInfo = teamUserRepository.findByUserIdAndTeamId(userId, request.getTeamId()).orElseThrow(
-                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND)
-        );
-
-        TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamId(request.getMemberId(), request.getTeamId()).orElseThrow(
-                ()-> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND)
-        );
-
-        if(userInfo.getRole() != TeamRole.CREATOR) {
-            throw new BaseException(TeamMembershipErrorCode.PERMISSION_UPDATE_MEMBER_ROLE_DENIED);
-        }
-
-        //Each group can have only one creator
-        if(request.getRole() == TeamRole.CREATOR) {
-            userInfo.setRole(TeamRole.ADMIN);
-            teamUserRepository.save(userInfo);
-        }
-
-        memberInfo.setRole(request.getRole());
-        teamUserRepository.save(memberInfo);
-
-        return ActionResponseDto.builder()
-                .success(true)
-                .message("Update member's role successfully.")
-                .build();
+    List<TeamUser> memberships;
+    if (cursor != null && !cursor.isEmpty()) {
+      DecodedCursor decodedCursor = CursorUtils.decodeCursor(cursor);
+      memberships =
+          teamUserRepository.findTeamMembersWithCursor(
+              teamId,
+              decodedCursor.getRolePriority(),
+              decodedCursor.getName(),
+              decodedCursor.getUserId(),
+              pageable);
+    } else {
+      memberships = teamUserRepository.findTeamMembers(teamId, pageable);
     }
 
-    @Override
-    @Caching(evict = {
-            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
-            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#request.memberId, #request.teamId)")
-    })
-    public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
-        if(userId.equals(request.getMemberId())) {
-            throw new BaseException(TeamMembershipErrorCode.CANNOT_REMOVE_SELF);
-        }
+    List<TeamMemberResponseDto> members =
+        memberships.stream()
+            .map(
+                m -> {
+                  User userInfo = m.getUser();
+                  return TeamMemberResponseDto.builder()
+                      .userId(userInfo.getId())
+                      .name(userInfo.getName())
+                      .avatarUrl(userInfo.getAvatarUrl())
+                      .role(m.getRole())
+                      .build();
+                })
+            .toList();
 
-        //Lock user performing action
-        TeamUser userInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(userId, request.getTeamId()).orElseThrow(
-                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND)
-        );
+    long total = teamUserRepository.getTotalMembers(teamId);
 
-        //Lock member being removed
-        TeamUser memberInfo = teamUserRepository.findByUserIdAndTeamIdForUpdate(request.getMemberId(), request.getTeamId()).orElseThrow(
-                () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND)
-        );
-
-        //Permission check
-        switch (userInfo.getRole()) {
-            case CREATOR: {
-                break;
-            }
-            case ADMIN: {
-                if(memberInfo.getRole() == TeamRole.MEMBER) {
-                    break;
-                }
-                else {
-                    throw new BaseException(TeamMembershipErrorCode.PERMISSION_REMOVE_MEMBER_RESTRICTED);
-                }
-            }
-            case MEMBER: {
-                throw new BaseException(TeamMembershipErrorCode.PERMISSION_REMOVE_MEMBER_RESTRICTED);
-            }
-        }
-
-        // Safe delete (only one transaction can proceed at a time due to lock)
-        int rowsDeleted = teamUserRepository.deleteMemberById(memberInfo.getId());
-        if (rowsDeleted == 0) {
-            throw new BaseException(TeamMembershipErrorCode.MEMBER_ALREADY_REMOVED);
-        }
-
-        teamService.decreaseMember(request.getTeamId());
-
-        return ActionResponseDto.builder()
-                .success(true)
-                .message("Remove member successfully.")
-                .build();
+    String nextCursor = null;
+    if (!members.isEmpty() && members.size() == size) {
+      TeamMemberResponseDto lastMember = members.get(members.size() - 1);
+      nextCursor =
+          CursorUtils.encodeCursor(
+              lastMember.getRole().ordinal() + 1, lastMember.getName(), lastMember.getUserId());
     }
 
-    @Override
-    @Caching(evict = {
-            @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)"),
-            @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#userId, #teamId)")
-    })
-    public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
-        TeamUser membership = teamUserRepository.findByUserIdAndTeamId(userId, teamId).orElseThrow(
-                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND)
-        );
+    ListTeamMemberResponseDto response =
+        ListTeamMemberResponseDto.builder()
+            .members(members)
+            .total(total)
+            .nextCursor(nextCursor)
+            .build();
 
-        teamUserRepository.delete(membership);
+    if (cacheResponse) cache.put(CacheKeyUtils.of(teamId), response);
 
-        int totalMembers = teamUserRepository.getTotalMembers(teamId) - 1;
+    return response;
+  }
 
-        if (totalMembers > 0 && membership.getRole() == TeamRole.CREATOR) {
-            throw new BaseException(TeamMembershipErrorCode.CANNOT_LEAVE_AS_CREATOR);
-        }
-
-        teamService.decreaseMember(teamId);
-
-        return ActionResponseDto.builder()
-                .success(true)
-                .message("Leave team successfully.")
-                .build();
+  @Override
+  public ListTeamMemberResponseDto searchTeamMembersByName(
+      UUID userId, UUID teamId, String keyword, UUID cursor, int size) {
+    if (!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+      throw new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND);
     }
+
+    String handledKeyword = keyword.toLowerCase().trim();
+    Pageable pageable = PageRequest.of(0, size);
+
+    List<TeamUser> memberships =
+        teamUserRepository.searchTeamMembersWithCursor(
+            userId, teamId, handledKeyword, cursor, pageable);
+    List<TeamMemberResponseDto> members =
+        memberships.stream()
+            .map(
+                m -> {
+                  User userInfo = m.getUser();
+                  return TeamMemberResponseDto.builder()
+                      .userId(userInfo.getId())
+                      .name(userInfo.getName())
+                      .avatarUrl(userInfo.getAvatarUrl())
+                      .role(m.getRole())
+                      .build();
+                })
+            .toList();
+
+    long total = teamUserRepository.countTeamMembersByName(userId, teamId, handledKeyword);
+    String nextCursor =
+        !members.isEmpty() && members.size() == size
+            ? members.get(members.size() - 1).getUserId().toString()
+            : null;
+
+    return ListTeamMemberResponseDto.builder()
+        .members(members)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  @Override
+  @Caching(
+      evict = {
+        @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
+        @CacheEvict(
+            value = CacheNames.TEAM_OVERVIEW,
+            key = "@keys.of(#request.memberId, #request.teamId)"),
+        @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#request.teamId)")
+      })
+  public ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request) {
+    if (userId.equals(request.getMemberId())) {
+      throw new BaseException(TeamMembershipErrorCode.CANNOT_UPDATE_OWN_ROLE);
+    }
+
+    TeamUser userInfo =
+        teamUserRepository
+            .findByUserIdAndTeamId(userId, request.getTeamId())
+            .orElseThrow(
+                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND));
+
+    TeamUser memberInfo =
+        teamUserRepository
+            .findByUserIdAndTeamId(request.getMemberId(), request.getTeamId())
+            .orElseThrow(
+                () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
+
+    if (userInfo.getRole() != TeamRole.CREATOR) {
+      throw new BaseException(TeamMembershipErrorCode.PERMISSION_UPDATE_MEMBER_ROLE_DENIED);
+    }
+
+    // Each group can have only one creator
+    if (request.getRole() == TeamRole.CREATOR) {
+      userInfo.setRole(TeamRole.ADMIN);
+      teamUserRepository.save(userInfo);
+    }
+
+    memberInfo.setRole(request.getRole());
+    teamUserRepository.save(memberInfo);
+
+    return ActionResponseDto.builder()
+        .success(true)
+        .message("Update member's role successfully.")
+        .build();
+  }
+
+  @Override
+  @Caching(
+      evict = {
+        @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
+        @CacheEvict(
+            value = CacheNames.TEAM_OVERVIEW,
+            key = "@keys.of(#request.memberId, #request.teamId)")
+      })
+  public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
+    if (userId.equals(request.getMemberId())) {
+      throw new BaseException(TeamMembershipErrorCode.CANNOT_REMOVE_SELF);
+    }
+
+    // Lock user performing action
+    TeamUser userInfo =
+        teamUserRepository
+            .findByUserIdAndTeamIdForUpdate(userId, request.getTeamId())
+            .orElseThrow(
+                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND));
+
+    // Lock member being removed
+    TeamUser memberInfo =
+        teamUserRepository
+            .findByUserIdAndTeamIdForUpdate(request.getMemberId(), request.getTeamId())
+            .orElseThrow(
+                () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
+
+    // Permission check
+    switch (userInfo.getRole()) {
+      case CREATOR:
+        {
+          break;
+        }
+      case ADMIN:
+        {
+          if (memberInfo.getRole() == TeamRole.MEMBER) {
+            break;
+          } else {
+            throw new BaseException(TeamMembershipErrorCode.PERMISSION_REMOVE_MEMBER_RESTRICTED);
+          }
+        }
+      case MEMBER:
+        {
+          throw new BaseException(TeamMembershipErrorCode.PERMISSION_REMOVE_MEMBER_RESTRICTED);
+        }
+    }
+
+    // Safe delete (only one transaction can proceed at a time due to lock)
+    int rowsDeleted = teamUserRepository.deleteMemberById(memberInfo.getId());
+    if (rowsDeleted == 0) {
+      throw new BaseException(TeamMembershipErrorCode.MEMBER_ALREADY_REMOVED);
+    }
+
+    teamService.decreaseMember(request.getTeamId());
+
+    return ActionResponseDto.builder().success(true).message("Remove member successfully.").build();
+  }
+
+  @Override
+  @Caching(
+      evict = {
+        @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)"),
+        @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#userId, #teamId)")
+      })
+  public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
+    TeamUser membership =
+        teamUserRepository
+            .findByUserIdAndTeamId(userId, teamId)
+            .orElseThrow(
+                () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND));
+
+    teamUserRepository.delete(membership);
+
+    int totalMembers = teamUserRepository.getTotalMembers(teamId) - 1;
+
+    if (totalMembers > 0 && membership.getRole() == TeamRole.CREATOR) {
+      throw new BaseException(TeamMembershipErrorCode.CANNOT_LEAVE_AS_CREATOR);
+    }
+
+    teamService.decreaseMember(teamId);
+
+    return ActionResponseDto.builder().success(true).message("Leave team successfully.").build();
+  }
 }

@@ -3,7 +3,9 @@ package com.study.studypal.common.exception;
 import org.springframework.http.HttpStatus;
 
 public interface ErrorCode {
-    HttpStatus getHttpStatus();
-    String getCode();
-    String getMessage();
+  HttpStatus getHttpStatus();
+
+  String getCode();
+
+  String getMessage();
 }

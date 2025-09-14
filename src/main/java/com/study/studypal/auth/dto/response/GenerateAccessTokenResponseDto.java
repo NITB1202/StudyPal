@@ -12,5 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class GenerateAccessTokenResponseDto {
-    private String accessToken;
+  private String accessToken;
 }

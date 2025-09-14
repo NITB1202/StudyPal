@@ -1,10 +1,9 @@
 package com.study.studypal.notification.dto.notification.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.*;
 
 @Getter
 @Setter
@@ -12,10 +11,10 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ListNotificationResponseDto {
-    private List<NotificationResponseDto> notifications;
+  private List<NotificationResponseDto> notifications;
 
-    private long total;
+  private long total;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime nextCursor;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+  private LocalDateTime nextCursor;
 }

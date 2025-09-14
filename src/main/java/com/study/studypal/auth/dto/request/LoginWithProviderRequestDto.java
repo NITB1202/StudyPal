@@ -15,9 +15,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class LoginWithProviderRequestDto {
-    @NotNull(message = "Provider is required")
-    private ExternalAuthProvider provider;
+  @NotNull(message = "Provider is required")
+  private ExternalAuthProvider provider;
 
-    @NotEmpty(message = "Access token is required")
-    private String accessToken;
+  @NotEmpty(message = "Access token is required")
+  private String accessToken;
 }

@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class FileResponseDto {
-    private String url;
+  private String url;
 
-    private long bytes;
+  private long bytes;
 }

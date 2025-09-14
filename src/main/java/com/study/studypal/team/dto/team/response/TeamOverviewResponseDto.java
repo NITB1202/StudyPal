@@ -2,13 +2,12 @@ package com.study.studypal.team.dto.team.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.team.enums.TeamRole;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,18 +15,18 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class TeamOverviewResponseDto {
-    private UUID id;
+  private UUID id;
 
-    private String name;
+  private String name;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private TeamRole role;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private TeamRole role;
 
-    private String avatarUrl;
+  private String avatarUrl;
 
-    private String description;
+  private String description;
 
-    private String teamCode;
+  private String teamCode;
 
-    private int totalMembers;
+  private int totalMembers;
 }

@@ -8,9 +8,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class UpdateTeamNotificationSettingsRequestDto {
-    private Boolean teamNotification;
+  private Boolean teamNotification;
 
-    private Boolean teamPlanReminder;
+  private Boolean teamPlanReminder;
 
-    private Boolean chatNotification;
+  private Boolean chatNotification;
 }

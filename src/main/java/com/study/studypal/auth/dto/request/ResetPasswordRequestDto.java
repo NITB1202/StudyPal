@@ -8,17 +8,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class ResetPasswordRequestDto {
-    @NotEmpty(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String email;
+  @NotEmpty(message = "Email is required")
+  @Email(message = "Invalid email format")
+  private String email;
 
-    @NotEmpty(message = "New password is required")
-    private String newPassword;
+  @NotEmpty(message = "New password is required")
+  private String newPassword;
 }

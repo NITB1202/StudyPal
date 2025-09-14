@@ -6,27 +6,45 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum TeamMembershipErrorCode implements ErrorCode {
-    USER_MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_MEM_001", "You are not a member of this team."),
-    TARGET_MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_MEM_002", "The specified member is not part of this team."),
-    PERMISSION_UPDATE_TEAM_DENIED(HttpStatus.FORBIDDEN, "TEAM_MEM_003", "Only the creator can update the team."),
-    PERMISSION_UPDATE_MEMBER_ROLE_DENIED(HttpStatus.FORBIDDEN, "TEAM_MEM_004", "Only the creator can update another member's role."),
-    PERMISSION_INVITE_MEMBER_DENIED(HttpStatus.FORBIDDEN, "TEAM_MEM_005", "Only the creator or an admin can invite members to this team."),
-    PERMISSION_REMOVE_MEMBER_RESTRICTED(HttpStatus.FORBIDDEN, "TEAM_MEM_006", "You cannot remove members with an equal or higher role than yours."),
-    CANNOT_UPDATE_OWN_ROLE(HttpStatus.BAD_REQUEST, "TEAM_MEM_007", "You cannot update your own role."),
-    CANNOT_REMOVE_SELF(HttpStatus.BAD_REQUEST, "TEAM_MEM_008", "You cannot remove yourself from the team."),
-    CANNOT_LEAVE_AS_CREATOR(HttpStatus.BAD_REQUEST, "TEAM_MEM_009", "You are the creator of the team. Please transfer ownership before leaving."),
-    USER_ALREADY_IN_TEAM(HttpStatus.CONFLICT, "TEAM_MEM_010", "You are already a member of this team."),
-    INVITEE_ALREADY_IN_TEAM(HttpStatus.CONFLICT, "TEAM_MEM_011", "The invitee is already a member of this team."),
-    MEMBER_ALREADY_REMOVED(HttpStatus.CONFLICT, "TEAM_MEM_012", "The member has already been removed from the team."),
-    CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "TEAM_MEM_013", "Failed to decode cursor: %s");
+  USER_MEMBERSHIP_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "TEAM_MEM_001", "You are not a member of this team."),
+  TARGET_MEMBERSHIP_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "TEAM_MEM_002", "The specified member is not part of this team."),
+  PERMISSION_UPDATE_TEAM_DENIED(
+      HttpStatus.FORBIDDEN, "TEAM_MEM_003", "Only the creator can update the team."),
+  PERMISSION_UPDATE_MEMBER_ROLE_DENIED(
+      HttpStatus.FORBIDDEN, "TEAM_MEM_004", "Only the creator can update another member's role."),
+  PERMISSION_INVITE_MEMBER_DENIED(
+      HttpStatus.FORBIDDEN,
+      "TEAM_MEM_005",
+      "Only the creator or an admin can invite members to this team."),
+  PERMISSION_REMOVE_MEMBER_RESTRICTED(
+      HttpStatus.FORBIDDEN,
+      "TEAM_MEM_006",
+      "You cannot remove members with an equal or higher role than yours."),
+  CANNOT_UPDATE_OWN_ROLE(
+      HttpStatus.BAD_REQUEST, "TEAM_MEM_007", "You cannot update your own role."),
+  CANNOT_REMOVE_SELF(
+      HttpStatus.BAD_REQUEST, "TEAM_MEM_008", "You cannot remove yourself from the team."),
+  CANNOT_LEAVE_AS_CREATOR(
+      HttpStatus.BAD_REQUEST,
+      "TEAM_MEM_009",
+      "You are the creator of the team. Please transfer ownership before leaving."),
+  USER_ALREADY_IN_TEAM(
+      HttpStatus.CONFLICT, "TEAM_MEM_010", "You are already a member of this team."),
+  INVITEE_ALREADY_IN_TEAM(
+      HttpStatus.CONFLICT, "TEAM_MEM_011", "The invitee is already a member of this team."),
+  MEMBER_ALREADY_REMOVED(
+      HttpStatus.CONFLICT, "TEAM_MEM_012", "The member has already been removed from the team."),
+  CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "TEAM_MEM_013", "Failed to decode cursor: %s");
 
-    private final HttpStatus httpStatus;
-    private final String code;
-    private final String message;
+  private final HttpStatus httpStatus;
+  private final String code;
+  private final String message;
 
-    TeamMembershipErrorCode(final HttpStatus httpStatus, final String code, final String message) {
-        this.httpStatus = httpStatus;
-        this.code = code;
-        this.message = message;
-    }
+  TeamMembershipErrorCode(final HttpStatus httpStatus, final String code, final String message) {
+    this.httpStatus = httpStatus;
+    this.code = code;
+    this.message = message;
+  }
 }

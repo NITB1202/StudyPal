@@ -6,29 +6,30 @@ import com.study.studypal.notification.service.internal.TeamNotificationSettings
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TeamNotificationSettingsInternalServiceImpl implements TeamNotificationSettingsInternalService {
-    private final TeamNotificationSettingsRepository teamNotificationSettingsRepository;
-    private final TeamMembershipInternalService teamMembershipInternalService;
+public class TeamNotificationSettingsInternalServiceImpl
+    implements TeamNotificationSettingsInternalService {
+  private final TeamNotificationSettingsRepository teamNotificationSettingsRepository;
+  private final TeamMembershipInternalService teamMembershipInternalService;
 
-    @Override
-    public void createSettings(UUID userId, UUID teamId) {
-        TeamUser membership = teamMembershipInternalService.getMemberShip(teamId, userId);
+  @Override
+  public void createSettings(UUID userId, UUID teamId) {
+    TeamUser membership = teamMembershipInternalService.getMemberShip(teamId, userId);
 
-        TeamNotificationSettings settings = TeamNotificationSettings.builder()
-                .membership(membership)
-                .teamNotification(true)
-                .chatNotification(true)
-                .teamPlanReminder(true)
-                .build();
+    TeamNotificationSettings settings =
+        TeamNotificationSettings.builder()
+            .membership(membership)
+            .teamNotification(true)
+            .chatNotification(true)
+            .teamPlanReminder(true)
+            .build();
 
-        teamNotificationSettingsRepository.save(settings);
-    }
+    teamNotificationSettingsRepository.save(settings);
+  }
 }

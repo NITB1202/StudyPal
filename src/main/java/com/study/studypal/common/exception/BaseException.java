@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class BaseException extends RuntimeException {
-    private final ErrorCode errorCode;
+  private final transient ErrorCode errorCode;
 
-    public BaseException(ErrorCode errorCode, Object... args) {
-        super(String.format(errorCode.getMessage(), args));
-        this.errorCode = errorCode;
-    }
+  public BaseException(ErrorCode errorCode, Object... args) {
+    super(String.format(errorCode.getMessage(), args));
+    this.errorCode = errorCode;
+  }
 }

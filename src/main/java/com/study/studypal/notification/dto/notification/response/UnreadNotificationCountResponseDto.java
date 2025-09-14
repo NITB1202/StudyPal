@@ -1,6 +1,5 @@
 package com.study.studypal.notification.dto.notification.response;
 
-
 import lombok.*;
 
 @Getter
@@ -9,5 +8,5 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class UnreadNotificationCountResponseDto {
-    private int count;
+  private int count;
 }

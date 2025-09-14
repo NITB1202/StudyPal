@@ -13,14 +13,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class RegisterWithCredentialsRequestDto {
-    @NotEmpty(message = "Name is required")
-    @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters")
-    private String name;
+  @NotEmpty(message = "Name is required")
+  @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters")
+  private String name;
 
-    @NotEmpty(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String email;
+  @NotEmpty(message = "Email is required")
+  @Email(message = "Invalid email format")
+  private String email;
 
-    @NotEmpty(message = "Password is required")
-    private String password;
+  @NotEmpty(message = "Password is required")
+  private String password;
 }

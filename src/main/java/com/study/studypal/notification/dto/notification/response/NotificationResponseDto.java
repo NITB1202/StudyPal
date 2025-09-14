@@ -2,10 +2,9 @@ package com.study.studypal.notification.dto.notification.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.notification.enums.LinkedSubject;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.*;
 
 @Getter
 @Setter
@@ -13,19 +12,19 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class NotificationResponseDto {
-    private UUID id;
+  private UUID id;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdAt;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime createdAt;
 
-    private String title;
+  private String title;
 
-    private String content;
+  private String content;
 
-    private boolean isRead;
+  private boolean isRead;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private LinkedSubject subject;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private LinkedSubject subject;
 
-    private UUID subjectId;
+  private UUID subjectId;
 }

@@ -10,17 +10,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class SendVerificationCodeRequestDto {
-    @NotNull(message = "Verification type is required")
-    private VerificationType type;
+  @NotNull(message = "Verification type is required")
+  private VerificationType type;
 
-    @NotEmpty(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String email;
+  @NotEmpty(message = "Email is required")
+  @Email(message = "Invalid email format")
+  private String email;
 }
