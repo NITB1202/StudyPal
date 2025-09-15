@@ -2,10 +2,9 @@ package com.study.studypal.user.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.user.enums.Gender;
-import lombok.*;
-
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.*;
 
 @Getter
 @Setter
@@ -13,15 +12,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class UserDetailResponseDto {
-    private UUID id;
+  private UUID id;
 
-    private String name;
+  private String name;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate dateOfBirth;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+  private LocalDate dateOfBirth;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Gender gender;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Gender gender;
 
-    private String avatarUrl;
+  private String avatarUrl;
 }

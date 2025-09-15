@@ -1,8 +1,7 @@
 package com.study.studypal.notification.dto.setting.response;
 
-import lombok.*;
-
 import java.util.UUID;
+import lombok.*;
 
 @Getter
 @Setter
@@ -10,11 +9,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class TeamNotificationSettingsResponseDto {
-    private UUID id;
+  private UUID id;
 
-    private boolean teamNotification;
+  private boolean teamNotification;
 
-    private boolean teamPlanReminder;
+  private boolean teamPlanReminder;
 
-    private boolean chatNotification;
+  private boolean chatNotification;
 }

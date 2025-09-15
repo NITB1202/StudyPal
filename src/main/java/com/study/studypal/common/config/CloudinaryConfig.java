@@ -7,12 +7,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class CloudinaryConfig {
-    @Value("${CLOUDINARY_URL}")
-    private String cloudinaryUrl;
+  @Value("${CLOUDINARY_URL}")
+  private String cloudinaryUrl;
 
-    @Bean
-    public Cloudinary cloudinary() {
-        return new Cloudinary(cloudinaryUrl);
-    }
+  @Bean
+  public Cloudinary cloudinary() {
+    return new Cloudinary(cloudinaryUrl);
+  }
 }
-

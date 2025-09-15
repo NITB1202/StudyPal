@@ -4,7 +4,11 @@ import com.study.studypal.auth.enums.VerificationType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -12,10 +16,10 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class SendVerificationCodeRequestDto {
-    @NotNull(message = "Verification type is required")
-    private VerificationType type;
+  @NotNull(message = "Verification type is required")
+  private VerificationType type;
 
-    @NotEmpty(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String email;
+  @NotEmpty(message = "Email is required")
+  @Email(message = "Invalid email format")
+  private String email;
 }

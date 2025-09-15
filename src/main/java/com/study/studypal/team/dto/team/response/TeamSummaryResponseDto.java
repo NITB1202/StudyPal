@@ -1,8 +1,11 @@
 package com.study.studypal.team.dto.team.response;
 
-import lombok.*;
-
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -10,11 +13,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class TeamSummaryResponseDto {
-    private UUID id;
+  private UUID id;
 
-    private String name;
+  private String name;
 
-    private String avatarUrl;
+  private String avatarUrl;
 
-    private boolean managedByUser;
+  private boolean managedByUser;
 }

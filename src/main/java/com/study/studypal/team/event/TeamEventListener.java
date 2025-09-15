@@ -13,28 +13,28 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 @RequiredArgsConstructor
 public class TeamEventListener {
-    private final TeamCacheService teamCacheService;
+  private final TeamCacheService teamCacheService;
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTeamUpdatedEvent(TeamUpdatedEvent event) {
-        //Evict the user's joined team cache only if the team's name or the team's avatar has changed
-        if(event.isShouldEvictCache()) {
-            teamCacheService.evictUserJoinedTeamsCaches(event.getMemberIds());
-        }
-        teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
+  @Async
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void handleTeamUpdatedEvent(TeamUpdatedEvent event) {
+    // Evict the user's joined team cache only if the team's name or the team's avatar has changed
+    if (event.isShouldEvictCache()) {
+      teamCacheService.evictUserJoinedTeamsCaches(event.getMemberIds());
     }
+    teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
+  }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTeamCodeResetEvent(TeamCodeResetEvent event) {
-        teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
-    }
+  @Async
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void handleTeamCodeResetEvent(TeamCodeResetEvent event) {
+    teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
+  }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTeamDeleted(TeamDeletedEvent event) {
-        teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
-        teamCacheService.evictUserJoinedTeamsCaches(event.getMemberIds());
-    }
+  @Async
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void handleTeamDeleted(TeamDeletedEvent event) {
+    teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
+    teamCacheService.evictUserJoinedTeamsCaches(event.getMemberIds());
+  }
 }

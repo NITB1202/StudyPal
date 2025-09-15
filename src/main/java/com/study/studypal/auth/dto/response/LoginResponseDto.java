@@ -1,6 +1,10 @@
 package com.study.studypal.auth.dto.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -8,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class LoginResponseDto {
-    private String accessToken;
+  private String accessToken;
 
-    private String refreshToken;
+  private String refreshToken;
 }

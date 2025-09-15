@@ -1,8 +1,11 @@
 package com.study.studypal.team.dto.membership.response;
 
-import lombok.*;
-
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -10,9 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ListTeamMemberResponseDto {
-    private List<TeamMemberResponseDto> members;
+  private List<TeamMemberResponseDto> members;
 
-    private long total;
+  private long total;
 
-    private String nextCursor;
+  private String nextCursor;
 }

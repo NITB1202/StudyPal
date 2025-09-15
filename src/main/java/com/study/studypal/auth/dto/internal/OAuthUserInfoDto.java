@@ -1,6 +1,10 @@
 package com.study.studypal.auth.dto.internal;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -8,11 +12,11 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class OAuthUserInfoDto {
-    private String id;
+  private String id;
 
-    private String name;
+  private String name;
 
-    private String email;
+  private String email;
 
-    private String picture;
+  private String picture;
 }

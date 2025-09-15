@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ActionResponseDto {
-    private boolean success;
+  private boolean success;
 
-    private String message;
+  private String message;
 }

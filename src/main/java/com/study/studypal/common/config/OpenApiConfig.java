@@ -11,22 +11,20 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-        info = @Info(
-                title = "StudyPal API",
-                version = "1.0",
-                description = "API documentation for the self-study mobile application."
-        ),
-        security = @SecurityRequirement(name = "bearerAuth")
-)
+    info =
+        @Info(
+            title = "StudyPal API",
+            version = "1.0",
+            description = "API documentation for the self-study mobile application."),
+    security = @SecurityRequirement(name = "bearerAuth"))
 @SecurityScheme(
-        name = "bearerAuth",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT"
-)
+    name = "bearerAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "bearer",
+    bearerFormat = "JWT")
 public class OpenApiConfig {
-    @Bean
-    public OpenAPI openAPI() {
-        return new OpenAPI();
-    }
+  @Bean
+  public OpenAPI openAPI() {
+    return new OpenAPI();
+  }
 }

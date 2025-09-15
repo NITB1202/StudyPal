@@ -1,7 +1,11 @@
 package com.study.studypal.auth.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -9,6 +13,6 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class GenerateAccessTokenRequestDto {
-    @NotEmpty(message = "Refresh token is required")
-    private String refreshToken;
+  @NotEmpty(message = "Refresh token is required")
+  private String refreshToken;
 }
