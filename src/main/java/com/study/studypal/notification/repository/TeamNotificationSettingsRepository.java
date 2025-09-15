@@ -11,7 +11,8 @@ public interface TeamNotificationSettingsRepository
     extends JpaRepository<TeamNotificationSettings, UUID> {
   @Query(
       """
-    SELECT st FROM TeamNotificationSettings st
+    SELECT st
+    FROM TeamNotificationSettings st
     JOIN st.membership tu
     WHERE tu.user.id = :userId
     AND tu.team.id = :teamId
@@ -21,9 +22,10 @@ public interface TeamNotificationSettingsRepository
 
   @Query(
       """
-    SELECT st.membership.user.id FROM TeamNotificationSettings st
-    JOIN FETCH st.membership m
-    JOIN FETCH m.user u
+    SELECT u.id
+    FROM TeamNotificationSettings st
+    JOIN st.membership m
+    JOIN m.user u
     WHERE st.id = :id
     """)
   UUID getUserIdById(@Param("id") UUID id);

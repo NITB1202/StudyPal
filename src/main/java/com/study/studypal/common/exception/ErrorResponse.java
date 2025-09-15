@@ -1,6 +1,6 @@
 package com.study.studypal.common.exception;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +17,6 @@ public class ErrorResponse {
     this.statusCode = statusCode;
     this.errorCode = errorCode;
     this.message = message;
-    this.timestamp = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+    this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
   }
 }

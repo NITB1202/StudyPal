@@ -22,11 +22,12 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setContentType("application/json");
 
     String timestamp =
-        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
 
     String json =
         "{"
-            + "\"errorCode\": \"INVALID_ACCESS_TOKEN\","
+            + "\"statusCode\": \"401\","
+            + "\"errorCode\": \"UNAUTHORIZED\","
             + "\"message\": \""
             + authException.getMessage()
             + "\","
