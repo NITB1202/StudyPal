@@ -4,7 +4,7 @@ import com.study.studypal.notification.dto.setting.request.UpdateTeamNotificatio
 import com.study.studypal.notification.dto.setting.response.TeamNotificationSettingResponseDto;
 import java.util.UUID;
 
-public interface TeamNotificationSettingsService {
+public interface TeamNotificationSettingService {
   TeamNotificationSettingResponseDto getTeamNotificationSetting(UUID userId, UUID teamId);
 
   TeamNotificationSettingResponseDto updateTeamNotificationSetting(

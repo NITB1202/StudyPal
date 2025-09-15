@@ -6,7 +6,7 @@ import com.study.studypal.notification.dto.setting.response.TeamNotificationSett
 import com.study.studypal.notification.entity.TeamNotificationSetting;
 import com.study.studypal.notification.exception.TeamNotificationSettingErrorCode;
 import com.study.studypal.notification.repository.TeamNotificationSettingRepository;
-import com.study.studypal.notification.service.api.TeamNotificationSettingsService;
+import com.study.studypal.notification.service.api.TeamNotificationSettingService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class TeamNotificationSettingServiceImpl implements TeamNotificationSettingsService {
+public class TeamNotificationSettingServiceImpl implements TeamNotificationSettingService {
   private final TeamNotificationSettingRepository teamNotificationSettingsRepository;
   private final ModelMapper modelMapper;
 
