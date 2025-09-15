@@ -1,4 +1,4 @@
-package com.study.studypal.notification.service;
+package com.study.studypal.notification.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.notification.dto.notification.request.DeleteNotificationsRequestDto;

@@ -4,7 +4,7 @@ import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.notification.dto.setting.request.UpdateTeamNotificationSettingRequestDto;
 import com.study.studypal.notification.dto.setting.response.TeamNotificationSettingResponseDto;
-import com.study.studypal.notification.service.api.TeamNotificationSettingsService;
+import com.study.studypal.notification.service.api.TeamNotificationSettingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/team-notification-settings")
 public class TeamNotificationSettingController {
-  private final TeamNotificationSettingsService teamNotificationSettingsService;
+  private final TeamNotificationSettingService teamNotificationSettingsService;
 
   @GetMapping("/{teamId}")
   @Operation(summary = "Get notification setting of a user in a team.")
