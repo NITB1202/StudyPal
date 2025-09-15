@@ -94,7 +94,7 @@ class UserControllerIT {
     mockMvc
         .perform(get("/api/users").header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.errorCode").value("INVALID_ACCESS_TOKEN"));
+        .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
   }
 
   // searchUsersByName
