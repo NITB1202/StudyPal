@@ -16,10 +16,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class RegisterDeviceTokenRequestDto {
-    @NotEmpty(message = "Device token is required")
-    private String deviceToken;
+  @NotEmpty(message = "Device token is required")
+  private String deviceToken;
 
-    @NotNull(message = "Platform is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Platform platform;
+  @NotNull(message = "Platform is required")
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Platform platform;
 }
