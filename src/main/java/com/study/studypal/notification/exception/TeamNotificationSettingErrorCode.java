@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum TeamNotificationSettingsErrorCode implements ErrorCode {
+public enum TeamNotificationSettingErrorCode implements ErrorCode {
   SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "SET_001", "Team notification settings not found."),
   PERMISSION_UPDATE_SETTING_DENIED(
       HttpStatus.FORBIDDEN,
@@ -17,7 +17,7 @@ public enum TeamNotificationSettingsErrorCode implements ErrorCode {
   private final String code;
   private final String message;
 
-  TeamNotificationSettingsErrorCode(
+  TeamNotificationSettingErrorCode(
       final HttpStatus httpStatus, final String code, final String message) {
     this.httpStatus = httpStatus;
     this.code = code;

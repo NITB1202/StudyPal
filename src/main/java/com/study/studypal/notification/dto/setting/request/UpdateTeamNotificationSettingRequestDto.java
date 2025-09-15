@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UpdateTeamNotificationSettingsRequestDto {
+public class UpdateTeamNotificationSettingRequestDto {
   private Boolean teamNotification;
 
   private Boolean teamPlanReminder;

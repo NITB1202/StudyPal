@@ -7,7 +7,7 @@ import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
-import com.study.studypal.notification.service.internal.TeamNotificationSettingsInternalService;
+import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.*;
@@ -48,7 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class TeamServiceImpl implements TeamService {
   private final TeamRepository teamRepository;
   private final TeamMembershipInternalService teamMembershipService;
-  private final TeamNotificationSettingsInternalService teamNotificationSettingsService;
+  private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CodeService codeService;
   private final FileService fileService;
   private final ModelMapper modelMapper;
@@ -83,7 +83,7 @@ public class TeamServiceImpl implements TeamService {
 
         teamRepository.save(team);
         teamMembershipService.createMembership(team.getId(), userId, TeamRole.CREATOR);
-        teamNotificationSettingsService.createSettings(userId, team.getId());
+        teamNotificationSettingService.createSettings(userId, team.getId());
 
         return modelMapper.map(team, TeamResponseDto.class);
       } catch (DataIntegrityViolationException e) {
