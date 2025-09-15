@@ -56,3 +56,9 @@ VALUES
     ('6fbeb41d-74f4-4e1b-be73-9ff503800e5d', '550e8400-e29b-41d4-a716-446655440000', TRUE, TRUE, TRUE),
     ('23188d8a-ebc9-41ab-94a0-7d23bcc17305', '660e8400-e29b-41d4-a716-446655440003', TRUE, TRUE, TRUE),
     ('edc72285-d3b1-4ad9-95f1-47399d471385', '770e8400-e29b-41d4-a716-446655440005', TRUE, TRUE, TRUE);
+
+INSERT INTO device_tokens (id, user_id, platform, token, last_updated)
+VALUES
+    ('abbb2730-0d5f-4ab0-9154-05e8d24258fb', '041c77e0-ae77-4005-b745-ea12dca9bec6', 'ANDROID', 'fcm_android_3a9f8x7n2k0lm5dqpw', '2025-09-15 00:00:00'),
+    ('ac2d2a0c-b654-4fd6-b2cb-cbbb6c92872f', '618c10ee-923f-4323-b32b-086caa534b46', 'ANDROID', 'fcm_android_9z7h6x4b3p1k2w8nq0', '2025-09-15 00:00:00'),
+    ('e567f27a-f5c5-4597-8837-752e20e47611', '9f5d79f2-83a2-411d-bb66-caeb640a62b0', 'ANDROID', 'fcm_android_0q1w2e3r4t5y6u7i8o9p','2025-09-15 00:00:00');
