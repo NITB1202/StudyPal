@@ -3,7 +3,7 @@ package com.study.studypal.team.service.api.impl;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.notification.service.internal.TeamNotificationSettingsInternalService;
+import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.team.dto.invitation.request.SendInvitationRequestDto;
 import com.study.studypal.team.dto.invitation.response.InvitationResponseDto;
 import com.study.studypal.team.dto.invitation.response.ListInvitationResponseDto;
@@ -38,7 +38,7 @@ public class InvitationServiceImpl implements InvitationService {
   private final InvitationRepository invitationRepository;
   private final TeamMembershipInternalService teamMembershipService;
   private final TeamInternalService teamService;
-  private final TeamNotificationSettingsInternalService teamNotificationSettingsService;
+  private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final ModelMapper modelMapper;
 
   @PersistenceContext private final EntityManager entityManager;
@@ -123,7 +123,7 @@ public class InvitationServiceImpl implements InvitationService {
       UUID teamId = invitation.getTeam().getId();
       teamMembershipService.createMembership(teamId, userId, TeamRole.MEMBER);
       teamService.increaseMember(teamId);
-      teamNotificationSettingsService.createSettings(userId, teamId);
+      teamNotificationSettingService.createSettings(userId, teamId);
     }
 
     invitationRepository.delete(invitation);

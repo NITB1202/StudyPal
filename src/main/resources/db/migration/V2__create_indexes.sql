@@ -19,3 +19,7 @@ CREATE INDEX idx_team_users_team_role_user
 -- Index for cursor pagination in getInvitations
 CREATE INDEX idx_invitations_invitee_invited_at
     ON invitations (invitee_id, invited_at DESC);
+
+-- Index for device_tokens table
+CREATE INDEX idx_device_tokens_user_token
+    ON device_tokens (user_id, token);

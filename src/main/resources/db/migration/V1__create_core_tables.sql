@@ -65,3 +65,14 @@ CREATE TABLE IF NOT EXISTS team_notification_settings (
         REFERENCES teams_users (id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS device_tokens (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    platform VARCHAR(255) NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    last_updated TIMESTAMP NOT NULL,
+    CONSTRAINT uq_device_token_user_token UNIQUE (user_id, token),
+    CONSTRAINT fk_device_token_user FOREIGN KEY (user_id)
+        REFERENCES users (id) ON DELETE CASCADE
+);
+

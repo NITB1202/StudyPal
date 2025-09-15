@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TeamNotificationSettingsResponseDto {
+public class TeamNotificationSettingResponseDto {
   private UUID id;
 
   private boolean teamNotification;

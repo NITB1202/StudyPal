@@ -14,7 +14,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @Builder
 @Table(name = "team_notification_settings")
-public class TeamNotificationSettings {
+public class TeamNotificationSetting {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", nullable = false)

@@ -1,12 +1,12 @@
 package com.study.studypal.notification.service.api;
 
-import com.study.studypal.notification.dto.setting.request.UpdateTeamNotificationSettingsRequestDto;
-import com.study.studypal.notification.dto.setting.response.TeamNotificationSettingsResponseDto;
+import com.study.studypal.notification.dto.setting.request.UpdateTeamNotificationSettingRequestDto;
+import com.study.studypal.notification.dto.setting.response.TeamNotificationSettingResponseDto;
 import java.util.UUID;
 
 public interface TeamNotificationSettingsService {
-  TeamNotificationSettingsResponseDto getTeamNotificationSettings(UUID userId, UUID teamId);
+  TeamNotificationSettingResponseDto getTeamNotificationSetting(UUID userId, UUID teamId);
 
-  TeamNotificationSettingsResponseDto updateTeamNotificationSettings(
-      UUID userId, UUID settingId, UpdateTeamNotificationSettingsRequestDto request);
+  TeamNotificationSettingResponseDto updateTeamNotificationSetting(
+      UUID userId, UUID settingId, UpdateTeamNotificationSettingRequestDto request);
 }
