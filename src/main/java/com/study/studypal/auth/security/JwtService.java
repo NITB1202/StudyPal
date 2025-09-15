@@ -18,7 +18,7 @@ public class JwtService {
   private static final long REFRESH_TOKEN_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000L; // 1 week
   private final Key secretKey;
 
-  public JwtService(@Value("${security.jwt.secret}") String jwtSecret) {
+  public JwtService(@Value("${JWT_SECRET}") String jwtSecret) {
     this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
   }
 
