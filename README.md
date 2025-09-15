@@ -49,7 +49,6 @@ Copy the `.env.example` file and rename it to `.env`, then fill in the configura
 
 For local development:
 ```env
-SPRING_PROFILES_ACTIVE=dev
 DB_HOST=localhost
 ```
 
