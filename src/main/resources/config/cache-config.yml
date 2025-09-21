@@ -31,4 +31,6 @@ app:
       invitations:
         ttl: PT10M
         maxSize: 1000
-
+      notifications:
+        ttl: PT10M
+        maxSize: 1000

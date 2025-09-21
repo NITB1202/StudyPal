@@ -11,6 +11,7 @@ public final class CacheNames {
   public static final String TEAM_OVERVIEW = "teamOverview";
   public static final String TEAM_MEMBERS = "teamMembers";
   public static final String INVITATIONS = "invitations";
+  public static final String NOTIFICATIONS = "notifications";
 
   private CacheNames() {}
 }
