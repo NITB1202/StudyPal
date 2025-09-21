@@ -48,7 +48,11 @@ public class SecurityConfig {
         .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers(WHITE_LIST_ENDPOINTS).permitAll().anyRequest().authenticated());
+            auth ->
+                auth.requestMatchers(WHITE_LIST_ENDPOINTS)
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated());
     return http.build();
   }
 
