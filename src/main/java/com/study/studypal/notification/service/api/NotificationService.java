@@ -13,7 +13,7 @@ public interface NotificationService {
 
   UnreadNotificationCountResponseDto getUnreadNotificationCount(UUID userId);
 
-  ActionResponseDto markNotificationsAsRead(MarkNotificationsAsReadRequestDto request);
+  ActionResponseDto markNotificationsAsRead(UUID userId, MarkNotificationsAsReadRequestDto request);
 
   ActionResponseDto markAllNotificationsAsRead(UUID userId);
 
