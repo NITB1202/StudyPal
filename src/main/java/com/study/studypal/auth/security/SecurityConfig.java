@@ -1,5 +1,6 @@
 package com.study.studypal.auth.security;
 
+import com.study.studypal.common.filter.RequestLoggingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +20,18 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+  private final RequestLoggingFilter requestLoggingFilter;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+  private static final String[] WHITE_LIST_ENDPOINTS = {
+    "/swagger/**",
+    "/swagger-ui/**",
+    "/v3/api-docs/**",
+    "/swagger-resources/**",
+    "/webjars/**",
+    "/h2-console/**",
+    "/api/auth/**"
+  };
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -34,17 +45,11 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .exceptionHandling(
             exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+        .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(
-                        "/swagger/**",
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/swagger-resources/**",
-                        "/webjars/**",
-                        "/h2-console/**",
-                        "/api/auth/**")
+                auth.requestMatchers(WHITE_LIST_ENDPOINTS)
                     .permitAll()
                     .anyRequest()
                     .authenticated());

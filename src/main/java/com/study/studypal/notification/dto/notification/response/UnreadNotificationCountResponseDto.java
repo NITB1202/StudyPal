@@ -12,5 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class UnreadNotificationCountResponseDto {
-  private int count;
+  private long count;
 }
