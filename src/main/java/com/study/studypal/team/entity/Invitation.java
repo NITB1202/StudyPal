@@ -30,9 +30,7 @@ import lombok.Setter;
     name = "invitations",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"invitee_id", "team_id"})},
     indexes = {
-      @Index(
-          name = "idx_invitations_invitee_invited_at",
-          columnList = "invitee_id, invited_at DESC")
+      @Index(name = "idx_invitations_invitee_invited_at", columnList = "invitee_id, invited_at")
     })
 public class Invitation {
   @Id
