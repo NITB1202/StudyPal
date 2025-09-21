@@ -17,8 +17,17 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
       """
     SELECT n
     FROM Notification n
-    WHERE n.userId = :userId
-      AND (:cursor IS NULL OR n.createdAt < :cursor)
+    WHERE n.user.id = :userId
+    ORDER BY n.createdAt DESC
+    """)
+  List<Notification> findByUserId(@Param("userId") UUID userId, Pageable pageable);
+
+  @Query(
+      """
+    SELECT n
+    FROM Notification n
+    WHERE n.user.id = :userId
+    AND n.createdAt < :cursor
     ORDER BY n.createdAt DESC
     """)
   List<Notification> findByUserIdWithCursor(
@@ -33,7 +42,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
       """
     UPDATE Notification n
     SET n.isRead = true
-    WHERE n.userId = :userId
+    WHERE n.user.id = :userId
     AND n.id IN :ids
     AND n.isRead = false
     """)
@@ -44,7 +53,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
       """
     UPDATE Notification n
     SET n.isRead = true
-    WHERE n.userId = :userId
+    WHERE n.user.id = :userId
     AND n.isRead = false
     """)
   void markAllAsRead(@Param("userId") UUID userId);
@@ -53,7 +62,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
   @Query(
       """
     DELETE FROM Notification n
-    WHERE n.userId = :userId
+    WHERE n.user.id = :userId
     AND n.id IN :ids
     """)
   int deleteByIds(@Param("userId") UUID userId, @Param("ids") List<UUID> ids);

@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
   private final NotificationRepository notificationRepository;
@@ -33,7 +34,9 @@ public class NotificationServiceImpl implements NotificationService {
     Pageable pageable = PageRequest.of(0, size);
 
     List<Notification> notifications =
-        notificationRepository.findByUserIdWithCursor(userId, cursor, pageable);
+        cursor == null
+            ? notificationRepository.findByUserId(userId, pageable)
+            : notificationRepository.findByUserIdWithCursor(userId, cursor, pageable);
     List<NotificationResponseDto> notificationsDTO =
         modelMapper.map(notifications, new TypeToken<List<NotificationResponseDto>>() {}.getType());
 
@@ -57,7 +60,6 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  @Transactional
   public ActionResponseDto markNotificationsAsRead(
       UUID userId, MarkNotificationsAsReadRequestDto request) {
     int updatedCount = notificationRepository.markAsReadByIds(userId, request.getIds());
@@ -74,7 +76,6 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  @Transactional
   public ActionResponseDto deleteNotifications(UUID userId, DeleteNotificationsRequestDto request) {
     int deletedCount = notificationRepository.deleteByIds(userId, request.getIds());
     if (deletedCount != request.getIds().size()) {
@@ -84,7 +85,6 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  @Transactional
   public ActionResponseDto deleteAllNotifications(UUID userId) {
     notificationRepository.deleteAllByUserId(userId);
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
