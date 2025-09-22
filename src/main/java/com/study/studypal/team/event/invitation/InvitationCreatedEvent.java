@@ -9,5 +9,6 @@ import lombok.Getter;
 public class InvitationCreatedEvent {
   private UUID invitationId;
   private UUID inviterId;
+  private UUID inviteeId;
   private UUID teamId;
 }

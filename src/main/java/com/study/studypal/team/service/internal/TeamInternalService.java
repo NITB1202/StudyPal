@@ -8,4 +8,6 @@ public interface TeamInternalService {
   void increaseMember(UUID teamId);
 
   void decreaseMember(UUID teamId);
+
+  String getTeamName(UUID teamId);
 }

@@ -80,6 +80,7 @@ public class InvitationServiceImpl implements InvitationService {
         InvitationCreatedEvent.builder()
             .invitationId(invitation.getId())
             .inviterId(userId)
+            .inviteeId(request.getInviteeId())
             .teamId(request.getTeamId())
             .build();
 

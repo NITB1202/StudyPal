@@ -57,4 +57,14 @@ public class TeamInternalServiceImpl implements TeamInternalService {
       teamRepository.save(team);
     }
   }
+
+  @Override
+  public String getTeamName(UUID teamId) {
+    Team team =
+        teamRepository
+            .findById(teamId)
+            .orElseThrow(() -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND));
+
+    return team.getName();
+  }
 }
