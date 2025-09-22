@@ -48,7 +48,7 @@ jobs:
         run: |
           IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/studypal-mobileapp:latest
           docker build \
-            --build-arg FIREBASE_JSON_CONTENT="${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" \
+            --build-arg FIREBASE_JSON_CONTENT_BASE64="${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON_BASE64 }}" \
             -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
