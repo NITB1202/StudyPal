@@ -8,9 +8,9 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 
 #Inject firebase-service-account.json
-ARG FIREBASE_JSON_CONTENT
+ARG FIREBASE_JSON_CONTENT_BASE64
 RUN mkdir -p src/main/resources/firebase && \
-    echo "$FIREBASE_JSON_CONTENT" > src/main/resources/firebase/firebase-service-account.json
+    echo "$FIREBASE_JSON_CONTENT_BASE64" | base64 -d > src/main/resources/firebase/firebase-service-account.json
 
 RUN mvn clean package -DskipTests
 
