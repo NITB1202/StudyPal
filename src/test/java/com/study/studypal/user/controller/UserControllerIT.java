@@ -2,10 +2,14 @@ package com.study.studypal.user.controller;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -76,7 +80,8 @@ class UserControllerIT {
   @Test
   void getUserProfile_whenUserExists_shouldReturnUserProfile() throws Exception {
     mockMvc
-        .perform(get("/api/users").header("Authorization", "Bearer " + accessToken))
+        .perform(
+            get("/api/users/" + currentUserId).header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Current"));
   }
