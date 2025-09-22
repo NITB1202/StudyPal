@@ -15,10 +15,9 @@ import com.study.studypal.user.dto.internal.UserSummaryProfileDto;
 import com.study.studypal.user.service.internal.UserInternalService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class NotificationEventListener {
   private final TeamNotificationSettingInternalService settingService;
 
   @Async
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void handleInvitationCreatedEvent(InvitationCreatedEvent event) {
     UserSummaryProfileDto inviter = userService.getUserSummaryProfile(event.getInviterId());
     String teamName = teamService.getTeamName(event.getTeamId());
@@ -51,7 +50,7 @@ public class NotificationEventListener {
   }
 
   @Async
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void handleTeamDeletedEvent(TeamDeletedEvent event) {
     UserSummaryProfileDto deletedBy = userService.getUserSummaryProfile(event.getDeletedBy());
 
@@ -78,7 +77,7 @@ public class NotificationEventListener {
   }
 
   @Async
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void handleTeamUpdatedEvent(TeamUpdatedEvent event) {
     UserSummaryProfileDto updatedBy = userService.getUserSummaryProfile(event.getUpdatedBy());
 
@@ -109,13 +108,13 @@ public class NotificationEventListener {
   }
 
   @Async
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void handleUserJoinedTeamEvent(UserJoinedTeamEvent event) {
     UserSummaryProfileDto user = userService.getUserSummaryProfile(event.getUserId());
     String teamName = teamService.getTeamName(event.getTeamId());
 
     String title = "New team member";
-    String content = user.getName() + " has joined team " + teamName + ".";
+    String content = user.getName() + " has joined the " + teamName + " team.";
 
     for (UUID memberId : event.getMemberIds()) {
       if (event.getUserId().equals(memberId)
@@ -137,7 +136,7 @@ public class NotificationEventListener {
   }
 
   @Async
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void handleUserLeftTeamEvent(UserLeftTeamEvent event) {
     UserSummaryProfileDto user = userService.getUserSummaryProfile(event.getUserId());
     String teamName = teamService.getTeamName(event.getTeamId());

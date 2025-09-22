@@ -55,6 +55,7 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
         MessagingErrorCode firebaseErrorCode = e.getMessagingErrorCode();
         if (isInvalidFmcToken(firebaseErrorCode)) {
           deviceTokenRepository.delete(token);
+          log.info("Invalid fmc token: {}", token.getToken());
         } else {
           log.error("Failed to send push notification: {}", e.getMessage());
         }
