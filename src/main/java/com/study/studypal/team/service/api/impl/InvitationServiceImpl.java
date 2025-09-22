@@ -10,6 +10,8 @@ import com.study.studypal.team.dto.invitation.response.ListInvitationResponseDto
 import com.study.studypal.team.entity.Invitation;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.event.invitation.InvitationCreatedEvent;
+import com.study.studypal.team.event.team.UserJoinedTeamEvent;
 import com.study.studypal.team.exception.InvitationErrorCode;
 import com.study.studypal.team.repository.InvitationRepository;
 import com.study.studypal.team.service.api.InvitationService;
@@ -27,6 +29,7 @@ import org.modelmapper.TypeToken;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +43,7 @@ public class InvitationServiceImpl implements InvitationService {
   private final TeamInternalService teamService;
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final ModelMapper modelMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -72,6 +76,16 @@ public class InvitationServiceImpl implements InvitationService {
     } catch (DataIntegrityViolationException e) {
       throw new BaseException(InvitationErrorCode.INVITEE_ALREADY_INVITED);
     }
+
+    InvitationCreatedEvent event =
+        InvitationCreatedEvent.builder()
+            .invitationId(invitation.getId())
+            .inviterId(userId)
+            .inviteeId(request.getInviteeId())
+            .teamId(request.getTeamId())
+            .build();
+
+    eventPublisher.publishEvent(event);
 
     return modelMapper.map(invitation, InvitationResponseDto.class);
   }
@@ -124,6 +138,15 @@ public class InvitationServiceImpl implements InvitationService {
       teamMembershipService.createMembership(teamId, userId, TeamRole.MEMBER);
       teamService.increaseMember(teamId);
       teamNotificationSettingService.createSettings(userId, teamId);
+
+      UserJoinedTeamEvent event =
+          UserJoinedTeamEvent.builder()
+              .userId(userId)
+              .teamId(teamId)
+              .memberIds(teamMembershipService.getMemberIds(teamId))
+              .build();
+
+      eventPublisher.publishEvent(event);
     }
 
     invitationRepository.delete(invitation);

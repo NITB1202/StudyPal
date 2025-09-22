@@ -1,5 +1,7 @@
 package com.study.studypal.notification.service.internal.impl;
 
+import com.study.studypal.common.cache.CacheNames;
+import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.notification.dto.internal.CreateNotificationDto;
 import com.study.studypal.notification.entity.Notification;
 import com.study.studypal.notification.repository.NotificationRepository;
@@ -9,13 +11,18 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationInternalServiceImpl implements NotificationInternalService {
   private final NotificationRepository notificationRepository;
+  private final CacheManager cacheManager;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -41,5 +48,11 @@ public class NotificationInternalServiceImpl implements NotificationInternalServ
   @Transactional
   public void deleteNotificationBefore(LocalDateTime time) {
     notificationRepository.deleteByCreatedAtBefore(time);
+  }
+
+  @Override
+  public void evictNotificationCache(UUID userId) {
+    Cache cache = cacheManager.getCache(CacheNames.NOTIFICATIONS);
+    Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(userId));
   }
 }

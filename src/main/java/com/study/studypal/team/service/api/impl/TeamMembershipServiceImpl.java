@@ -12,6 +12,8 @@ import com.study.studypal.team.dto.membership.response.ListTeamMemberResponseDto
 import com.study.studypal.team.dto.membership.response.TeamMemberResponseDto;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
+import com.study.studypal.team.event.team.UserJoinedTeamEvent;
+import com.study.studypal.team.event.team.UserLeftTeamEvent;
 import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.team.service.api.TeamMembershipService;
@@ -28,6 +30,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
   private final TeamInternalService teamService;
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   /**
    * Note: Cache eviction for teamMembers is already handled inside TeamInternalService's
@@ -58,6 +62,15 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     internalService.createMembership(teamId, userId, TeamRole.MEMBER);
     teamService.increaseMember(teamId);
     teamNotificationSettingService.createSettings(userId, teamId);
+
+    UserJoinedTeamEvent event =
+        UserJoinedTeamEvent.builder()
+            .userId(userId)
+            .teamId(teamId)
+            .memberIds(internalService.getMemberIds(teamId))
+            .build();
+
+    eventPublisher.publishEvent(event);
 
     return ActionResponseDto.builder().success(true).message("Join team successfully.").build();
   }
@@ -272,6 +285,15 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     teamService.decreaseMember(request.getTeamId());
 
+    UserLeftTeamEvent event =
+        UserLeftTeamEvent.builder()
+            .userId(request.getMemberId())
+            .teamId(request.getTeamId())
+            .memberIds(internalService.getMemberIds(request.getTeamId()))
+            .build();
+
+    eventPublisher.publishEvent(event);
+
     return ActionResponseDto.builder().success(true).message("Remove member successfully.").build();
   }
 
@@ -297,6 +319,15 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     }
 
     teamService.decreaseMember(teamId);
+
+    UserLeftTeamEvent event =
+        UserLeftTeamEvent.builder()
+            .userId(userId)
+            .teamId(teamId)
+            .memberIds(internalService.getMemberIds(teamId))
+            .build();
+
+    eventPublisher.publishEvent(event);
 
     return ActionResponseDto.builder().success(true).message("Leave team successfully.").build();
   }

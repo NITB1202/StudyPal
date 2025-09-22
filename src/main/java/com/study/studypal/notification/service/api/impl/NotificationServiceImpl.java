@@ -1,5 +1,6 @@
 package com.study.studypal.notification.service.api.impl;
 
+import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.notification.dto.notification.request.DeleteNotificationsRequestDto;
@@ -18,6 +19,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,10 @@ public class NotificationServiceImpl implements NotificationService {
   private final ModelMapper modelMapper;
 
   @Override
+  @Cacheable(
+      value = CacheNames.NOTIFICATIONS,
+      key = "@keys.of(#userId)",
+      condition = "#cursor == null && #size == 10")
   public ListNotificationResponseDto getNotifications(UUID userId, LocalDateTime cursor, int size) {
     Pageable pageable = PageRequest.of(0, size);
 
@@ -60,6 +67,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
+  @CacheEvict(value = CacheNames.NOTIFICATIONS, key = "@keys.of(#userId)")
   public ActionResponseDto markNotificationsAsRead(
       UUID userId, MarkNotificationsAsReadRequestDto request) {
     int updatedCount = notificationRepository.markAsReadByIds(userId, request.getIds());
@@ -70,12 +78,14 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
+  @CacheEvict(value = CacheNames.NOTIFICATIONS, key = "@keys.of(#userId)")
   public ActionResponseDto markAllNotificationsAsRead(UUID userId) {
     notificationRepository.markAllAsRead(userId);
     return ActionResponseDto.builder().success(true).message("Mark successfully.").build();
   }
 
   @Override
+  @CacheEvict(value = CacheNames.NOTIFICATIONS, key = "@keys.of(#userId)")
   public ActionResponseDto deleteNotifications(UUID userId, DeleteNotificationsRequestDto request) {
     int deletedCount = notificationRepository.deleteByIds(userId, request.getIds());
     if (deletedCount != request.getIds().size()) {
@@ -85,6 +95,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
+  @CacheEvict(value = CacheNames.NOTIFICATIONS, key = "@keys.of(#userId)")
   public ActionResponseDto deleteAllNotifications(UUID userId) {
     notificationRepository.deleteAllByUserId(userId);
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();

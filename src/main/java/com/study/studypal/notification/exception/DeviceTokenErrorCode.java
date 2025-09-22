@@ -7,7 +7,11 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum DeviceTokenErrorCode implements ErrorCode {
   DEVICE_TOKEN_NOT_FOUND(
-      HttpStatus.NOT_FOUND, "DEVICE_001", "The device token is not associated with this user.");
+      HttpStatus.NOT_FOUND, "DEVICE_001", "The device token is not associated with this user."),
+  PUSH_SERVICE_INIT_ERROR(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      "DEVICE_002",
+      "Failed to initialize push notification service: %s");
 
   private final HttpStatus httpStatus;
   private final String code;

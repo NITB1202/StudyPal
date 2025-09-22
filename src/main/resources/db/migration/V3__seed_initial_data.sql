@@ -69,11 +69,11 @@ VALUES
         '1e84fc88-1a6d-4e99-9022-3a0191a5c1f1',
         '041c77e0-ae77-4005-b745-ea12dca9bec6',
         'Team deleted',
-        'TEST-TEAM-01 was deleted by David Becker.',
+        'TEST-TEAM-01 has been deleted by David Becker.',
         '2025-09-20 10:30:00',
         FALSE,
         'TEAM',
-        '9b3dfc8c-7c9d-4a28-8653-85c10ec91e67'
+        null
     ),
     (
         'b7c4aa7d-5896-45db-93ea-f4e35e91d20e',
