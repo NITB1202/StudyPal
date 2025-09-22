@@ -11,6 +11,7 @@ import com.study.studypal.team.entity.Invitation;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.event.invitation.InvitationCreatedEvent;
+import com.study.studypal.team.event.team.UserJoinedTeamEvent;
 import com.study.studypal.team.exception.InvitationErrorCode;
 import com.study.studypal.team.repository.InvitationRepository;
 import com.study.studypal.team.service.api.InvitationService;
@@ -137,6 +138,15 @@ public class InvitationServiceImpl implements InvitationService {
       teamMembershipService.createMembership(teamId, userId, TeamRole.MEMBER);
       teamService.increaseMember(teamId);
       teamNotificationSettingService.createSettings(userId, teamId);
+
+      UserJoinedTeamEvent event =
+          UserJoinedTeamEvent.builder()
+              .userId(userId)
+              .teamId(teamId)
+              .memberIds(teamMembershipService.getMemberIds(teamId))
+              .build();
+
+      eventPublisher.publishEvent(event);
     }
 
     invitationRepository.delete(invitation);
