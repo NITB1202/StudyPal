@@ -2,7 +2,7 @@ name: CI/CD for StudyPal
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   # 1. Unit Test
@@ -47,7 +47,9 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/studypal-mobileapp:latest
-          docker build -t $IMAGE_NAME .
+          docker build \
+            --build-arg FIREBASE_JSON_CONTENT="${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" \
+            -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
   # 4. Deploy to VPS Staging

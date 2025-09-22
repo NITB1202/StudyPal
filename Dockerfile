@@ -1,4 +1,4 @@
-#BUILD
+# ============ BUILD STAGE ============
 FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /app
 
@@ -6,9 +6,15 @@ COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
 COPY src ./src
+
+#Inject firebase-service-account.json
+ARG FIREBASE_JSON_CONTENT
+RUN mkdir -p src/main/resources/firebase && \
+    echo "$FIREBASE_JSON_CONTENT" > src/main/resources/firebase/firebase-service-account.json
+
 RUN mvn clean package -DskipTests
 
-#RUN
+# ============ RUNTIME STAGE ============
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
