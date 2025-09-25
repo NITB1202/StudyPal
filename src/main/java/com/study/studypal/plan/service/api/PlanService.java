@@ -7,7 +7,7 @@ import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public interface PersonalPlanService {
+public interface PlanService {
   ActionResponseDto createPersonalPlan(UUID userId, CreatePersonalPlanRequestDto request);
 
   PlanDetailResponseDto getPlanDetail(UUID planId);

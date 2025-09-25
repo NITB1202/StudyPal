@@ -10,7 +10,7 @@ import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
-import com.study.studypal.plan.service.api.PersonalPlanService;
+import com.study.studypal.plan.service.api.PlanService;
 import com.study.studypal.plan.service.internal.PlanRecurrenceRuleInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.user.entity.User;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PersonalPlanServiceImpl implements PersonalPlanService {
+public class PlanServiceImpl implements PlanService {
   private final PlanRepository planRepository;
   private final ModelMapper modelMapper;
   private final TaskInternalService taskService;

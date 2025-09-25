@@ -51,12 +51,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
       }
 
       Task task =
-          Task.builder()
-              .plan(plan)
-              .assignee(user)
-              .content(content)
-              .dueDate(taskDto.getDueDate())
-              .build();
+          Task.builder().plan(plan).assignee(user).content(content).dueDate(dueDate).build();
 
       savedTasks.add(task);
     }
