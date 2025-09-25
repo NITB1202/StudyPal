@@ -195,19 +195,22 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#request.teamId)")
       })
   public ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request) {
-    if (userId.equals(request.getMemberId())) {
+    UUID teamId = request.getTeamId();
+    UUID memberId = request.getMemberId();
+
+    if (userId.equals(memberId)) {
       throw new BaseException(TeamMembershipErrorCode.CANNOT_UPDATE_OWN_ROLE);
     }
 
     TeamUser userInfo =
         teamUserRepository
-            .findByUserIdAndTeamId(userId, request.getTeamId())
+            .findByUserIdAndTeamId(userId, teamId)
             .orElseThrow(
                 () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND));
 
     TeamUser memberInfo =
         teamUserRepository
-            .findByUserIdAndTeamId(request.getMemberId(), request.getTeamId())
+            .findByUserIdAndTeamId(memberId, teamId)
             .orElseThrow(
                 () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
 
@@ -218,6 +221,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     // Each group can have only one creator
     if (request.getRole() == TeamRole.CREATOR) {
       userInfo.setRole(TeamRole.ADMIN);
+      teamService.updateCreator(teamId, memberId);
       teamUserRepository.save(userInfo);
     }
 

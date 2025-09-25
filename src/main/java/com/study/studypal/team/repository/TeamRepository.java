@@ -17,6 +17,8 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 
   boolean existsByTeamCode(String teamCode);
 
+  int countByCreatorId(UUID userId);
+
   @Query(
       """
     SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(

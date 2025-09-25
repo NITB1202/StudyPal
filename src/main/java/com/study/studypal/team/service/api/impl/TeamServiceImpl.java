@@ -10,7 +10,11 @@ import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
-import com.study.studypal.team.dto.team.response.*;
+import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
@@ -56,10 +60,15 @@ public class TeamServiceImpl implements TeamService {
 
   @PersistenceContext private final EntityManager entityManager;
   private static final String AVATAR_FOLDER = "teams";
+  private static final int MAX_OWNED_TEAMS = 5;
 
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
   public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
+    if (teamRepository.countByCreatorId(userId) == MAX_OWNED_TEAMS) {
+      throw new BaseException(TeamErrorCode.TEAM_CREATION_LIMIT_REACHED);
+    }
+
     if (teamRepository.existsByNameAndCreatorId(request.getName(), userId)) {
       throw new BaseException(TeamErrorCode.DUPLICATE_TEAM_NAME);
     }
