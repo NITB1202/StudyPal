@@ -2,7 +2,7 @@ package com.study.studypal.notification.service.internal.impl;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.util.CacheKeyUtils;
-import com.study.studypal.notification.dto.internal.CreateNotificationDto;
+import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
 import com.study.studypal.notification.entity.Notification;
 import com.study.studypal.notification.repository.NotificationRepository;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
@@ -27,7 +27,7 @@ public class NotificationInternalServiceImpl implements NotificationInternalServ
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public void createNotification(CreateNotificationDto request) {
+  public void createNotification(CreateNotificationRequest request) {
     User user = entityManager.getReference(User.class, request.getUserId());
 
     Notification notification =

@@ -1,7 +1,7 @@
 package com.study.studypal.user.service.internal.impl;
 
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.user.dto.internal.UserSummaryProfileDto;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.enums.Gender;
 import com.study.studypal.user.exception.UserErrorCode;
@@ -47,12 +47,12 @@ public class UserInternalServiceImpl implements UserInternalService {
   }
 
   @Override
-  public UserSummaryProfileDto getUserSummaryProfile(UUID userId) {
+  public UserSummaryProfile getUserSummaryProfile(UUID userId) {
     User user =
         userRepository
             .findById(userId)
             .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
 
-    return modelMapper.map(user, UserSummaryProfileDto.class);
+    return modelMapper.map(user, UserSummaryProfile.class);
   }
 }

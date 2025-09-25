@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateNotificationDto {
+public class CreateNotificationRequest {
   private UUID userId;
 
   private String title;

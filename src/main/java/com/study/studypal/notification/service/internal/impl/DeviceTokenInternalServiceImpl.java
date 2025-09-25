@@ -5,7 +5,7 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
-import com.study.studypal.notification.dto.internal.CreateNotificationDto;
+import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
 import com.study.studypal.notification.entity.DeviceToken;
 import com.study.studypal.notification.repository.DeviceTokenRepository;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
@@ -31,7 +31,7 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
   }
 
   @Override
-  public void sendPushNotification(CreateNotificationDto dto) {
+  public void sendPushNotification(CreateNotificationRequest dto) {
     List<DeviceToken> tokens = deviceTokenRepository.findByUserId(dto.getUserId());
     String id = dto.getSubjectId() != null ? dto.getSubjectId().toString() : "";
 

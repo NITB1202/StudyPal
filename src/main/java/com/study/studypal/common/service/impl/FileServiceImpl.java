@@ -2,7 +2,7 @@ package com.study.studypal.common.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.study.studypal.common.dto.FileResponseDto;
+import com.study.studypal.common.dto.FileResponse;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
@@ -19,7 +19,7 @@ public class FileServiceImpl implements FileService {
   private static final List<String> validResourceTypes = List.of("image", "video", "raw");
 
   @Override
-  public FileResponseDto uploadFile(String folderPath, String publicId, byte[] bytes) {
+  public FileResponse uploadFile(String folderPath, String publicId, byte[] bytes) {
     Map params =
         ObjectUtils.asMap(
             "resource_type",
@@ -36,7 +36,7 @@ public class FileServiceImpl implements FileService {
       String url = result.get("secure_url").toString();
       long fileSizeInBytes = ((Number) result.get("bytes")).longValue();
 
-      return FileResponseDto.builder().url(url).bytes(fileSizeInBytes).build();
+      return FileResponse.builder().url(url).bytes(fileSizeInBytes).build();
     } catch (IOException e) {
       throw new BaseException(FileErrorCode.UPLOAD_FILE_FAILED);
     }

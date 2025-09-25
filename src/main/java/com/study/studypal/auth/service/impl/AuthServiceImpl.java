@@ -1,7 +1,13 @@
 package com.study.studypal.auth.service.impl;
 
-import com.study.studypal.auth.dto.internal.OAuthUserInfoDto;
-import com.study.studypal.auth.dto.request.*;
+import com.study.studypal.auth.dto.internal.OAuthUserInfo;
+import com.study.studypal.auth.dto.request.GenerateAccessTokenRequestDto;
+import com.study.studypal.auth.dto.request.LoginWithCredentialsRequestDto;
+import com.study.studypal.auth.dto.request.LoginWithProviderRequestDto;
+import com.study.studypal.auth.dto.request.RegisterWithCredentialsRequestDto;
+import com.study.studypal.auth.dto.request.ResetPasswordRequestDto;
+import com.study.studypal.auth.dto.request.SendVerificationCodeRequestDto;
+import com.study.studypal.auth.dto.request.VerifyCodeRequestDto;
 import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
 import com.study.studypal.auth.entity.Account;
@@ -62,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public LoginResponseDto loginWithProvider(LoginWithProviderRequestDto request) {
-    OAuthUserInfoDto userInfo = null;
+    OAuthUserInfo userInfo = null;
 
     switch (request.getProvider()) {
       case GOOGLE -> userInfo = getUserInfoWithGoogle(request.getAccessToken());
@@ -82,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
     return saveUserSession(account);
   }
 
-  private OAuthUserInfoDto getUserInfoWithGoogle(String accessToken) {
+  private OAuthUserInfo getUserInfoWithGoogle(String accessToken) {
     String googleAPIUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
 
     RestTemplate restTemplate = new RestTemplate();
@@ -99,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
       throw new BaseException(AuthErrorCode.OAUTH_USER_INFO_NOT_FOUND);
     }
 
-    return OAuthUserInfoDto.builder()
+    return OAuthUserInfo.builder()
         .id(userInfo.get("id"))
         .email(userInfo.get("email"))
         .name(userInfo.get("name"))

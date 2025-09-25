@@ -1,9 +1,9 @@
 package com.study.studypal.common.service;
 
-import com.study.studypal.common.dto.FileResponseDto;
+import com.study.studypal.common.dto.FileResponse;
 
 public interface FileService {
-  FileResponseDto uploadFile(String folderPath, String publicId, byte[] bytes);
+  FileResponse uploadFile(String folderPath, String publicId, byte[] bytes);
 
   void moveFile(String publicId, String newFolder);
 
