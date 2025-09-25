@@ -16,10 +16,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CreatePlanDto {
-  @NotEmpty(message = "Name is required")
-  private String name;
+  @NotEmpty(message = "Title is required")
+  private String title;
 
-  private String note;
+  private String description;
 
   @NotNull(message = "Start date is required")
   private LocalDateTime startDate;

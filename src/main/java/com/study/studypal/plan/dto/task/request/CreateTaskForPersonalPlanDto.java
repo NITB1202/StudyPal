@@ -14,8 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CreateTaskForPersonalPlanDto {
-  @NotEmpty(message = "Name is required")
-  private String name;
+  @NotEmpty(message = "Content is required")
+  private String content;
 
   private LocalDateTime dueDate;
 }
