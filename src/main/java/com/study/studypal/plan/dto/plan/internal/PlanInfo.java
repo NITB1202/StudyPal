@@ -1,4 +1,4 @@
-package com.study.studypal.plan.dto.task.internal;
+package com.study.studypal.plan.dto.plan.internal;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ValidateTasksInfo {
+public class PlanInfo {
   private UUID planId;
   private LocalDateTime planStartDate;
   private LocalDateTime planDueDate;

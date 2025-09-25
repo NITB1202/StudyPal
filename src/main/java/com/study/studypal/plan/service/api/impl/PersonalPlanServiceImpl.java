@@ -2,11 +2,11 @@ package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePersonalPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
-import com.study.studypal.plan.dto.task.internal.ValidateTasksInfo;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
@@ -46,10 +46,10 @@ public class PersonalPlanServiceImpl implements PersonalPlanService {
     modelMapper.map(planDto, plan);
     planRepository.save(plan);
 
-    ValidateTasksInfo planInfo =
-        new ValidateTasksInfo(plan.getId(), plan.getStartDate(), plan.getDueDate());
+    PlanInfo planInfo = new PlanInfo(plan.getId(), plan.getStartDate(), plan.getDueDate());
+
     taskService.createTasksForPersonalPlan(userId, planInfo, request.getTasks());
-    ruleService.createPlanRecurrenceRule(plan.getId(), request.getRecurrenceRule());
+    ruleService.createPlanRecurrenceRule(planInfo, request.getRecurrenceRule());
 
     return ActionResponseDto.builder().success(true).message("Create successfully.").build();
   }

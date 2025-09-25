@@ -1,7 +1,7 @@
 package com.study.studypal.plan.service.internal.impl;
 
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.plan.dto.task.internal.ValidateTasksInfo;
+import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPersonalPlanDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
@@ -28,7 +28,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
   @Override
   public void createTasksForPersonalPlan(
-      UUID userId, ValidateTasksInfo planInfo, List<CreateTaskForPersonalPlanDto> tasks) {
+      UUID userId, PlanInfo planInfo, List<CreateTaskForPersonalPlanDto> tasks) {
     List<Task> savedTasks = new ArrayList<>();
     Set<String> contents = new HashSet<>();
 
