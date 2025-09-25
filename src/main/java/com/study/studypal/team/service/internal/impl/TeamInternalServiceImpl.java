@@ -6,9 +6,6 @@ import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.exception.TeamErrorCode;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.service.internal.TeamInternalService;
-import com.study.studypal.user.entity.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TeamInternalServiceImpl implements TeamInternalService {
   private final TeamRepository teamRepository;
-  @PersistenceContext private final EntityManager entityManager;
 
   @Override
   public UUID getTeamIdByTeamCode(String teamCode) {
@@ -70,16 +66,5 @@ public class TeamInternalServiceImpl implements TeamInternalService {
             .orElseThrow(() -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND));
 
     return team.getName();
-  }
-
-  @Override
-  public void updateCreator(UUID teamId, UUID userId) {
-    Team team =
-        teamRepository
-            .findById(teamId)
-            .orElseThrow(() -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND));
-
-    User user = entityManager.getReference(User.class, userId);
-    team.setCreator(user);
   }
 }

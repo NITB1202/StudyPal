@@ -10,6 +10,4 @@ public interface TeamInternalService {
   void decreaseMember(UUID teamId);
 
   String getTeamName(UUID teamId);
-
-  void updateCreator(UUID teamId, UUID userId);
 }

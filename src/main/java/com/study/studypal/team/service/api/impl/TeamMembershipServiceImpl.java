@@ -214,14 +214,13 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
             .orElseThrow(
                 () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
 
-    if (userInfo.getRole() != TeamRole.CREATOR) {
+    if (userInfo.getRole() != TeamRole.OWNER) {
       throw new BaseException(TeamMembershipErrorCode.PERMISSION_UPDATE_MEMBER_ROLE_DENIED);
     }
 
     // Each group can have only one creator
-    if (request.getRole() == TeamRole.CREATOR) {
+    if (request.getRole() == TeamRole.OWNER) {
       userInfo.setRole(TeamRole.ADMIN);
-      teamService.updateCreator(teamId, memberId);
       teamUserRepository.save(userInfo);
     }
 
@@ -263,7 +262,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     // Permission check
     switch (userInfo.getRole()) {
-      case CREATOR:
+      case OWNER:
         {
           break;
         }
@@ -318,7 +317,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     int totalMembers = teamUserRepository.getTotalMembers(teamId) - 1;
 
-    if (totalMembers > 0 && membership.getRole() == TeamRole.CREATOR) {
+    if (totalMembers > 0 && membership.getRole() == TeamRole.OWNER) {
       throw new BaseException(TeamMembershipErrorCode.CANNOT_LEAVE_AS_CREATOR);
     }
 

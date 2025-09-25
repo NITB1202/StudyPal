@@ -91,7 +91,7 @@ public class TeamServiceImpl implements TeamService {
                 .build();
 
         teamRepository.save(team);
-        teamMembershipService.createMembership(team.getId(), userId, TeamRole.CREATOR);
+        teamMembershipService.createMembership(team.getId(), userId, TeamRole.OWNER);
         teamNotificationSettingService.createSettings(userId, team.getId());
 
         return modelMapper.map(team, TeamResponseDto.class);
