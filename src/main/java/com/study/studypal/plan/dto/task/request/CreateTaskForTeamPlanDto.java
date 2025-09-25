@@ -1,5 +1,6 @@
 package com.study.studypal.plan.dto.task.request;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class CreateTaskForTeamPlanDto {
   @NotEmpty(message = "Content is required")
   private String content;
 
+  @Future(message = "Due date must be in the future")
   private LocalDateTime dueDate;
 
   @NotNull(message = "Assignee id is required")
