@@ -1,8 +1,11 @@
 package com.study.studypal.plan.entity;
 
+import com.study.studypal.plan.enums.Priority;
 import com.study.studypal.team.entity.Team;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,6 +48,10 @@ public class Plan {
 
   @Column(name = "due_date", nullable = false)
   private LocalDateTime dueDate;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "priority", nullable = false)
+  private Priority priority;
 
   @Column(name = "progress", nullable = false)
   private Float progress;
