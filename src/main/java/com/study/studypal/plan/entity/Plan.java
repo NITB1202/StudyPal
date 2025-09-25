@@ -2,6 +2,7 @@ package com.study.studypal.plan.entity;
 
 import com.study.studypal.plan.enums.Priority;
 import com.study.studypal.team.entity.Team;
+import com.study.studypal.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,14 +35,15 @@ public class Plan {
   @Column(name = "id", nullable = false)
   private UUID id;
 
-  @Column(name = "creator_id", nullable = false)
-  private UUID creatorId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "creator_id", nullable = false)
+  private User creator;
 
-  @Column(name = "name", nullable = false)
-  private String name;
+  @Column(name = "title", nullable = false)
+  private String title;
 
-  @Column(name = "note")
-  private String note;
+  @Column(name = "description")
+  private String description;
 
   @Column(name = "start_date", nullable = false)
   private LocalDateTime startDate;
