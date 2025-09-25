@@ -16,7 +16,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateRecurrenceRuleDto {
+public class CreatePlanRecurrenceRuleDto {
   @NotNull(message = "Week days are required")
   @Size(min = 1, message = "The list must contain at least 1 item")
   private List<DayOfWeek> weekDays;

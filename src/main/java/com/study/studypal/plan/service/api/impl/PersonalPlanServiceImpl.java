@@ -6,10 +6,13 @@ import com.study.studypal.plan.dto.plan.request.CreatePersonalPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
+import com.study.studypal.plan.dto.task.internal.ValidateTasksInfo;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.api.PersonalPlanService;
+import com.study.studypal.plan.service.internal.PlanRecurrenceRuleInternalService;
+import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -24,6 +27,8 @@ import org.springframework.stereotype.Service;
 public class PersonalPlanServiceImpl implements PersonalPlanService {
   private final PlanRepository planRepository;
   private final ModelMapper modelMapper;
+  private final TaskInternalService taskService;
+  private final PlanRecurrenceRuleInternalService ruleService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -40,6 +45,11 @@ public class PersonalPlanServiceImpl implements PersonalPlanService {
 
     modelMapper.map(planDto, plan);
     planRepository.save(plan);
+
+    ValidateTasksInfo planInfo =
+        new ValidateTasksInfo(plan.getId(), plan.getStartDate(), plan.getDueDate());
+    taskService.createTasksForPersonalPlan(userId, planInfo, request.getTasks());
+    ruleService.createPlanRecurrenceRule(plan.getId(), request.getRecurrenceRule());
 
     return ActionResponseDto.builder().success(true).message("Create successfully.").build();
   }

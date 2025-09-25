@@ -1,6 +1,6 @@
 package com.study.studypal.plan.dto.plan.request;
 
-import com.study.studypal.plan.dto.recurrence.request.CreateRecurrenceRuleDto;
+import com.study.studypal.plan.dto.recurrence.request.CreatePlanRecurrenceRuleDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPersonalPlanDto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,7 +20,7 @@ public class CreatePersonalPlanRequestDto {
   @NotNull(message = "Plan is required")
   private CreatePlanDto plan;
 
-  private CreateRecurrenceRuleDto recurrenceRule;
+  private CreatePlanRecurrenceRuleDto recurrenceRule;
 
   @NotNull(message = "Tasks are required")
   @Size(min = 1, message = "The list must contain at least 1 item")
