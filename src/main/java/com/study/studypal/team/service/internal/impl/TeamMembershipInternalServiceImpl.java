@@ -7,6 +7,7 @@ import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -79,5 +80,10 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   @Override
   public List<UUID> getMemberIds(UUID teamId) {
     return teamUserRepository.getTeamMemberUserIds(teamId);
+  }
+
+  @Override
+  public UserSummaryProfile getOwnerProfile(UUID teamId) {
+    return teamUserRepository.getTeamOwner(teamId);
   }
 }

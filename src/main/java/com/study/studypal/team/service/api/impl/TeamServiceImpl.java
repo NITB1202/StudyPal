@@ -25,6 +25,7 @@ import com.study.studypal.team.exception.TeamErrorCode;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.service.api.TeamService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -129,11 +130,11 @@ public class TeamServiceImpl implements TeamService {
       throw new BaseException(TeamErrorCode.INVALID_TEAM_CODE);
     }
 
-    User creator = team.getCreator();
+    UserSummaryProfile owner = teamMembershipService.getOwnerProfile(team.getId());
     TeamProfileResponseDto profile = modelMapper.map(team, TeamProfileResponseDto.class);
 
-    profile.setCreatorName(creator.getName());
-    profile.setCreatorAvatarUrl(creator.getAvatarUrl());
+    profile.setCreatorName(owner.getName());
+    profile.setCreatorAvatarUrl(owner.getAvatarUrl());
 
     return profile;
   }

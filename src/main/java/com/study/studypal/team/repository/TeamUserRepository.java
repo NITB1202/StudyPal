@@ -1,6 +1,7 @@
 package com.study.studypal.team.repository;
 
 import com.study.studypal.team.entity.TeamUser;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
@@ -89,4 +90,16 @@ public interface TeamUserRepository extends JpaRepository<TeamUser, UUID> {
     WHERE tu.team.id = :teamId
     """)
   List<UUID> getTeamMemberUserIds(@Param("teamId") UUID teamId);
+
+  @Query(
+      """
+    SELECT new com.study.studypal.user.dto.internal.UserSummaryProfile(
+      tu.user.name,
+      tu.user.avatarUrl
+    )
+    FROM TeamUser tu
+    WHERE tu.team.id = :teamId
+    AND tu.role = 'OWNER'
+    """)
+  UserSummaryProfile getTeamOwner(@Param("teamId") UUID teamId);
 }
