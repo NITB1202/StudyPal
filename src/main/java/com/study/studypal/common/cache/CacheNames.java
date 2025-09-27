@@ -1,5 +1,9 @@
 package com.study.studypal.common.cache;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CacheNames {
   public static final String REGISTER = "register";
   public static final String RESET_PASSWORD = "resetPassword";
@@ -12,6 +16,4 @@ public final class CacheNames {
   public static final String TEAM_MEMBERS = "teamMembers";
   public static final String INVITATIONS = "invitations";
   public static final String NOTIFICATIONS = "notifications";
-
-  private CacheNames() {}
 }

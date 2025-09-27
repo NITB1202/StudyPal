@@ -1,5 +1,7 @@
 package com.study.studypal.team.service.api.impl;
 
+import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -45,7 +47,6 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CacheManager cacheManager;
   private final ApplicationEventPublisher eventPublisher;
-  private static final int MAX_OWNED_TEAMS = 5;
 
   /**
    * Note: Cache eviction for teamMembers is already handled inside TeamInternalService's

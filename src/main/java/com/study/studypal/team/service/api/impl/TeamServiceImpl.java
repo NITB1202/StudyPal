@@ -1,5 +1,7 @@
 package com.study.studypal.team.service.api.impl;
 
+import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -63,7 +65,6 @@ public class TeamServiceImpl implements TeamService {
 
   @PersistenceContext private final EntityManager entityManager;
   private static final String AVATAR_FOLDER = "teams";
-  private static final int MAX_OWNED_TEAMS = 5;
 
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")

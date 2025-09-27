@@ -1,5 +1,7 @@
 package com.study.studypal.team.controller;
 
+import static com.study.studypal.common.util.Constants.DEFAULT_PAGE_SIZE;
+
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
@@ -48,7 +50,7 @@ public class InvitationController {
       @AuthenticationPrincipal UUID userId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
     return ResponseEntity.ok(invitationService.getInvitations(userId, cursor, size));
   }
 
