@@ -24,6 +24,7 @@ import com.study.studypal.team.event.team.TeamUpdatedEvent;
 import com.study.studypal.team.exception.TeamErrorCode;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.service.api.TeamService;
+import com.study.studypal.team.service.internal.TeamInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
@@ -52,6 +53,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class TeamServiceImpl implements TeamService {
   private final TeamRepository teamRepository;
+  private final TeamInternalService internalService;
   private final TeamMembershipInternalService teamMembershipService;
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CodeService codeService;
@@ -66,8 +68,8 @@ public class TeamServiceImpl implements TeamService {
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
   public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
-    if (teamRepository.countByCreatorId(userId) == MAX_OWNED_TEAMS) {
-      throw new BaseException(TeamErrorCode.TEAM_CREATION_LIMIT_REACHED);
+    if (internalService.countTeamsOwnerByUser(userId) == MAX_OWNED_TEAMS) {
+      throw new BaseException(TeamErrorCode.TEAM_OWNER_LIMIT_REACHED);
     }
 
     if (teamRepository.existsByNameAndCreatorId(request.getName(), userId)) {

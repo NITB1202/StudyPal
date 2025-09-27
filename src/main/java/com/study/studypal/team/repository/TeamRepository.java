@@ -17,7 +17,14 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 
   boolean existsByTeamCode(String teamCode);
 
-  int countByCreatorId(UUID userId);
+  @Query(
+      """
+          SELECT COUNT(tu)
+          FROM TeamUser tu
+          WHERE tu.user.id = :userId
+          AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+          """)
+  long countTeamsOwnedByUser(@Param("userId") UUID userId);
 
   @Query(
       """

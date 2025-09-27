@@ -99,7 +99,7 @@ public interface TeamUserRepository extends JpaRepository<TeamUser, UUID> {
     )
     FROM TeamUser tu
     WHERE tu.team.id = :teamId
-    AND tu.role = 'OWNER'
+    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
     """)
   UserSummaryProfile getTeamOwner(@Param("teamId") UUID teamId);
 }

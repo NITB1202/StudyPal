@@ -45,6 +45,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CacheManager cacheManager;
   private final ApplicationEventPublisher eventPublisher;
+  private static final int MAX_OWNED_TEAMS = 5;
 
   /**
    * Note: Cache eviction for teamMembers is already handled inside TeamInternalService's
@@ -220,8 +221,12 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     // Each group can have only one creator
     if (request.getRole() == TeamRole.OWNER) {
-      userInfo.setRole(TeamRole.ADMIN);
-      teamUserRepository.save(userInfo);
+      if (teamService.countTeamsOwnerByUser(request.getMemberId()) == MAX_OWNED_TEAMS) {
+        throw new BaseException(TeamMembershipErrorCode.TEAM_OWNER_LIMIT_REACHED);
+      } else {
+        userInfo.setRole(TeamRole.ADMIN);
+        teamUserRepository.save(userInfo);
+      }
     }
 
     memberInfo.setRole(request.getRole());

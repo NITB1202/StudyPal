@@ -12,8 +12,8 @@ public enum TeamErrorCode implements ErrorCode {
       HttpStatus.CONFLICT, "TEAM_003", "You have already created a team with the same name."),
   TEAM_NAME_UNCHANGED(
       HttpStatus.BAD_REQUEST, "TEAM_004", "The new team name is the same as the current name."),
-  TEAM_CREATION_LIMIT_REACHED(
-      HttpStatus.BAD_REQUEST, "TEAM_005", "You have reached the maximum number of teams allowed.");
+  TEAM_OWNER_LIMIT_REACHED(
+      HttpStatus.BAD_REQUEST, "TEAM_005", "You already own the maximum number of teams allowed.");
 
   private final HttpStatus httpStatus;
   private final String code;

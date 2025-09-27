@@ -67,4 +67,9 @@ public class TeamInternalServiceImpl implements TeamInternalService {
 
     return team.getName();
   }
+
+  @Override
+  public long countTeamsOwnerByUser(UUID userId) {
+    return teamRepository.countTeamsOwnedByUser(userId);
+  }
 }
