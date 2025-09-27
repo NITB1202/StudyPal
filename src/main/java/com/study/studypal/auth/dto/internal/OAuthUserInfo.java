@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OAuthUserInfoDto {
+public class OAuthUserInfo {
   private String id;
 
   private String name;

@@ -1,6 +1,6 @@
 package com.study.studypal.notification.event;
 
-import com.study.studypal.notification.dto.internal.CreateNotificationDto;
+import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
 import com.study.studypal.notification.enums.LinkedSubject;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
@@ -11,7 +11,7 @@ import com.study.studypal.team.event.team.TeamUpdatedEvent;
 import com.study.studypal.team.event.team.UserJoinedTeamEvent;
 import com.study.studypal.team.event.team.UserLeftTeamEvent;
 import com.study.studypal.team.service.internal.TeamInternalService;
-import com.study.studypal.user.dto.internal.UserSummaryProfileDto;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.service.internal.UserInternalService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +31,14 @@ public class NotificationEventListener {
   @Async
   @EventListener
   public void handleInvitationCreatedEvent(InvitationCreatedEvent event) {
-    UserSummaryProfileDto inviter = userService.getUserSummaryProfile(event.getInviterId());
+    UserSummaryProfile inviter = userService.getUserSummaryProfile(event.getInviterId());
     String teamName = teamService.getTeamName(event.getTeamId());
 
     String title = "Team invitation";
     String content = inviter.getName() + " has invited you to the team " + teamName + ".";
 
-    CreateNotificationDto notification =
-        CreateNotificationDto.builder()
+    CreateNotificationRequest notification =
+        CreateNotificationRequest.builder()
             .userId(event.getInviteeId())
             .title(title)
             .content(content)
@@ -52,7 +52,7 @@ public class NotificationEventListener {
   @Async
   @EventListener
   public void handleTeamDeletedEvent(TeamDeletedEvent event) {
-    UserSummaryProfileDto deletedBy = userService.getUserSummaryProfile(event.getDeletedBy());
+    UserSummaryProfile deletedBy = userService.getUserSummaryProfile(event.getDeletedBy());
 
     String title = "Team deleted";
     String content =
@@ -61,8 +61,8 @@ public class NotificationEventListener {
     for (UUID memberId : event.getMemberIds()) {
       if (event.getDeletedBy().equals(memberId)) continue;
 
-      CreateNotificationDto dto =
-          CreateNotificationDto.builder()
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
               .userId(memberId)
               .title(title)
               .content(content)
@@ -79,7 +79,7 @@ public class NotificationEventListener {
   @Async
   @EventListener
   public void handleTeamUpdatedEvent(TeamUpdatedEvent event) {
-    UserSummaryProfileDto updatedBy = userService.getUserSummaryProfile(event.getUpdatedBy());
+    UserSummaryProfile updatedBy = userService.getUserSummaryProfile(event.getUpdatedBy());
 
     String title = "Team updated";
     String content =
@@ -92,8 +92,8 @@ public class NotificationEventListener {
       if (event.getUpdatedBy().equals(memberId)
           || !settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
 
-      CreateNotificationDto dto =
-          CreateNotificationDto.builder()
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
               .userId(memberId)
               .title(title)
               .content(content)
@@ -110,7 +110,7 @@ public class NotificationEventListener {
   @Async
   @EventListener
   public void handleUserJoinedTeamEvent(UserJoinedTeamEvent event) {
-    UserSummaryProfileDto user = userService.getUserSummaryProfile(event.getUserId());
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
     String teamName = teamService.getTeamName(event.getTeamId());
 
     String title = "New team member";
@@ -120,8 +120,8 @@ public class NotificationEventListener {
       if (event.getUserId().equals(memberId)
           || !settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
 
-      CreateNotificationDto dto =
-          CreateNotificationDto.builder()
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
               .userId(memberId)
               .title(title)
               .content(content)
@@ -138,7 +138,7 @@ public class NotificationEventListener {
   @Async
   @EventListener
   public void handleUserLeftTeamEvent(UserLeftTeamEvent event) {
-    UserSummaryProfileDto user = userService.getUserSummaryProfile(event.getUserId());
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
     String teamName = teamService.getTeamName(event.getTeamId());
 
     String title = "Member left";
@@ -148,8 +148,8 @@ public class NotificationEventListener {
       if (event.getUserId().equals(memberId)
           || !settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
 
-      CreateNotificationDto dto =
-          CreateNotificationDto.builder()
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
               .userId(memberId)
               .title(title)
               .content(content)

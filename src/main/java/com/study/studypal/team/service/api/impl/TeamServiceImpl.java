@@ -1,5 +1,7 @@
 package com.study.studypal.team.service.api.impl;
 
+import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -10,7 +12,11 @@ import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
-import com.study.studypal.team.dto.team.response.*;
+import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
@@ -20,7 +26,9 @@ import com.study.studypal.team.event.team.TeamUpdatedEvent;
 import com.study.studypal.team.exception.TeamErrorCode;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.service.api.TeamService;
+import com.study.studypal.team.service.internal.TeamInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -47,6 +55,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class TeamServiceImpl implements TeamService {
   private final TeamRepository teamRepository;
+  private final TeamInternalService internalService;
   private final TeamMembershipInternalService teamMembershipService;
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CodeService codeService;
@@ -60,6 +69,10 @@ public class TeamServiceImpl implements TeamService {
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
   public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
+    if (internalService.countTeamsOwnerByUser(userId) == MAX_OWNED_TEAMS) {
+      throw new BaseException(TeamErrorCode.TEAM_OWNER_LIMIT_REACHED);
+    }
+
     if (teamRepository.existsByNameAndCreatorId(request.getName(), userId)) {
       throw new BaseException(TeamErrorCode.DUPLICATE_TEAM_NAME);
     }
@@ -82,7 +95,7 @@ public class TeamServiceImpl implements TeamService {
                 .build();
 
         teamRepository.save(team);
-        teamMembershipService.createMembership(team.getId(), userId, TeamRole.CREATOR);
+        teamMembershipService.createMembership(team.getId(), userId, TeamRole.OWNER);
         teamNotificationSettingService.createSettings(userId, team.getId());
 
         return modelMapper.map(team, TeamResponseDto.class);
@@ -120,11 +133,11 @@ public class TeamServiceImpl implements TeamService {
       throw new BaseException(TeamErrorCode.INVALID_TEAM_CODE);
     }
 
-    User creator = team.getCreator();
+    UserSummaryProfile owner = teamMembershipService.getOwnerProfile(team.getId());
     TeamProfileResponseDto profile = modelMapper.map(team, TeamProfileResponseDto.class);
 
-    profile.setCreatorName(creator.getName());
-    profile.setCreatorAvatarUrl(creator.getAvatarUrl());
+    profile.setCreatorName(owner.getName());
+    profile.setCreatorAvatarUrl(owner.getAvatarUrl());
 
     return profile;
   }

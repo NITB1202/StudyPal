@@ -19,5 +19,5 @@ public class TeamSummaryResponseDto {
 
   private String avatarUrl;
 
-  private boolean managedByUser;
+  private boolean isOwner;
 }

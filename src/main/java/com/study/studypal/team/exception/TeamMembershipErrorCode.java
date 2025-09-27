@@ -11,13 +11,13 @@ public enum TeamMembershipErrorCode implements ErrorCode {
   TARGET_MEMBERSHIP_NOT_FOUND(
       HttpStatus.NOT_FOUND, "TEAM_MEM_002", "The specified member is not part of this team."),
   PERMISSION_UPDATE_TEAM_DENIED(
-      HttpStatus.FORBIDDEN, "TEAM_MEM_003", "Only the creator can update the team."),
+      HttpStatus.FORBIDDEN, "TEAM_MEM_003", "Only the owner can update the team."),
   PERMISSION_UPDATE_MEMBER_ROLE_DENIED(
-      HttpStatus.FORBIDDEN, "TEAM_MEM_004", "Only the creator can update another member's role."),
+      HttpStatus.FORBIDDEN, "TEAM_MEM_004", "Only the owner can update another member's role."),
   PERMISSION_INVITE_MEMBER_DENIED(
       HttpStatus.FORBIDDEN,
       "TEAM_MEM_005",
-      "Only the creator or an admin can invite members to this team."),
+      "Only the owner or an admin can invite members to this team."),
   PERMISSION_REMOVE_MEMBER_RESTRICTED(
       HttpStatus.FORBIDDEN,
       "TEAM_MEM_006",
@@ -29,14 +29,18 @@ public enum TeamMembershipErrorCode implements ErrorCode {
   CANNOT_LEAVE_AS_CREATOR(
       HttpStatus.BAD_REQUEST,
       "TEAM_MEM_009",
-      "You are the creator of the team. Please transfer ownership before leaving."),
+      "You are the owner of the team. Please transfer ownership before leaving."),
   USER_ALREADY_IN_TEAM(
       HttpStatus.CONFLICT, "TEAM_MEM_010", "You are already a member of this team."),
   INVITEE_ALREADY_IN_TEAM(
       HttpStatus.CONFLICT, "TEAM_MEM_011", "The invitee is already a member of this team."),
   MEMBER_ALREADY_REMOVED(
       HttpStatus.CONFLICT, "TEAM_MEM_012", "The member has already been removed from the team."),
-  CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "TEAM_MEM_013", "Failed to decode cursor: %s");
+  CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "TEAM_MEM_013", "Failed to decode cursor: %s"),
+  TEAM_OWNER_LIMIT_REACHED(
+      HttpStatus.BAD_REQUEST,
+      "TEAM_MEM_013",
+      "The selected member already owns the maximum number of teams allowed.");
 
   private final HttpStatus httpStatus;
   private final String code;

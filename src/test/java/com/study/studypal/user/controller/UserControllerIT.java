@@ -18,7 +18,7 @@ import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.security.JwtService;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.config.TestConfig;
-import com.study.studypal.common.dto.FileResponseDto;
+import com.study.studypal.common.dto.FileResponse;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.factory.FileFactory;
 import com.study.studypal.common.service.FileService;
@@ -172,7 +172,7 @@ class UserControllerIT {
   void uploadUserAvatar_whenValidImage_shouldReturnSuccess() throws Exception {
     String newAvatarUrl = "http://avatar.url/avatar.png";
     MockMultipartFile file = FileFactory.createImageFile();
-    FileResponseDto uploadResponse = mock(FileResponseDto.class);
+    FileResponse uploadResponse = mock(FileResponse.class);
 
     // Mock FileService
     when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);

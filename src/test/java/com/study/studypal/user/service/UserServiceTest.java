@@ -1,10 +1,27 @@
 package com.study.studypal.user.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.common.dto.FileResponseDto;
+import com.study.studypal.common.dto.FileResponse;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.factory.FileFactory;
@@ -328,7 +345,7 @@ class UserServiceTest {
       utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
 
       // Mock fileService uploadFile returns URL
-      FileResponseDto uploadResponse = mock(FileResponseDto.class);
+      FileResponse uploadResponse = mock(FileResponse.class);
       when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);
       when(fileService.uploadFile(anyString(), eq(userId.toString()), any(byte[].class)))
           .thenReturn(uploadResponse);
@@ -357,7 +374,7 @@ class UserServiceTest {
     try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
       utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
 
-      FileResponseDto uploadResponse = mock(FileResponseDto.class);
+      FileResponse uploadResponse = mock(FileResponse.class);
       when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);
       when(fileService.uploadFile(anyString(), eq(userId.toString()), any(byte[].class)))
           .thenReturn(uploadResponse);

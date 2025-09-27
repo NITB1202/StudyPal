@@ -1,5 +1,7 @@
 package com.study.studypal.team.service.api.impl;
 
+import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -195,30 +197,37 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#request.teamId)")
       })
   public ActionResponseDto updateTeamMemberRole(UUID userId, UpdateMemberRoleRequestDto request) {
-    if (userId.equals(request.getMemberId())) {
+    UUID teamId = request.getTeamId();
+    UUID memberId = request.getMemberId();
+
+    if (userId.equals(memberId)) {
       throw new BaseException(TeamMembershipErrorCode.CANNOT_UPDATE_OWN_ROLE);
     }
 
     TeamUser userInfo =
         teamUserRepository
-            .findByUserIdAndTeamId(userId, request.getTeamId())
+            .findByUserIdAndTeamId(userId, teamId)
             .orElseThrow(
                 () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND));
 
     TeamUser memberInfo =
         teamUserRepository
-            .findByUserIdAndTeamId(request.getMemberId(), request.getTeamId())
+            .findByUserIdAndTeamId(memberId, teamId)
             .orElseThrow(
                 () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
 
-    if (userInfo.getRole() != TeamRole.CREATOR) {
+    if (userInfo.getRole() != TeamRole.OWNER) {
       throw new BaseException(TeamMembershipErrorCode.PERMISSION_UPDATE_MEMBER_ROLE_DENIED);
     }
 
     // Each group can have only one creator
-    if (request.getRole() == TeamRole.CREATOR) {
-      userInfo.setRole(TeamRole.ADMIN);
-      teamUserRepository.save(userInfo);
+    if (request.getRole() == TeamRole.OWNER) {
+      if (teamService.countTeamsOwnerByUser(request.getMemberId()) == MAX_OWNED_TEAMS) {
+        throw new BaseException(TeamMembershipErrorCode.TEAM_OWNER_LIMIT_REACHED);
+      } else {
+        userInfo.setRole(TeamRole.ADMIN);
+        teamUserRepository.save(userInfo);
+      }
     }
 
     memberInfo.setRole(request.getRole());
@@ -259,7 +268,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     // Permission check
     switch (userInfo.getRole()) {
-      case CREATOR:
+      case OWNER:
         {
           break;
         }
@@ -314,7 +323,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     int totalMembers = teamUserRepository.getTotalMembers(teamId) - 1;
 
-    if (totalMembers > 0 && membership.getRole() == TeamRole.CREATOR) {
+    if (totalMembers > 0 && membership.getRole() == TeamRole.OWNER) {
       throw new BaseException(TeamMembershipErrorCode.CANNOT_LEAVE_AS_CREATOR);
     }
 

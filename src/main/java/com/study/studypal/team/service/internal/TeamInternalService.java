@@ -10,4 +10,6 @@ public interface TeamInternalService {
   void decreaseMember(UUID teamId);
 
   String getTeamName(UUID teamId);
+
+  long countTeamsOwnerByUser(UUID userId);
 }

@@ -1,6 +1,6 @@
 package com.study.studypal.user.service.internal;
 
-import com.study.studypal.user.dto.internal.UserSummaryProfileDto;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import java.util.UUID;
 
 public interface UserInternalService {
@@ -8,5 +8,5 @@ public interface UserInternalService {
 
   UUID createProfile(String name, String avatarUrl);
 
-  UserSummaryProfileDto getUserSummaryProfile(UUID userId);
+  UserSummaryProfile getUserSummaryProfile(UUID userId);
 }

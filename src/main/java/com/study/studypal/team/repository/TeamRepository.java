@@ -19,11 +19,20 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 
   @Query(
       """
+          SELECT COUNT(tu)
+          FROM TeamUser tu
+          WHERE tu.user.id = :userId
+          AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+          """)
+  long countTeamsOwnedByUser(@Param("userId") UUID userId);
+
+  @Query(
+      """
     SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
         t.id,
         t.name,
         t.avatarUrl,
-        CASE WHEN tu.role IN (com.study.studypal.team.enums.TeamRole.CREATOR, com.study.studypal.team.enums.TeamRole.ADMIN) THEN true ELSE false END
+        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
@@ -37,7 +46,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
         t.id,
         t.name,
         t.avatarUrl,
-        CASE WHEN tu.role IN (com.study.studypal.team.enums.TeamRole.CREATOR, com.study.studypal.team.enums.TeamRole.ADMIN) THEN true ELSE false END
+        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
@@ -61,7 +70,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
         t.id,
         t.name,
         t.avatarUrl,
-        CASE WHEN tu.role IN (com.study.studypal.team.enums.TeamRole.CREATOR, com.study.studypal.team.enums.TeamRole.ADMIN) THEN true ELSE false END
+        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
@@ -77,7 +86,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
         t.id,
         t.name,
         t.avatarUrl,
-        CASE WHEN tu.role IN (com.study.studypal.team.enums.TeamRole.CREATOR, com.study.studypal.team.enums.TeamRole.ADMIN) THEN true ELSE false END
+        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId

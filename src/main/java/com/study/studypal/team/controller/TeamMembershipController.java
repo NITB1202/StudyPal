@@ -1,5 +1,7 @@
 package com.study.studypal.team.controller;
 
+import static com.study.studypal.common.util.Constants.DEFAULT_PAGE_SIZE;
+
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
@@ -17,7 +19,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,7 +51,7 @@ public class TeamMembershipController {
       @AuthenticationPrincipal UUID userId,
       @RequestParam UUID teamId,
       @RequestParam(required = false) String cursor,
-      @RequestParam(defaultValue = "10") @Positive int size) {
+      @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
     return ResponseEntity.ok(teamMembershipService.getTeamMembers(userId, teamId, cursor, size));
   }
 
@@ -54,7 +63,7 @@ public class TeamMembershipController {
       @RequestParam UUID teamId,
       @RequestParam String keyword,
       @RequestParam(required = false) UUID cursor,
-      @RequestParam(defaultValue = "10") @Positive int size) {
+      @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
     return ResponseEntity.ok(
         teamMembershipService.searchTeamMembersByName(userId, teamId, keyword, cursor, size));
   }

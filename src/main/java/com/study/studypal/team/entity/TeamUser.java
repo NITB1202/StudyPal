@@ -65,7 +65,7 @@ public class TeamUser {
   @Formula(
       """
         CASE role
-            WHEN 'CREATOR' THEN 1
+            WHEN 'OWNER' THEN 1
             WHEN 'ADMIN' THEN 2
             WHEN 'MEMBER' THEN 3
         END

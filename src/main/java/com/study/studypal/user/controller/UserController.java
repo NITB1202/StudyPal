@@ -1,5 +1,7 @@
 package com.study.studypal.user.controller;
 
+import static com.study.studypal.common.util.Constants.DEFAULT_PAGE_SIZE;
+
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
@@ -58,7 +60,7 @@ public class UserController {
       @AuthenticationPrincipal UUID userId,
       @RequestParam String keyword,
       @RequestParam(required = false) UUID cursor,
-      @RequestParam(defaultValue = "10") @Positive int size) {
+      @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
     return ResponseEntity.ok(userService.searchUsersByName(userId, keyword, cursor, size));
   }
 
