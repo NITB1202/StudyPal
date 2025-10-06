@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS notifications (
         REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE TABLE plans (
+CREATE TABLE IF NOT EXISTS plans (
     id UUID PRIMARY KEY,
     creator_id UUID NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -110,7 +110,7 @@ CREATE TABLE plans (
         REFERENCES plans(id) ON DELETE CASCADE
 );
 
-CREATE TABLE plan_comments (
+CREATE TABLE IF NOT EXISTS plan_comments (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL,
     user_id UUID NOT NULL,
@@ -125,7 +125,7 @@ CREATE TABLE plan_comments (
         REFERENCES plan_comments(id) ON DELETE CASCADE
 );
 
-CREATE TABLE plan_recurrence_rules (
+CREATE TABLE IF NOT EXISTS plan_recurrence_rules (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL UNIQUE,
     week_days VARCHAR(100) NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE plan_recurrence_rules (
         REFERENCES plans(id) ON DELETE CASCADE
 );
 
-CREATE TABLE plan_reminders (
+CREATE TABLE IF NOT EXISTS plan_reminders (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL,
     remind_at TIMESTAMP NOT NULL,
@@ -144,7 +144,7 @@ CREATE TABLE plan_reminders (
         REFERENCES plans(id) ON DELETE CASCADE
 );
 
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL,
     content VARCHAR(255) NOT NULL,
