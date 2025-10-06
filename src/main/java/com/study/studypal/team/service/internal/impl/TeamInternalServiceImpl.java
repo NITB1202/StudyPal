@@ -18,7 +18,7 @@ public class TeamInternalServiceImpl implements TeamInternalService {
   private final TeamRepository teamRepository;
 
   @Override
-  public UUID getTeamIdByTeamCode(String teamCode) {
+  public UUID getIdByTeamCode(String teamCode) {
     Team team =
         teamRepository
             .findByTeamCode(teamCode)

@@ -24,6 +24,7 @@ import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
 import com.study.studypal.team.exception.TeamErrorCode;
+import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import com.study.studypal.team.repository.TeamRepository;
 import com.study.studypal.team.service.api.TeamService;
 import com.study.studypal.team.service.internal.TeamInternalService;
@@ -123,13 +124,24 @@ public class TeamServiceImpl implements TeamService {
   }
 
   @Override
-  public TeamQRCodeResponseDto getTeamQRCode(UUID userId, UUID teamId) {
-    return null;
+  public TeamQRCodeResponseDto getTeamQRCode(UUID userId, UUID teamId, int width, int height) {
+    TeamUser membership = teamMembershipService.getMemberShip(teamId, userId);
+
+    if (membership.getRole().equals(TeamRole.MEMBER)) {
+      throw new BaseException(TeamMembershipErrorCode.PERMISSION_INVITE_MEMBER_DENIED);
+    }
+
+    Team team =
+        teamRepository
+            .findById(teamId)
+            .orElseThrow(() -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND));
+    String qrCode = codeService.generateQRCodeBase64(team.getTeamCode(), width, height);
+
+    return TeamQRCodeResponseDto.builder().qrCode(qrCode).build();
   }
 
   @Override
-  public TeamPreviewResponseDto getTeamPreview(String qrCode) {
-    String teamCode = codeService.decodeBase64String(qrCode);
+  public TeamPreviewResponseDto getTeamPreview(String teamCode) {
     Team team =
         teamRepository
             .findByTeamCode(teamCode)
@@ -247,7 +259,7 @@ public class TeamServiceImpl implements TeamService {
     team.setTeamCode(teamCode);
     teamRepository.save(team);
 
-    return ActionResponseDto.builder().success(true).message(teamCode).build();
+    return ActionResponseDto.builder().success(true).message("Reset successfully.").build();
   }
 
   @Override

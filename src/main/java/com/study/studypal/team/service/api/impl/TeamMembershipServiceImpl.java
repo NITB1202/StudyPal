@@ -55,7 +55,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
   public ActionResponseDto joinTeam(UUID userId, String teamCode) {
-    UUID teamId = teamService.getTeamIdByTeamCode(teamCode);
+    UUID teamId = teamService.getIdByTeamCode(teamCode);
 
     if (teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
       throw new BaseException(TeamMembershipErrorCode.USER_ALREADY_IN_TEAM);

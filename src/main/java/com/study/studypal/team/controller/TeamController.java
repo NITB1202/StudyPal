@@ -11,6 +11,7 @@ import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
 import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import com.study.studypal.team.service.api.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -37,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/teams")
 public class TeamController {
   private final TeamService teamService;
@@ -51,7 +54,7 @@ public class TeamController {
   }
 
   @GetMapping("/{teamId}")
-  @Operation(summary = "Get team dashboard.")
+  @Operation(summary = "Get team's dashboard.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @NotFoundApiResponse
   public ResponseEntity<TeamDashboardResponseDto> getTeamDashboard(
@@ -59,12 +62,26 @@ public class TeamController {
     return ResponseEntity.ok(teamService.getTeamDashboard(userId, teamId));
   }
 
-  @GetMapping("/code/{qrCode}")
-  @Operation(summary = "Get team's preview by QR code.")
-  @ApiResponse(responseCode = "200", description = "Get successfully")
+  @GetMapping("/{teamId}/qr")
+  @Operation(summary = "Returns a base64-encoded QR code image representing the team code.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
   @NotFoundApiResponse
-  public ResponseEntity<TeamPreviewResponseDto> getTeamPreview(@PathVariable String qrCode) {
-    return ResponseEntity.ok(teamService.getTeamPreview(qrCode));
+  public ResponseEntity<TeamQRCodeResponseDto> getTeamQRCode(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID teamId,
+      @RequestParam @Positive int width,
+      @RequestParam @Positive int height) {
+    return ResponseEntity.ok(teamService.getTeamQRCode(userId, teamId, width, height));
+  }
+
+  @GetMapping("/{teamCode}/preview")
+  @Operation(summary = "Get team's preview by team code.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  @NotFoundApiResponse
+  public ResponseEntity<TeamPreviewResponseDto> getTeamPreview(@PathVariable String teamCode) {
+    return ResponseEntity.ok(teamService.getTeamPreview(teamCode));
   }
 
   @GetMapping("/all")
@@ -94,7 +111,7 @@ public class TeamController {
   }
 
   @PatchMapping("/{teamId}")
-  @Operation(summary = "Update team's profile.")
+  @Operation(summary = "Update a team's details.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
   @BadRequestApiResponse
   @UnauthorizedApiResponse
@@ -106,7 +123,7 @@ public class TeamController {
     return ResponseEntity.ok(teamService.updateTeam(userId, teamId, request));
   }
 
-  @PatchMapping("/reset/{teamId}")
+  @PatchMapping("/{teamId}/code")
   @Operation(summary = "Reset team code.")
   @ApiResponse(responseCode = "200", description = "Reset successfully.")
   @BadRequestApiResponse
@@ -127,7 +144,7 @@ public class TeamController {
     return ResponseEntity.ok(teamService.deleteTeam(teamId, userId));
   }
 
-  @PostMapping(value = "/avatar/{teamId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/{teamId}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Upload team's avatar.")
   @ApiResponse(responseCode = "200", description = "Upload successfully.")
   @BadRequestApiResponse

@@ -3,7 +3,7 @@ package com.study.studypal.team.service.internal;
 import java.util.UUID;
 
 public interface TeamInternalService {
-  UUID getTeamIdByTeamCode(String teamCode);
+  UUID getIdByTeamCode(String teamCode);
 
   void increaseMember(UUID teamId);
 

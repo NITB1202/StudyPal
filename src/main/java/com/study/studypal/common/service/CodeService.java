@@ -9,5 +9,5 @@ public interface CodeService {
 
   String generateTeamCode();
 
-  String decodeBase64String(String str);
+  String generateQRCodeBase64(String str, int width, int height);
 }
