@@ -31,7 +31,7 @@ public class PlanRecurrenceRule {
   private UUID id;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "plan_id", nullable = false)
+  @JoinColumn(name = "plan_id", unique = true, nullable = false)
   private Plan plan;
 
   @Column(name = "week_days", nullable = false)
@@ -40,7 +40,7 @@ public class PlanRecurrenceRule {
   @Column(name = "recurrence_start_date", nullable = false)
   private LocalDate recurrenceStartDate;
 
-  @Column(name = "recurrence_end_date")
+  @Column(name = "recurrence_end_date", nullable = false)
   private LocalDate recurrenceEndDate;
 
   @Column(name = "is_deleted", nullable = false)
