@@ -10,7 +10,7 @@ import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
 import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
-import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import com.study.studypal.team.service.api.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,7 +63,7 @@ public class TeamController {
   @Operation(summary = "Get team's preview by QR code.")
   @ApiResponse(responseCode = "200", description = "Get successfully")
   @NotFoundApiResponse
-  public ResponseEntity<TeamProfileResponseDto> getTeamPreview(@PathVariable String qrCode) {
+  public ResponseEntity<TeamPreviewResponseDto> getTeamPreview(@PathVariable String qrCode) {
     return ResponseEntity.ok(teamService.getTeamPreview(qrCode));
   }
 

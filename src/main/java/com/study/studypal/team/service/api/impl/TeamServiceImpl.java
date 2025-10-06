@@ -14,7 +14,8 @@ import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
 import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
-import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
@@ -122,7 +123,12 @@ public class TeamServiceImpl implements TeamService {
   }
 
   @Override
-  public TeamProfileResponseDto getTeamPreview(String qrCode) {
+  public TeamQRCodeResponseDto getTeamQRCode(UUID userId, UUID teamId) {
+    return null;
+  }
+
+  @Override
+  public TeamPreviewResponseDto getTeamPreview(String qrCode) {
     String teamCode = codeService.decodeBase64String(qrCode);
     Team team =
         teamRepository
@@ -130,7 +136,7 @@ public class TeamServiceImpl implements TeamService {
             .orElseThrow(() -> new BaseException(TeamErrorCode.INVALID_TEAM_CODE));
 
     UserSummaryProfile owner = teamMembershipService.getOwnerProfile(team.getId());
-    TeamProfileResponseDto profile = modelMapper.map(team, TeamProfileResponseDto.class);
+    TeamPreviewResponseDto profile = modelMapper.map(team, TeamPreviewResponseDto.class);
 
     profile.setCreatorName(owner.getName());
     profile.setCreatorAvatarUrl(owner.getAvatarUrl());

@@ -5,7 +5,8 @@ import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
 import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
-import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,7 +17,9 @@ public interface TeamService {
 
   TeamDashboardResponseDto getTeamDashboard(UUID userId, UUID teamId);
 
-  TeamProfileResponseDto getTeamPreview(String qrCode);
+  TeamQRCodeResponseDto getTeamQRCode(UUID userId, UUID teamId);
+
+  TeamPreviewResponseDto getTeamPreview(String qrCode);
 
   ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size);
 

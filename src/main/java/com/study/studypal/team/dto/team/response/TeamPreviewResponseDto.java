@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TeamProfileResponseDto {
+public class TeamPreviewResponseDto {
   private UUID id;
 
   private String avatarUrl;
