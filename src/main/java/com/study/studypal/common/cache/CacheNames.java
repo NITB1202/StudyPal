@@ -12,7 +12,7 @@ public final class CacheNames {
   public static final String REFRESH_TOKENS = "refreshTokens";
   public static final String USER_SUMMARY = "userSummary";
   public static final String USER_TEAMS = "userTeams";
-  public static final String TEAM_OVERVIEW = "teamOverview";
+  public static final String TEAM_DASHBOARD = "teamDashboard";
   public static final String TEAM_MEMBERS = "teamMembers";
   public static final String INVITATIONS = "invitations";
   public static final String NOTIFICATIONS = "notifications";

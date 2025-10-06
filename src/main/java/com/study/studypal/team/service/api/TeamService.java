@@ -4,7 +4,7 @@ import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
-import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface TeamService {
   TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request);
 
-  TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId);
+  TeamDashboardResponseDto getTeamDashboard(UUID userId, UUID teamId);
 
   TeamProfileResponseDto getTeamProfileByTeamCode(String teamCode);
 

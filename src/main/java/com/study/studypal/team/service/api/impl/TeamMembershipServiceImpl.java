@@ -192,7 +192,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
       evict = {
         @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
         @CacheEvict(
-            value = CacheNames.TEAM_OVERVIEW,
+            value = CacheNames.TEAM_DASHBOARD,
             key = "@keys.of(#request.memberId, #request.teamId)"),
         @CacheEvict(value = CacheNames.TEAM_MEMBERS, key = "@keys.of(#request.teamId)")
       })
@@ -244,7 +244,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
       evict = {
         @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#request.memberId)"),
         @CacheEvict(
-            value = CacheNames.TEAM_OVERVIEW,
+            value = CacheNames.TEAM_DASHBOARD,
             key = "@keys.of(#request.memberId, #request.teamId)")
       })
   public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
@@ -310,7 +310,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
   @Caching(
       evict = {
         @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)"),
-        @CacheEvict(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#userId, #teamId)")
+        @CacheEvict(value = CacheNames.TEAM_DASHBOARD, key = "@keys.of(#userId, #teamId)")
       })
   public ActionResponseDto leaveTeam(UUID userId, UUID teamId) {
     TeamUser membership =

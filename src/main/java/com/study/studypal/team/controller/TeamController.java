@@ -9,7 +9,7 @@ import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
-import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import com.study.studypal.team.service.api.TeamService;
@@ -51,12 +51,12 @@ public class TeamController {
   }
 
   @GetMapping("/{teamId}")
-  @Operation(summary = "Get team overview.")
+  @Operation(summary = "Get team dashboard.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @NotFoundApiResponse
-  public ResponseEntity<TeamOverviewResponseDto> getTeamOverview(
+  public ResponseEntity<TeamDashboardResponseDto> getTeamDashboard(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID teamId) {
-    return ResponseEntity.ok(teamService.getTeamOverview(userId, teamId));
+    return ResponseEntity.ok(teamService.getTeamDashboard(userId, teamId));
   }
 
   @GetMapping("/code/{teamCode}")

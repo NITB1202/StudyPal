@@ -14,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TeamOverviewResponseDto {
+public class TeamDashboardResponseDto {
   private UUID id;
 
   private String name;
@@ -25,8 +25,6 @@ public class TeamOverviewResponseDto {
   private String avatarUrl;
 
   private String description;
-
-  private String teamCode;
 
   private int totalMembers;
 }

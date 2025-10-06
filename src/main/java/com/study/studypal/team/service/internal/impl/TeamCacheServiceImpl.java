@@ -17,8 +17,8 @@ public class TeamCacheServiceImpl implements TeamCacheService {
   private final CacheManager cacheManager;
 
   @Override
-  public void evictTeamOverviewCaches(UUID teamId, List<UUID> memberIds) {
-    Cache cache = cacheManager.getCache(CacheNames.TEAM_OVERVIEW);
+  public void evictTeamDashboardCaches(UUID teamId, List<UUID> memberIds) {
+    Cache cache = cacheManager.getCache(CacheNames.TEAM_DASHBOARD);
     for (UUID memberId : memberIds) {
       Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(memberId, teamId));
     }

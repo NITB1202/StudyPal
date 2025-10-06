@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TeamCacheService {
-  void evictTeamOverviewCaches(UUID teamId, List<UUID> memberIds);
+  void evictTeamDashboardCaches(UUID teamId, List<UUID> memberIds);
 
   void evictUserJoinedTeamsCaches(List<UUID> memberIds);
 }

@@ -13,14 +13,13 @@ import com.study.studypal.notification.service.internal.TeamNotificationSettingI
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
-import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
 import com.study.studypal.team.enums.TeamRole;
-import com.study.studypal.team.event.team.TeamCodeResetEvent;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
 import com.study.studypal.team.exception.TeamErrorCode;
@@ -107,22 +106,19 @@ public class TeamServiceImpl implements TeamService {
   }
 
   @Override
-  @Cacheable(value = CacheNames.TEAM_OVERVIEW, key = "@keys.of(#userId, #teamId)")
-  public TeamOverviewResponseDto getTeamOverview(UUID userId, UUID teamId) {
+  @Cacheable(value = CacheNames.TEAM_DASHBOARD, key = "@keys.of(#userId, #teamId)")
+  public TeamDashboardResponseDto getTeamDashboard(UUID userId, UUID teamId) {
     Team team =
         teamRepository
             .findById(teamId)
             .orElseThrow(() -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND));
 
-    TeamOverviewResponseDto overview = modelMapper.map(team, TeamOverviewResponseDto.class);
+    TeamDashboardResponseDto dashboard = modelMapper.map(team, TeamDashboardResponseDto.class);
 
     TeamUser membership = teamMembershipService.getMemberShip(teamId, userId);
-    overview.setRole(membership.getRole());
-    if (membership.getRole() == TeamRole.MEMBER) {
-      overview.setTeamCode(null);
-    }
+    dashboard.setRole(membership.getRole());
 
-    return overview;
+    return dashboard;
   }
 
   @Override
@@ -244,14 +240,6 @@ public class TeamServiceImpl implements TeamService {
 
     team.setTeamCode(teamCode);
     teamRepository.save(team);
-
-    TeamCodeResetEvent event =
-        TeamCodeResetEvent.builder()
-            .teamId(teamId)
-            .memberIds(teamMembershipService.getMemberIds(teamId))
-            .build();
-
-    eventPublisher.publishEvent(event);
 
     return ActionResponseDto.builder().success(true).message(teamCode).build();
   }
