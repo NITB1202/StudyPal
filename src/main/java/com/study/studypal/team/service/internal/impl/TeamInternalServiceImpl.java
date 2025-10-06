@@ -19,11 +19,10 @@ public class TeamInternalServiceImpl implements TeamInternalService {
 
   @Override
   public UUID getTeamIdByTeamCode(String teamCode) {
-    Team team = teamRepository.findByTeamCode(teamCode);
-
-    if (team == null) {
-      throw new BaseException(TeamErrorCode.INVALID_TEAM_CODE);
-    }
+    Team team =
+        teamRepository
+            .findByTeamCode(teamCode)
+            .orElseThrow(() -> new BaseException(TeamErrorCode.INVALID_TEAM_CODE));
 
     return team.getId();
   }

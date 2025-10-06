@@ -59,13 +59,12 @@ public class TeamController {
     return ResponseEntity.ok(teamService.getTeamDashboard(userId, teamId));
   }
 
-  @GetMapping("/code/{teamCode}")
-  @Operation(summary = "Get team's profile by team code.")
+  @GetMapping("/code/{qrCode}")
+  @Operation(summary = "Get team's preview by QR code.")
   @ApiResponse(responseCode = "200", description = "Get successfully")
   @NotFoundApiResponse
-  public ResponseEntity<TeamProfileResponseDto> getTeamProfileByTeamCode(
-      @PathVariable String teamCode) {
-    return ResponseEntity.ok(teamService.getTeamProfileByTeamCode(teamCode));
+  public ResponseEntity<TeamProfileResponseDto> getTeamPreview(@PathVariable String qrCode) {
+    return ResponseEntity.ok(teamService.getTeamPreview(qrCode));
   }
 
   @GetMapping("/all")

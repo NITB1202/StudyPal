@@ -5,6 +5,7 @@ import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.util.CacheKeyUtils;
 import jakarta.annotation.PostConstruct;
+import java.util.Base64;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
@@ -45,6 +46,12 @@ public class CodeServiceImpl implements CodeService {
   @Override
   public String generateTeamCode() {
     return generateRandomCode();
+  }
+
+  @Override
+  public String decodeBase64String(String str) {
+    byte[] decodedBytes = Base64.getDecoder().decode(str);
+    return new String(decodedBytes);
   }
 
   private String generateRandomCode() {

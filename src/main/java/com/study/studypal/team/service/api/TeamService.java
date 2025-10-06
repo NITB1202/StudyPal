@@ -16,7 +16,7 @@ public interface TeamService {
 
   TeamDashboardResponseDto getTeamDashboard(UUID userId, UUID teamId);
 
-  TeamProfileResponseDto getTeamProfileByTeamCode(String teamCode);
+  TeamProfileResponseDto getTeamPreview(String qrCode);
 
   ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size);
 

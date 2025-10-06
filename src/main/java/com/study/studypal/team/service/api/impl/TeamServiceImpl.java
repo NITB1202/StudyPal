@@ -122,12 +122,12 @@ public class TeamServiceImpl implements TeamService {
   }
 
   @Override
-  public TeamProfileResponseDto getTeamProfileByTeamCode(String teamCode) {
-    Team team = teamRepository.findByTeamCode(teamCode);
-
-    if (team == null) {
-      throw new BaseException(TeamErrorCode.INVALID_TEAM_CODE);
-    }
+  public TeamProfileResponseDto getTeamPreview(String qrCode) {
+    String teamCode = codeService.decodeBase64String(qrCode);
+    Team team =
+        teamRepository
+            .findByTeamCode(teamCode)
+            .orElseThrow(() -> new BaseException(TeamErrorCode.INVALID_TEAM_CODE));
 
     UserSummaryProfile owner = teamMembershipService.getOwnerProfile(team.getId());
     TeamProfileResponseDto profile = modelMapper.map(team, TeamProfileResponseDto.class);

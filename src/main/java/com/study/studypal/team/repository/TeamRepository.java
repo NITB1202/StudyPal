@@ -4,6 +4,7 @@ import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,7 @@ import org.springframework.data.repository.query.Param;
 public interface TeamRepository extends JpaRepository<Team, UUID> {
   boolean existsByNameAndCreatorId(String name, UUID creatorId);
 
-  Team findByTeamCode(String teamCode);
+  Optional<Team> findByTeamCode(String teamCode);
 
   boolean existsByTeamCode(String teamCode);
 
