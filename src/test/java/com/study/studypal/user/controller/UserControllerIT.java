@@ -14,7 +14,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.AccountRole;
+import com.study.studypal.auth.factory.AccountFactory;
+import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.security.JwtService;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.config.TestConfig;
@@ -55,6 +58,8 @@ class UserControllerIT {
 
   @Autowired private UserRepository userRepository;
 
+  @Autowired private AccountRepository accountRepository;
+
   @Autowired private FileService fileService;
 
   @Autowired private JwtService jwtService;
@@ -74,6 +79,11 @@ class UserControllerIT {
 
     userRepository.save(UserFactory.createForSave("Alice"));
     userRepository.save(UserFactory.createForSave("alex"));
+
+    Account account = AccountFactory.createFullDetails();
+    account.setUser(currentUser);
+
+    accountRepository.save(account);
   }
 
   // getUserProfile

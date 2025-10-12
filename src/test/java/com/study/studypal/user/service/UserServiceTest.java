@@ -30,6 +30,7 @@ import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.exception.UserErrorCode;
@@ -97,11 +98,7 @@ class UserServiceTest {
     when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
     BaseException thrown =
-        assertThrows(
-            BaseException.class,
-            () -> {
-              userService.getUserSummaryProfile(userId);
-            });
+        assertThrows(BaseException.class, () -> userService.getUserSummaryProfile(userId));
 
     assertEquals(UserErrorCode.USER_NOT_FOUND, thrown.getErrorCode());
 
@@ -114,8 +111,7 @@ class UserServiceTest {
   void getUserProfile_whenUserExists_thenReturnUserDetailResponseDto() {
     UserDetailResponseDto userDto = UserFactory.createUserDetailResponseDto(userId, userName);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(modelMapper.map(user, UserDetailResponseDto.class)).thenReturn(userDto);
+    when(userRepository.getUserProfile(userId)).thenReturn(Optional.of(userDto));
 
     UserDetailResponseDto result = userService.getUserProfile(userId);
 
@@ -123,19 +119,17 @@ class UserServiceTest {
     assertEquals(userId, result.getId());
     assertEquals(userName, result.getName());
 
-    verify(userRepository).findById(userId);
-    verify(modelMapper).map(user, UserDetailResponseDto.class);
+    verify(userRepository).getUserProfile(userId);
   }
 
   @Test
   void getUserProfile_whenUserNotFound_thenThrowUserNotFoundException() {
-    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+    when(userRepository.getUserProfile(userId)).thenReturn(Optional.empty());
 
     BaseException ex = assertThrows(BaseException.class, () -> userService.getUserProfile(userId));
     assertEquals(UserErrorCode.USER_NOT_FOUND, ex.getErrorCode());
 
-    verify(userRepository).findById(userId);
-    verifyNoInteractions(modelMapper);
+    verify(userRepository).getUserProfile(userId);
   }
 
   // searchUsersByName
@@ -271,7 +265,7 @@ class UserServiceTest {
     // Arrange
     String newName = "NewName";
     UpdateUserRequestDto updateRequest = UserFactory.createUpdateUserRequestDto(newName);
-    UserDetailResponseDto userDto = UserFactory.createUserDetailResponseDto(userId, newName);
+    UserResponseDto userDto = UserFactory.createUserResponseDto(userId, newName);
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
     doAnswer(
@@ -285,10 +279,10 @@ class UserServiceTest {
         .map(updateRequest, user);
 
     when(userRepository.save(user)).thenReturn(user);
-    when(modelMapper.map(user, UserDetailResponseDto.class)).thenReturn(userDto);
+    when(modelMapper.map(user, UserResponseDto.class)).thenReturn(userDto);
 
     // Act
-    UserDetailResponseDto result = userService.updateUser(userId, updateRequest);
+    UserResponseDto result = userService.updateUser(userId, updateRequest);
 
     // Assert
     assertNotNull(result);
@@ -298,7 +292,7 @@ class UserServiceTest {
     verify(userRepository).findById(userId);
     verify(modelMapper).map(updateRequest, user);
     verify(userRepository).save(user);
-    verify(modelMapper).map(user, UserDetailResponseDto.class);
+    verify(modelMapper).map(user, UserResponseDto.class);
   }
 
   @Test

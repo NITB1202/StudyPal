@@ -2,6 +2,7 @@ package com.study.studypal.user.factory;
 
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
 import java.util.UUID;
@@ -34,6 +35,10 @@ public class UserFactory {
 
   public static UserSummaryResponseDto createUserSummaryResponseDto(UUID id, String name) {
     return UserSummaryResponseDto.builder().id(id).name(name).build();
+  }
+
+  public static UserResponseDto createUserResponseDto(UUID id, String name) {
+    return UserResponseDto.builder().id(id).name(name).build();
   }
 
   public static UserDetailResponseDto createUserDetailResponseDto(UUID id, String name) {

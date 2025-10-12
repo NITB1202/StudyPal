@@ -9,6 +9,7 @@ import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.exception.UserErrorCode;
@@ -49,12 +50,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserDetailResponseDto getUserProfile(UUID userId) {
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
-
-    return modelMapper.map(user, UserDetailResponseDto.class);
+    return userRepository
+        .getUserProfile(userId)
+        .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
   }
 
   @Override
@@ -80,7 +78,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
-  public UserDetailResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
+  public UserResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
     User user =
         userRepository
             .findById(userId)
@@ -89,7 +87,7 @@ public class UserServiceImpl implements UserService {
     modelMapper.map(request, user);
     userRepository.save(user);
 
-    return modelMapper.map(user, UserDetailResponseDto.class);
+    return modelMapper.map(user, UserResponseDto.class);
   }
 
   @Override
