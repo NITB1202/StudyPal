@@ -2,6 +2,8 @@ package com.study.studypal.user.factory;
 
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserPreviewResponseDto;
+import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
 import java.util.UUID;
@@ -18,10 +20,6 @@ public class UserFactory {
         .build();
   }
 
-  public static User createWithId(String name) {
-    return User.builder().id(UUID.randomUUID()).name(name).build();
-  }
-
   public static User createForSave() {
     return User.builder().name("user_" + ThreadLocalRandom.current().nextInt(1000)).build();
   }
@@ -36,11 +34,19 @@ public class UserFactory {
     return UserSummaryResponseDto.builder().id(id).name(name).build();
   }
 
+  public static UserResponseDto createUserResponseDto(UUID id, String name) {
+    return UserResponseDto.builder().id(id).name(name).build();
+  }
+
   public static UserDetailResponseDto createUserDetailResponseDto(UUID id, String name) {
     return UserDetailResponseDto.builder().id(id).name(name).build();
   }
 
   public static UpdateUserRequestDto createUpdateUserRequestDto(String newName) {
     return UpdateUserRequestDto.builder().name(newName).build();
+  }
+
+  public static UserPreviewResponseDto createUserPreviewResponseDto(String name) {
+    return UserPreviewResponseDto.builder().id(UUID.randomUUID()).name(name).build();
   }
 }

@@ -30,6 +30,8 @@ import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserPreviewResponseDto;
+import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.exception.UserErrorCode;
@@ -49,7 +51,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -97,11 +98,7 @@ class UserServiceTest {
     when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
     BaseException thrown =
-        assertThrows(
-            BaseException.class,
-            () -> {
-              userService.getUserSummaryProfile(userId);
-            });
+        assertThrows(BaseException.class, () -> userService.getUserSummaryProfile(userId));
 
     assertEquals(UserErrorCode.USER_NOT_FOUND, thrown.getErrorCode());
 
@@ -114,8 +111,7 @@ class UserServiceTest {
   void getUserProfile_whenUserExists_thenReturnUserDetailResponseDto() {
     UserDetailResponseDto userDto = UserFactory.createUserDetailResponseDto(userId, userName);
 
-    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(modelMapper.map(user, UserDetailResponseDto.class)).thenReturn(userDto);
+    when(userRepository.getUserProfile(userId)).thenReturn(Optional.of(userDto));
 
     UserDetailResponseDto result = userService.getUserProfile(userId);
 
@@ -123,24 +119,22 @@ class UserServiceTest {
     assertEquals(userId, result.getId());
     assertEquals(userName, result.getName());
 
-    verify(userRepository).findById(userId);
-    verify(modelMapper).map(user, UserDetailResponseDto.class);
+    verify(userRepository).getUserProfile(userId);
   }
 
   @Test
   void getUserProfile_whenUserNotFound_thenThrowUserNotFoundException() {
-    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+    when(userRepository.getUserProfile(userId)).thenReturn(Optional.empty());
 
     BaseException ex = assertThrows(BaseException.class, () -> userService.getUserProfile(userId));
     assertEquals(UserErrorCode.USER_NOT_FOUND, ex.getErrorCode());
 
-    verify(userRepository).findById(userId);
-    verifyNoInteractions(modelMapper);
+    verify(userRepository).getUserProfile(userId);
   }
 
-  // searchUsersByName
+  // searchUsersByNameOrEmail
   @Test
-  void searchUsersByName_whenResultSizeEqualsPageSize_shouldReturnNextCursor() {
+  void searchUsersByNameOrEmail_whenResultSizeEqualsPageSize_shouldReturnNextCursor() {
     // Arrange
     UUID cursor = UUID.randomUUID();
     int size = 2;
@@ -149,45 +143,35 @@ class UserServiceTest {
     String handledKeyword = keyword.toLowerCase().trim();
 
     // Mock data: 2 users to match size = 2
-    User user1 = UserFactory.createWithId("TestUser1");
-    User user2 = UserFactory.createWithId("TestUser2");
-    List<User> users = List.of(user1, user2);
-
-    // Mock mapped DTO list
-    UserSummaryResponseDto dto1 =
-        UserFactory.createUserSummaryResponseDto(user1.getId(), user1.getName());
-    UserSummaryResponseDto dto2 =
-        UserFactory.createUserSummaryResponseDto(user2.getId(), user2.getName());
-    List<UserSummaryResponseDto> dtoList = List.of(dto1, dto2);
+    UserPreviewResponseDto user1 = UserFactory.createUserPreviewResponseDto("TestUser1");
+    UserPreviewResponseDto user2 = UserFactory.createUserPreviewResponseDto("TestUser2");
+    List<UserPreviewResponseDto> users = List.of(user1, user2);
 
     long totalCount = 2L;
 
-    when(userRepository.searchByNameWithCursor(
+    when(userRepository.searchByNameOrEmailWithCursor(
             eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class)))
         .thenReturn(users);
-
-    when(modelMapper.map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType()))
-        .thenReturn(dtoList);
-
-    when(userRepository.countByName(userId, handledKeyword)).thenReturn(totalCount);
+    when(userRepository.countByNameOrEmail(userId, handledKeyword)).thenReturn(totalCount);
 
     // Act
-    ListUserResponseDto result = userService.searchUsersByName(userId, keyword, cursor, size);
+    ListUserResponseDto result =
+        userService.searchUsersByNameOrEmail(userId, keyword, cursor, size);
 
     // Assert
     assertNotNull(result);
     assertEquals(totalCount, result.getTotal());
-    assertEquals(dtoList, result.getUsers());
+    assertEquals(users, result.getUsers());
     assertEquals(user2.getId(), result.getNextCursor());
 
     verify(userRepository)
-        .searchByNameWithCursor(eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class));
-    verify(modelMapper).map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType());
-    verify(userRepository).countByName(userId, handledKeyword);
+        .searchByNameOrEmailWithCursor(
+            eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class));
+    verify(userRepository).countByNameOrEmail(userId, handledKeyword);
   }
 
   @Test
-  void searchUsersByName_whenResultSizeLessThanPageSize_shouldReturnNullNextCursor() {
+  void searchUsersByNameOrEmail_whenResultSizeLessThanPageSize_shouldReturnNullNextCursor() {
     // Arrange
     UUID cursor = UUID.randomUUID();
     int size = 2;
@@ -195,41 +179,34 @@ class UserServiceTest {
     String keyword = "anotherUser";
     String handledKeyword = keyword.toLowerCase().trim();
 
-    User user1 = UserFactory.createWithId("AnotherUser1");
-    List<User> users = List.of(user1);
-
-    UserSummaryResponseDto dto1 =
-        UserFactory.createUserSummaryResponseDto(user1.getId(), user1.getName());
-    List<UserSummaryResponseDto> dtoList = List.of(dto1);
+    UserPreviewResponseDto user1 = UserFactory.createUserPreviewResponseDto("AnotherUser1");
+    List<UserPreviewResponseDto> users = List.of(user1);
 
     long totalCount = 1L;
 
-    when(userRepository.searchByNameWithCursor(
+    when(userRepository.searchByNameOrEmailWithCursor(
             eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class)))
         .thenReturn(users);
-
-    when(modelMapper.map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType()))
-        .thenReturn(dtoList);
-
-    when(userRepository.countByName(userId, handledKeyword)).thenReturn(totalCount);
+    when(userRepository.countByNameOrEmail(userId, handledKeyword)).thenReturn(totalCount);
 
     // Act
-    ListUserResponseDto result = userService.searchUsersByName(userId, keyword, cursor, size);
+    ListUserResponseDto result =
+        userService.searchUsersByNameOrEmail(userId, keyword, cursor, size);
 
     // Assert
     assertNotNull(result);
     assertEquals(totalCount, result.getTotal());
-    assertEquals(dtoList, result.getUsers());
+    assertEquals(users, result.getUsers());
     assertNull(result.getNextCursor());
 
     verify(userRepository)
-        .searchByNameWithCursor(eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class));
-    verify(modelMapper).map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType());
-    verify(userRepository).countByName(userId, handledKeyword);
+        .searchByNameOrEmailWithCursor(
+            eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class));
+    verify(userRepository).countByNameOrEmail(userId, handledKeyword);
   }
 
   @Test
-  void searchUsersByName_whenResultIsEmpty_shouldReturnEmptyResult() {
+  void searchUsersByNameOrEmail_whenResultIsEmpty_shouldReturnEmptyResult() {
     // Arrange
     UUID cursor = UUID.randomUUID();
     int size = 2;
@@ -237,21 +214,17 @@ class UserServiceTest {
     String keyword = "empty";
     String handledKeyword = keyword.toLowerCase().trim();
 
-    List<User> users = Collections.emptyList();
-    List<UserSummaryResponseDto> dtoList = Collections.emptyList();
+    List<UserPreviewResponseDto> users = Collections.emptyList();
     long totalCount = 0L;
 
-    when(userRepository.searchByNameWithCursor(
+    when(userRepository.searchByNameOrEmailWithCursor(
             eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class)))
         .thenReturn(users);
-
-    when(modelMapper.map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType()))
-        .thenReturn(dtoList);
-
-    when(userRepository.countByName(userId, handledKeyword)).thenReturn(totalCount);
+    when(userRepository.countByNameOrEmail(userId, handledKeyword)).thenReturn(totalCount);
 
     // Act
-    ListUserResponseDto result = userService.searchUsersByName(userId, keyword, cursor, size);
+    ListUserResponseDto result =
+        userService.searchUsersByNameOrEmail(userId, keyword, cursor, size);
 
     // Assert
     assertNotNull(result);
@@ -260,9 +233,9 @@ class UserServiceTest {
     assertNull(result.getNextCursor());
 
     verify(userRepository)
-        .searchByNameWithCursor(eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class));
-    verify(modelMapper).map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType());
-    verify(userRepository).countByName(userId, handledKeyword);
+        .searchByNameOrEmailWithCursor(
+            eq(userId), eq(handledKeyword), eq(cursor), any(Pageable.class));
+    verify(userRepository).countByNameOrEmail(userId, handledKeyword);
   }
 
   // updateUser
@@ -271,7 +244,7 @@ class UserServiceTest {
     // Arrange
     String newName = "NewName";
     UpdateUserRequestDto updateRequest = UserFactory.createUpdateUserRequestDto(newName);
-    UserDetailResponseDto userDto = UserFactory.createUserDetailResponseDto(userId, newName);
+    UserResponseDto userDto = UserFactory.createUserResponseDto(userId, newName);
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
     doAnswer(
@@ -285,10 +258,10 @@ class UserServiceTest {
         .map(updateRequest, user);
 
     when(userRepository.save(user)).thenReturn(user);
-    when(modelMapper.map(user, UserDetailResponseDto.class)).thenReturn(userDto);
+    when(modelMapper.map(user, UserResponseDto.class)).thenReturn(userDto);
 
     // Act
-    UserDetailResponseDto result = userService.updateUser(userId, updateRequest);
+    UserResponseDto result = userService.updateUser(userId, updateRequest);
 
     // Assert
     assertNotNull(result);
@@ -298,7 +271,7 @@ class UserServiceTest {
     verify(userRepository).findById(userId);
     verify(modelMapper).map(updateRequest, user);
     verify(userRepository).save(user);
-    verify(modelMapper).map(user, UserDetailResponseDto.class);
+    verify(modelMapper).map(user, UserResponseDto.class);
   }
 
   @Test

@@ -113,7 +113,7 @@ public class TeamController {
   }
 
   @PatchMapping("/{teamId}")
-  @Operation(summary = "Update a team's details.")
+  @Operation(summary = "Update team's details.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
   @BadRequestApiResponse
   @UnauthorizedApiResponse

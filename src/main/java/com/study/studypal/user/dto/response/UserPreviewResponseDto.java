@@ -1,6 +1,5 @@
 package com.study.studypal.user.dto.response;
 
-import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +12,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ListUserResponseDto {
-  private List<UserPreviewResponseDto> users;
+public class UserPreviewResponseDto {
+  private UUID id;
 
-  private long total;
+  private String name;
 
-  private UUID nextCursor;
+  private String email;
+
+  private String avatarUrl;
 }

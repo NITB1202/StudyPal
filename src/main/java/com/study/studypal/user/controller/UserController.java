@@ -7,6 +7,7 @@ import com.study.studypal.common.exception.ErrorResponse;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.service.api.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,14 +40,14 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping("/{userId}")
-  @Operation(summary = "Get user's profile.")
+  @Operation(summary = "Get a user's profile.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<UserDetailResponseDto> getUserProfile(@PathVariable UUID userId) {
     return ResponseEntity.ok(userService.getUserProfile(userId));
   }
 
   @GetMapping("/summary")
-  @Operation(summary = "Get user's summary profile.")
+  @Operation(summary = "Get a summary of the current user's profile")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<UserSummaryResponseDto> getUserSummaryProfile(
       @AuthenticationPrincipal UUID userId) {
@@ -54,30 +55,30 @@ public class UserController {
   }
 
   @GetMapping("/search")
-  @Operation(summary = "Search for users by name.")
+  @Operation(summary = "Search for users by name or email.")
   @ApiResponse(responseCode = "200", description = "Search successfully.")
-  public ResponseEntity<ListUserResponseDto> searchUsersByName(
+  public ResponseEntity<ListUserResponseDto> searchUsersByNameOrEmail(
       @AuthenticationPrincipal UUID userId,
       @RequestParam String keyword,
       @RequestParam(required = false) UUID cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
-    return ResponseEntity.ok(userService.searchUsersByName(userId, keyword, cursor, size));
+    return ResponseEntity.ok(userService.searchUsersByNameOrEmail(userId, keyword, cursor, size));
   }
 
   @PatchMapping
-  @Operation(summary = "Update user's profile.")
+  @Operation(summary = "Update the current user's profile.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
   @ApiResponse(
       responseCode = "400",
       description = "Invalid request body.",
       content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-  public ResponseEntity<UserDetailResponseDto> updateUser(
+  public ResponseEntity<UserResponseDto> updateUser(
       @AuthenticationPrincipal UUID userId, @Valid @RequestBody UpdateUserRequestDto request) {
     return ResponseEntity.ok(userService.updateUser(userId, request));
   }
 
   @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(summary = "Upload user's avatar.")
+  @Operation(summary = "Upload the current user's avatar.")
   @ApiResponse(responseCode = "200", description = "Upload successfully.")
   @ApiResponse(
       responseCode = "400",

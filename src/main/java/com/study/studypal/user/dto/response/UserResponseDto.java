@@ -15,18 +15,14 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserDetailResponseDto {
+public class UserResponseDto {
   private UUID id;
 
   private String name;
-
-  private String email;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate dateOfBirth;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private Gender gender;
-
-  private String avatarUrl;
 }
