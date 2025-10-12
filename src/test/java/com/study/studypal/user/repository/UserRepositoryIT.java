@@ -2,6 +2,8 @@ package com.study.studypal.user.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.study.studypal.auth.factory.AccountFactory;
+import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.user.dto.response.UserPreviewResponseDto;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.factory.UserFactory;
@@ -22,18 +24,31 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class UserRepositoryIT {
   @Autowired private UserRepository userRepository;
+  @Autowired private AccountRepository accountRepository;
 
   private UUID currentUserId;
 
   @BeforeEach
   void setUp() {
-    User currentUser = userRepository.save(UserFactory.createForSave());
+    User currentUser = UserFactory.createForSave();
+    User user1 = UserFactory.createForSave("Stephany");
+    User user2 = UserFactory.createForSave("Stelio");
+    User user3 = UserFactory.createForSave("Bob");
+    User user4 = UserFactory.createForSave("Steamy");
+
+    userRepository.save(currentUser);
+    userRepository.save(user1);
+    userRepository.save(user2);
+    userRepository.save(user3);
+    userRepository.save(user4);
+
     currentUserId = currentUser.getId();
 
-    userRepository.save(UserFactory.createForSave("Alice"));
-    userRepository.save(UserFactory.createForSave("alex"));
-    userRepository.save(UserFactory.createForSave("Bob"));
-    userRepository.save(UserFactory.createForSave("Alfred"));
+    accountRepository.save(AccountFactory.createWithUser(currentUser));
+    accountRepository.save(AccountFactory.createWithUser(user1));
+    accountRepository.save(AccountFactory.createWithUser(user2));
+    accountRepository.save(AccountFactory.createWithUser(user3));
+    accountRepository.save(AccountFactory.createWithUser(user4));
   }
 
   @Test
@@ -41,11 +56,11 @@ class UserRepositoryIT {
       searchByNameOrEmailWithCursor_whenKeywordMatchesIgnoringCase_shouldReturnMatchingUsersExcludingCurrentUser() {
     List<UserPreviewResponseDto> results =
         userRepository.searchByNameOrEmailWithCursor(
-            currentUserId, "al", null, PageRequest.of(0, 10));
+            currentUserId, "ste", null, PageRequest.of(0, 10));
 
     assertThat(results)
         .extracting(UserPreviewResponseDto::getName)
-        .containsExactlyInAnyOrder("Alice", "alex", "Alfred");
+        .containsExactlyInAnyOrder("Stephany", "Stelio", "Steamy");
     assertThat(results).allSatisfy(user -> assertThat(user.getId()).isNotEqualTo(currentUserId));
   }
 
@@ -53,13 +68,13 @@ class UserRepositoryIT {
   void searchByNameOrEmailWithCursor_whenCursorProvided_shouldReturnNextPage() {
     List<UserPreviewResponseDto> allResults =
         userRepository.searchByNameOrEmailWithCursor(
-            currentUserId, "al", null, PageRequest.of(0, 10));
+            currentUserId, "ste", null, PageRequest.of(0, 10));
 
     UUID cursor = allResults.get(0).getId();
 
     List<UserPreviewResponseDto> pagedResults =
         userRepository.searchByNameOrEmailWithCursor(
-            currentUserId, "al", cursor, PageRequest.of(0, 10));
+            currentUserId, "ste", cursor, PageRequest.of(0, 10));
 
     assertThat(pagedResults)
         .hasSize(allResults.size() - 1)
@@ -77,7 +92,7 @@ class UserRepositoryIT {
 
   @Test
   void countByNameOrEmail_whenKeywordMatches_shouldReturnNumberOfMatchesExcludingCurrentUser() {
-    long count = userRepository.countByNameOrEmail(currentUserId, "al");
+    long count = userRepository.countByNameOrEmail(currentUserId, "ste");
     assertThat(count).isEqualTo(3);
   }
 
