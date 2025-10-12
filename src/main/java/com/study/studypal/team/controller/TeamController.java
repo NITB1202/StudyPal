@@ -9,9 +9,11 @@ import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
-import com.study.studypal.team.dto.team.response.TeamOverviewResponseDto;
-import com.study.studypal.team.dto.team.response.TeamProfileResponseDto;
+import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
+import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
+import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
+import com.study.studypal.team.enums.TeamFilter;
 import com.study.studypal.team.service.api.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,6 +26,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -37,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/teams")
 public class TeamController {
   private final TeamService teamService;
@@ -51,51 +55,65 @@ public class TeamController {
   }
 
   @GetMapping("/{teamId}")
-  @Operation(summary = "Get team overview.")
+  @Operation(summary = "Get team's dashboard.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @NotFoundApiResponse
-  public ResponseEntity<TeamOverviewResponseDto> getTeamOverview(
+  public ResponseEntity<TeamDashboardResponseDto> getTeamDashboard(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID teamId) {
-    return ResponseEntity.ok(teamService.getTeamOverview(userId, teamId));
+    return ResponseEntity.ok(teamService.getTeamDashboard(userId, teamId));
   }
 
-  @GetMapping("/code/{teamCode}")
-  @Operation(summary = "Get team's profile by team code.")
-  @ApiResponse(responseCode = "200", description = "Get successfully")
+  @GetMapping("/{teamId}/qr")
+  @Operation(summary = "Returns a base64-encoded QR code image representing the team code.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
   @NotFoundApiResponse
-  public ResponseEntity<TeamProfileResponseDto> getTeamProfileByTeamCode(
-      @PathVariable String teamCode) {
-    return ResponseEntity.ok(teamService.getTeamProfileByTeamCode(teamCode));
+  public ResponseEntity<TeamQRCodeResponseDto> getTeamQRCode(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID teamId,
+      @RequestParam @Positive int width,
+      @RequestParam @Positive int height) {
+    return ResponseEntity.ok(teamService.getTeamQRCode(userId, teamId, width, height));
+  }
+
+  @GetMapping("/{teamCode}/preview")
+  @Operation(summary = "Get team's preview by team code.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  @NotFoundApiResponse
+  public ResponseEntity<TeamPreviewResponseDto> getTeamPreview(@PathVariable String teamCode) {
+    return ResponseEntity.ok(teamService.getTeamPreview(teamCode));
   }
 
   @GetMapping("/all")
-  @Operation(summary = "Get part of the user's teams.")
+  @Operation(summary = "Get user's teams.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @NotFoundApiResponse
-  public ResponseEntity<ListTeamResponseDto> getUserJoinedTeams(
+  public ResponseEntity<ListTeamResponseDto> getTeams(
       @AuthenticationPrincipal UUID userId,
+      @RequestParam TeamFilter filter,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
-    return ResponseEntity.ok(teamService.getUserJoinedTeams(userId, cursor, size));
+    return ResponseEntity.ok(teamService.getTeams(userId, filter, cursor, size));
   }
 
   @GetMapping("/search")
   @Operation(summary = "Search for user's teams by name.")
   @ApiResponse(responseCode = "200", description = "Search successfully.")
   @NotFoundApiResponse
-  public ResponseEntity<ListTeamResponseDto> searchUserJoinedTeamsByName(
+  public ResponseEntity<ListTeamResponseDto> searchTeamsByName(
       @AuthenticationPrincipal UUID userId,
+      @RequestParam TeamFilter filter,
       @RequestParam String keyword,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
-    return ResponseEntity.ok(
-        teamService.searchUserJoinedTeamsByName(userId, keyword, cursor, size));
+    return ResponseEntity.ok(teamService.searchTeamsByName(userId, filter, keyword, cursor, size));
   }
 
   @PatchMapping("/{teamId}")
-  @Operation(summary = "Update team's profile.")
+  @Operation(summary = "Update a team's details.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
   @BadRequestApiResponse
   @UnauthorizedApiResponse
@@ -107,7 +125,7 @@ public class TeamController {
     return ResponseEntity.ok(teamService.updateTeam(userId, teamId, request));
   }
 
-  @PatchMapping("/reset/{teamId}")
+  @PatchMapping("/{teamId}/code")
   @Operation(summary = "Reset team code.")
   @ApiResponse(responseCode = "200", description = "Reset successfully.")
   @BadRequestApiResponse
@@ -128,7 +146,7 @@ public class TeamController {
     return ResponseEntity.ok(teamService.deleteTeam(teamId, userId));
   }
 
-  @PostMapping(value = "/avatar/{teamId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/{teamId}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Upload team's avatar.")
   @ApiResponse(responseCode = "200", description = "Upload successfully.")
   @BadRequestApiResponse

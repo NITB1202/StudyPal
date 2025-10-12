@@ -8,4 +8,6 @@ public interface CodeService {
   boolean verifyCode(String email, String code, VerificationType type);
 
   String generateTeamCode();
+
+  String generateQRCodeBase64(String str, int width, int height);
 }

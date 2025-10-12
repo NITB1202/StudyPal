@@ -45,6 +45,7 @@ public class PlanComment {
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
-  @Column(name = "parent_comment_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "parent_comment_id")
   private PlanComment parentComment;
 }

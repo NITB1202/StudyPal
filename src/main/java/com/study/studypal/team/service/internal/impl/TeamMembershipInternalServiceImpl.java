@@ -71,8 +71,7 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   }
 
   @Override
-  public LocalDateTime getUserJoinedTeamsListCursor(
-      UUID userId, UUID lastTeamId, int listSize, int size) {
+  public LocalDateTime getTeamListCursor(UUID userId, UUID lastTeamId, int listSize, int size) {
     TeamUser membership = getMemberShip(lastTeamId, userId);
     return listSize > 0 && listSize == size ? membership.getJoinedAt() : null;
   }

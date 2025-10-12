@@ -45,6 +45,6 @@ public class Task {
   @Column(name = "due_date")
   private LocalDateTime dueDate;
 
-  @Column(name = "complete_date", nullable = false)
+  @Column(name = "complete_date")
   private LocalDateTime completeDate;
 }

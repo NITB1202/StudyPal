@@ -1,6 +1,5 @@
 package com.study.studypal.team.event;
 
-import com.study.studypal.team.event.team.TeamCodeResetEvent;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
 import com.study.studypal.team.service.internal.TeamCacheService;
@@ -21,19 +20,13 @@ public class TeamEventListener {
     if (event.isShouldEvictCache()) {
       teamCacheService.evictUserJoinedTeamsCaches(event.getMemberIds());
     }
-    teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
-  }
-
-  @Async
-  @EventListener
-  public void handleTeamCodeResetEvent(TeamCodeResetEvent event) {
-    teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
+    teamCacheService.evictTeamDashboardCaches(event.getTeamId(), event.getMemberIds());
   }
 
   @Async
   @EventListener
   public void handleTeamDeleted(TeamDeletedEvent event) {
-    teamCacheService.evictTeamOverviewCaches(event.getTeamId(), event.getMemberIds());
+    teamCacheService.evictTeamDashboardCaches(event.getTeamId(), event.getMemberIds());
     teamCacheService.evictUserJoinedTeamsCaches(event.getMemberIds());
   }
 }

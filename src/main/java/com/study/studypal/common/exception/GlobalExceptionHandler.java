@@ -3,6 +3,7 @@ package com.study.studypal.common.exception;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import jakarta.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -82,7 +83,28 @@ public class GlobalExceptionHandler {
             .map(error -> error.getField() + ": " + error.getDefaultMessage())
             .collect(Collectors.joining(", "));
 
-    log.warn("Validation error(s): {}", errors);
+    log.warn("Request body validation error(s): {}", errors);
+
+    ErrorResponse errorResponse =
+        new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", errors);
+
+    return ResponseEntity.badRequest().body(errorResponse);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+      ConstraintViolationException ex) {
+    String errors =
+        ex.getConstraintViolations().stream()
+            .map(
+                error -> {
+                  String path = error.getPropertyPath().toString();
+                  String fieldName = path.substring(path.lastIndexOf('.') + 1);
+                  return fieldName + ": " + error.getMessage();
+                })
+            .collect(Collectors.joining(", "));
+
+    log.warn("Request param validation error(s): {}", errors);
 
     ErrorResponse errorResponse =
         new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", errors);

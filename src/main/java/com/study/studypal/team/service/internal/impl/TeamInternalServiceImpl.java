@@ -18,12 +18,11 @@ public class TeamInternalServiceImpl implements TeamInternalService {
   private final TeamRepository teamRepository;
 
   @Override
-  public UUID getTeamIdByTeamCode(String teamCode) {
-    Team team = teamRepository.findByTeamCode(teamCode);
-
-    if (team == null) {
-      throw new BaseException(TeamErrorCode.INVALID_TEAM_CODE);
-    }
+  public UUID getIdByTeamCode(String teamCode) {
+    Team team =
+        teamRepository
+            .findByTeamCode(teamCode)
+            .orElseThrow(() -> new BaseException(TeamErrorCode.INVALID_TEAM_CODE));
 
     return team.getId();
   }
@@ -70,6 +69,6 @@ public class TeamInternalServiceImpl implements TeamInternalService {
 
   @Override
   public long countTeamsOwnerByUser(UUID userId) {
-    return teamRepository.countTeamsOwnedByUser(userId);
+    return teamRepository.countUserOwnedTeams(userId);
   }
 }
