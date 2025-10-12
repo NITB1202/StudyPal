@@ -55,14 +55,14 @@ public class UserController {
   }
 
   @GetMapping("/search")
-  @Operation(summary = "Search for users by name.")
+  @Operation(summary = "Search for users by name or email.")
   @ApiResponse(responseCode = "200", description = "Search successfully.")
-  public ResponseEntity<ListUserResponseDto> searchUsersByName(
+  public ResponseEntity<ListUserResponseDto> searchUsersByNameOrEmail(
       @AuthenticationPrincipal UUID userId,
       @RequestParam String keyword,
       @RequestParam(required = false) UUID cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
-    return ResponseEntity.ok(userService.searchUsersByName(userId, keyword, cursor, size));
+    return ResponseEntity.ok(userService.searchUsersByNameOrEmail(userId, keyword, cursor, size));
   }
 
   @PatchMapping

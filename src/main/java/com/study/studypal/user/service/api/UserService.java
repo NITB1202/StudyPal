@@ -14,7 +14,7 @@ public interface UserService {
 
   UserDetailResponseDto getUserProfile(UUID userId);
 
-  ListUserResponseDto searchUsersByName(UUID userId, String keyword, UUID cursor, int size);
+  ListUserResponseDto searchUsersByNameOrEmail(UUID userId, String keyword, UUID cursor, int size);
 
   UserResponseDto updateUser(UUID userId, UpdateUserRequestDto request);
 

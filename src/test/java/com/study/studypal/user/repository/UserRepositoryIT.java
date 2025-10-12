@@ -2,6 +2,7 @@ package com.study.studypal.user.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.study.studypal.user.dto.response.UserPreviewResponseDto;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.factory.UserFactory;
 import jakarta.transaction.Transactional;
@@ -37,25 +38,28 @@ class UserRepositoryIT {
 
   @Test
   void
-      searchByNameWithCursor_whenKeywordMatchesIgnoringCase_shouldReturnMatchingUsersExcludingCurrentUser() {
-    List<User> results =
-        userRepository.searchByNameWithCursor(currentUserId, "al", null, PageRequest.of(0, 10));
+      searchByNameOrEmailWithCursor_whenKeywordMatchesIgnoringCase_shouldReturnMatchingUsersExcludingCurrentUser() {
+    List<UserPreviewResponseDto> results =
+        userRepository.searchByNameOrEmailWithCursor(
+            currentUserId, "al", null, PageRequest.of(0, 10));
 
     assertThat(results)
-        .extracting(User::getName)
+        .extracting(UserPreviewResponseDto::getName)
         .containsExactlyInAnyOrder("Alice", "alex", "Alfred");
     assertThat(results).allSatisfy(user -> assertThat(user.getId()).isNotEqualTo(currentUserId));
   }
 
   @Test
-  void searchByNameWithCursor_whenCursorProvided_shouldReturnNextPage() {
-    List<User> allResults =
-        userRepository.searchByNameWithCursor(currentUserId, "al", null, PageRequest.of(0, 10));
+  void searchByNameOrEmailWithCursor_whenCursorProvided_shouldReturnNextPage() {
+    List<UserPreviewResponseDto> allResults =
+        userRepository.searchByNameOrEmailWithCursor(
+            currentUserId, "al", null, PageRequest.of(0, 10));
 
     UUID cursor = allResults.get(0).getId();
 
-    List<User> pagedResults =
-        userRepository.searchByNameWithCursor(currentUserId, "al", cursor, PageRequest.of(0, 10));
+    List<UserPreviewResponseDto> pagedResults =
+        userRepository.searchByNameOrEmailWithCursor(
+            currentUserId, "al", cursor, PageRequest.of(0, 10));
 
     assertThat(pagedResults)
         .hasSize(allResults.size() - 1)
@@ -63,22 +67,23 @@ class UserRepositoryIT {
   }
 
   @Test
-  void searchByNameWithCursor_whenNoUserMatches_shouldReturnEmptyList() {
-    List<User> results =
-        userRepository.searchByNameWithCursor(currentUserId, "zzz", null, PageRequest.of(0, 10));
+  void searchByNameOrEmailWithCursor_whenNoUserMatches_shouldReturnEmptyList() {
+    List<UserPreviewResponseDto> results =
+        userRepository.searchByNameOrEmailWithCursor(
+            currentUserId, "zzz", null, PageRequest.of(0, 10));
 
     assertThat(results).isEmpty();
   }
 
   @Test
-  void countByName_whenKeywordMatches_shouldReturnNumberOfMatchesExcludingCurrentUser() {
-    long count = userRepository.countByName(currentUserId, "al");
+  void countByNameOrEmail_whenKeywordMatches_shouldReturnNumberOfMatchesExcludingCurrentUser() {
+    long count = userRepository.countByNameOrEmail(currentUserId, "al");
     assertThat(count).isEqualTo(3);
   }
 
   @Test
-  void countByName_whenNoUserMatches_shouldReturnZero() {
-    long count = userRepository.countByName(currentUserId, "zzz");
+  void countByNameOrEmail_whenNoUserMatches_shouldReturnZero() {
+    long count = userRepository.countByNameOrEmail(currentUserId, "zzz");
     assertThat(count).isZero();
   }
 }

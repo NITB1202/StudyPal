@@ -112,9 +112,9 @@ class UserControllerIT {
         .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
   }
 
-  // searchUsersByName
+  // searchUsersByNameOrEmail
   @Test
-  void searchUsersByName_whenMatchesFound_shouldReturnUserList() throws Exception {
+  void searchUsersByNameOrEmail_whenMatchesFound_shouldReturnUserList() throws Exception {
     mockMvc
         .perform(
             get("/api/users/search")
@@ -130,7 +130,7 @@ class UserControllerIT {
   }
 
   @Test
-  void searchUsersByName_whenNoMatches_shouldReturnEmptyList() throws Exception {
+  void searchUsersByNameOrEmail_whenNoMatches_shouldReturnEmptyList() throws Exception {
     mockMvc
         .perform(
             get("/api/users/search")

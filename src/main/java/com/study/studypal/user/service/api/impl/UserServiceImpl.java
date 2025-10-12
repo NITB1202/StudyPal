@@ -9,6 +9,7 @@ import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserPreviewResponseDto;
 import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
@@ -56,24 +56,19 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public ListUserResponseDto searchUsersByName(UUID userId, String keyword, UUID cursor, int size) {
+  public ListUserResponseDto searchUsersByNameOrEmail(
+      UUID userId, String keyword, UUID cursor, int size) {
     String handledKeyword = keyword.toLowerCase().trim();
     Pageable pageable = PageRequest.of(0, size);
 
-    List<User> users =
-        userRepository.searchByNameWithCursor(userId, handledKeyword, cursor, pageable);
-    List<UserSummaryResponseDto> summaries =
-        modelMapper.map(users, new TypeToken<List<UserSummaryResponseDto>>() {}.getType());
+    List<UserPreviewResponseDto> users =
+        userRepository.searchByNameOrEmailWithCursor(userId, handledKeyword, cursor, pageable);
 
-    long total = userRepository.countByName(userId, handledKeyword);
+    long total = userRepository.countByNameOrEmail(userId, handledKeyword);
     UUID nextCursor =
         !users.isEmpty() && users.size() == size ? users.get(users.size() - 1).getId() : null;
 
-    return ListUserResponseDto.builder()
-        .users(summaries)
-        .total(total)
-        .nextCursor(nextCursor)
-        .build();
+    return ListUserResponseDto.builder().users(users).total(total).nextCursor(nextCursor).build();
   }
 
   @Override

@@ -2,6 +2,7 @@ package com.study.studypal.user.factory;
 
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
+import com.study.studypal.user.dto.response.UserPreviewResponseDto;
 import com.study.studypal.user.dto.response.UserResponseDto;
 import com.study.studypal.user.dto.response.UserSummaryResponseDto;
 import com.study.studypal.user.entity.User;
@@ -17,10 +18,6 @@ public class UserFactory {
         .id(UUID.randomUUID())
         .name("user_" + ThreadLocalRandom.current().nextInt(1000))
         .build();
-  }
-
-  public static User createWithId(String name) {
-    return User.builder().id(UUID.randomUUID()).name(name).build();
   }
 
   public static User createForSave() {
@@ -47,5 +44,9 @@ public class UserFactory {
 
   public static UpdateUserRequestDto createUpdateUserRequestDto(String newName) {
     return UpdateUserRequestDto.builder().name(newName).build();
+  }
+
+  public static UserPreviewResponseDto createUserPreviewResponseDto(String name) {
+    return UserPreviewResponseDto.builder().id(UUID.randomUUID()).name(name).build();
   }
 }
