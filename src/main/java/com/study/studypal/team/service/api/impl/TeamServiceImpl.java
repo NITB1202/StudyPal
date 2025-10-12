@@ -20,6 +20,7 @@ import com.study.studypal.team.dto.team.response.TeamResponseDto;
 import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.entity.TeamUser;
+import com.study.studypal.team.enums.TeamFilter;
 import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
@@ -160,26 +161,45 @@ public class TeamServiceImpl implements TeamService {
   @Cacheable(
       value = CacheNames.USER_TEAMS,
       key = "@keys.of(#userId)",
-      condition = "#cursor == null && #size == 10")
-  public ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size) {
+      condition =
+          "#cursor == null && #size == 10 && #filter == T(com.study.studypal.team.enums.TeamFilter).JOINED")
+  public ListTeamResponseDto getTeams(
+      UUID userId, TeamFilter filter, LocalDateTime cursor, int size) {
     Pageable pageable = PageRequest.of(0, size);
 
     List<TeamSummaryResponseDto> teams =
-        cursor == null
-            ? teamRepository.findUserJoinedTeam(userId, pageable)
-            : teamRepository.findUserJoinedTeamWithCursor(userId, cursor, pageable);
+        switch (filter) {
+          case JOINED -> getUserJoinedTeams(userId, cursor, pageable);
+          case OWNED -> getUserOwnedTeams(userId, cursor, pageable);
+        };
 
-    long total = teamRepository.countUserJoinedTeam(userId);
+    long total =
+        switch (filter) {
+          case JOINED -> teamRepository.countUserJoinedTeam(userId);
+          case OWNED -> teamRepository.countUserOwnedTeams(userId);
+        };
 
     LocalDateTime nextCursor = null;
     if (!teams.isEmpty()) {
       UUID lastTeamId = teams.get(teams.size() - 1).getId();
-      nextCursor =
-          teamMembershipService.getUserJoinedTeamsListCursor(
-              userId, lastTeamId, teams.size(), size);
+      nextCursor = teamMembershipService.getTeamListCursor(userId, lastTeamId, teams.size(), size);
     }
 
     return ListTeamResponseDto.builder().teams(teams).total(total).nextCursor(nextCursor).build();
+  }
+
+  private List<TeamSummaryResponseDto> getUserJoinedTeams(
+      UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.findUserJoinedTeams(userId, pageable)
+        : teamRepository.findUserJoinedTeamsWithCursor(userId, cursor, pageable);
+  }
+
+  private List<TeamSummaryResponseDto> getUserOwnedTeams(
+      UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.findUserTeamsWithRole(userId, TeamRole.OWNER, pageable)
+        : teamRepository.findUserTeamsWithRoleAndCursor(userId, TeamRole.OWNER, cursor, pageable);
   }
 
   @Override
@@ -199,9 +219,7 @@ public class TeamServiceImpl implements TeamService {
     LocalDateTime nextCursor = null;
     if (!teams.isEmpty()) {
       UUID lastTeamId = teams.get(teams.size() - 1).getId();
-      nextCursor =
-          teamMembershipService.getUserJoinedTeamsListCursor(
-              userId, lastTeamId, teams.size(), size);
+      nextCursor = teamMembershipService.getTeamListCursor(userId, lastTeamId, teams.size(), size);
     }
 
     return ListTeamResponseDto.builder().teams(teams).total(total).nextCursor(nextCursor).build();

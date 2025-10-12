@@ -2,6 +2,7 @@ package com.study.studypal.team.repository;
 
 import com.study.studypal.team.dto.team.response.TeamSummaryResponseDto;
 import com.study.studypal.team.entity.Team;
+import com.study.studypal.team.enums.TeamRole;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -20,42 +21,78 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 
   @Query(
       """
-          SELECT COUNT(tu)
-          FROM TeamUser tu
-          WHERE tu.user.id = :userId
-          AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
-          """)
-  long countTeamsOwnedByUser(@Param("userId") UUID userId);
+    SELECT COUNT(tu)
+    FROM TeamUser tu
+    WHERE tu.user.id = :userId
+    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+    """)
+  long countUserOwnedTeams(@Param("userId") UUID userId);
 
   @Query(
       """
     SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
-        t.id,
-        t.name,
-        t.avatarUrl,
-        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    t.id,
+    t.name,
+    t.avatarUrl,
+    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
     ORDER BY tu.joinedAt DESC
     """)
-  List<TeamSummaryResponseDto> findUserJoinedTeam(@Param("userId") UUID userId, Pageable pageable);
+  List<TeamSummaryResponseDto> findUserJoinedTeams(@Param("userId") UUID userId, Pageable pageable);
 
   @Query(
       """
     SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
-        t.id,
-        t.name,
-        t.avatarUrl,
-        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    t.id,
+    t.name,
+    t.avatarUrl,
+    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-      AND tu.joinedAt < :cursor
+    AND tu.joinedAt < :cursor
     ORDER BY tu.joinedAt DESC
     """)
-  List<TeamSummaryResponseDto> findUserJoinedTeamWithCursor(
+  List<TeamSummaryResponseDto> findUserJoinedTeamsWithCursor(
       @Param("userId") UUID userId, @Param("cursor") LocalDateTime cursor, Pageable pageable);
+
+  @Query(
+      """
+    SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
+    t.id,
+    t.name,
+    t.avatarUrl,
+    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    )
+    FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
+    WHERE tu.user.id = :userId
+    AND tu.role = :role
+    ORDER BY tu.joinedAt DESC
+    """)
+  List<TeamSummaryResponseDto> findUserTeamsWithRole(
+      @Param("userId") UUID userId, @Param("role") TeamRole role, Pageable pageable);
+
+  @Query(
+      """
+    SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
+    t.id,
+    t.name,
+    t.avatarUrl,
+    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    )
+    FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
+    WHERE tu.user.id = :userId
+    AND tu.role = :role
+    AND tu.joinedAt < :cursor
+    ORDER BY tu.joinedAt DESC
+    """)
+  List<TeamSummaryResponseDto> findUserTeamsWithRoleAndCursor(
+      @Param("userId") UUID userId,
+      @Param("role") TeamRole role,
+      @Param("cursor") LocalDateTime cursor,
+      Pageable pageable);
 
   @Query(
       """
@@ -68,14 +105,14 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
   @Query(
       """
     SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
-        t.id,
-        t.name,
-        t.avatarUrl,
-        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    t.id,
+    t.name,
+    t.avatarUrl,
+    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-      AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
+    AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     ORDER BY tu.joinedAt DESC
     """)
   List<TeamSummaryResponseDto> searchUserJoinedTeamByName(
@@ -84,15 +121,15 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
   @Query(
       """
     SELECT new com.study.studypal.team.dto.team.response.TeamSummaryResponseDto(
-        t.id,
-        t.name,
-        t.avatarUrl,
-        CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    t.id,
+    t.name,
+    t.avatarUrl,
+    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-      AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
-      AND tu.joinedAt < :cursor
+    AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
+    AND tu.joinedAt < :cursor
     ORDER BY tu.joinedAt DESC
     """)
   List<TeamSummaryResponseDto> searchUserJoinedTeamByNameWithCursor(
@@ -106,7 +143,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     SELECT COUNT(t)
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-        AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
+    AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     """)
   long countUserJoinedTeamByName(@Param("userId") UUID userId, @Param("keyword") String keyword);
 }

@@ -8,6 +8,7 @@ import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
 import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
+import com.study.studypal.team.enums.TeamFilter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +22,7 @@ public interface TeamService {
 
   TeamPreviewResponseDto getTeamPreview(String teamCode);
 
-  ListTeamResponseDto getUserJoinedTeams(UUID userId, LocalDateTime cursor, int size);
+  ListTeamResponseDto getTeams(UUID userId, TeamFilter filter, LocalDateTime cursor, int size);
 
   ListTeamResponseDto searchUserJoinedTeamsByName(
       UUID userId, String keyword, LocalDateTime cursor, int size);

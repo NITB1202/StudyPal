@@ -16,7 +16,7 @@ public interface TeamMembershipInternalService {
 
   TeamUser getMemberShip(UUID teamId, UUID userId);
 
-  LocalDateTime getUserJoinedTeamsListCursor(UUID userId, UUID lastTeamId, int listSize, int size);
+  LocalDateTime getTeamListCursor(UUID userId, UUID lastTeamId, int listSize, int size);
 
   List<UUID> getMemberIds(UUID teamId);
 

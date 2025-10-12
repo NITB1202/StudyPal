@@ -13,6 +13,7 @@ import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
 import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamResponseDto;
+import com.study.studypal.team.enums.TeamFilter;
 import com.study.studypal.team.service.api.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -85,15 +86,16 @@ public class TeamController {
   }
 
   @GetMapping("/all")
-  @Operation(summary = "Get part of the user's teams.")
+  @Operation(summary = "Get user's teams.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @NotFoundApiResponse
-  public ResponseEntity<ListTeamResponseDto> getUserJoinedTeams(
+  public ResponseEntity<ListTeamResponseDto> getTeams(
       @AuthenticationPrincipal UUID userId,
+      @RequestParam TeamFilter filter,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
-    return ResponseEntity.ok(teamService.getUserJoinedTeams(userId, cursor, size));
+    return ResponseEntity.ok(teamService.getTeams(userId, filter, cursor, size));
   }
 
   @GetMapping("/search")
