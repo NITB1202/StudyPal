@@ -24,8 +24,8 @@ public interface TeamService {
 
   ListTeamResponseDto getTeams(UUID userId, TeamFilter filter, LocalDateTime cursor, int size);
 
-  ListTeamResponseDto searchUserJoinedTeamsByName(
-      UUID userId, String keyword, LocalDateTime cursor, int size);
+  ListTeamResponseDto searchTeamsByName(
+      UUID userId, TeamFilter filter, String keyword, LocalDateTime cursor, int size);
 
   TeamResponseDto updateTeam(UUID userId, UUID teamId, UpdateTeamRequestDto request);
 

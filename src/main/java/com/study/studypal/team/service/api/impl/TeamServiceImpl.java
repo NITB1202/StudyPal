@@ -198,23 +198,27 @@ public class TeamServiceImpl implements TeamService {
   private List<TeamSummaryResponseDto> getUserOwnedTeams(
       UUID userId, LocalDateTime cursor, Pageable pageable) {
     return cursor == null
-        ? teamRepository.findUserTeamsWithRole(userId, TeamRole.OWNER, pageable)
-        : teamRepository.findUserTeamsWithRoleAndCursor(userId, TeamRole.OWNER, cursor, pageable);
+        ? teamRepository.findUserOwnedTeams(userId, pageable)
+        : teamRepository.findUserOwnedTeamsWithCursor(userId, cursor, pageable);
   }
 
   @Override
-  public ListTeamResponseDto searchUserJoinedTeamsByName(
-      UUID userId, String keyword, LocalDateTime cursor, int size) {
+  public ListTeamResponseDto searchTeamsByName(
+      UUID userId, TeamFilter filter, String keyword, LocalDateTime cursor, int size) {
     String handledKeyword = keyword.toLowerCase().trim();
     Pageable pageable = PageRequest.of(0, size);
 
     List<TeamSummaryResponseDto> teams =
-        cursor == null
-            ? teamRepository.searchUserJoinedTeamByName(userId, handledKeyword, pageable)
-            : teamRepository.searchUserJoinedTeamByNameWithCursor(
-                userId, handledKeyword, cursor, pageable);
+        switch (filter) {
+          case JOINED -> searchUserJoinedTeamsByName(userId, handledKeyword, cursor, pageable);
+          case OWNED -> searchUserOwnedTeamsByName(userId, handledKeyword, cursor, pageable);
+        };
 
-    long total = teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
+    long total =
+        switch (filter) {
+          case JOINED -> teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
+          case OWNED -> teamRepository.countUserOwnedTeamByName(userId, handledKeyword);
+        };
 
     LocalDateTime nextCursor = null;
     if (!teams.isEmpty()) {
@@ -223,6 +227,22 @@ public class TeamServiceImpl implements TeamService {
     }
 
     return ListTeamResponseDto.builder().teams(teams).total(total).nextCursor(nextCursor).build();
+  }
+
+  private List<TeamSummaryResponseDto> searchUserJoinedTeamsByName(
+      UUID userId, String handledKeyword, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.searchUserJoinedTeamsByName(userId, handledKeyword, pageable)
+        : teamRepository.searchUserJoinedTeamsByNameWithCursor(
+            userId, handledKeyword, cursor, pageable);
+  }
+
+  private List<TeamSummaryResponseDto> searchUserOwnedTeamsByName(
+      UUID userId, String handledKeyword, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.searchUserOwnedTeamsByName(userId, handledKeyword, pageable)
+        : teamRepository.searchUserOwnedTeamsByNameWithCursor(
+            userId, handledKeyword, cursor, pageable);
   }
 
   @Override

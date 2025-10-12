@@ -102,14 +102,14 @@ public class TeamController {
   @Operation(summary = "Search for user's teams by name.")
   @ApiResponse(responseCode = "200", description = "Search successfully.")
   @NotFoundApiResponse
-  public ResponseEntity<ListTeamResponseDto> searchUserJoinedTeamsByName(
+  public ResponseEntity<ListTeamResponseDto> searchTeamsByName(
       @AuthenticationPrincipal UUID userId,
+      @RequestParam TeamFilter filter,
       @RequestParam String keyword,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
-    return ResponseEntity.ok(
-        teamService.searchUserJoinedTeamsByName(userId, keyword, cursor, size));
+    return ResponseEntity.ok(teamService.searchTeamsByName(userId, filter, keyword, cursor, size));
   }
 
   @PatchMapping("/{teamId}")
