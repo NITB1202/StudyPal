@@ -23,7 +23,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     SELECT COUNT(tu)
     FROM TeamUser tu
     WHERE tu.user.id = :userId
-    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+    AND tu.role = 'OWNER'
     """)
   long countUserOwnedTeams(@Param("userId") UUID userId);
 
@@ -33,7 +33,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     t.id,
     t.name,
     t.avatarUrl,
-    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    CASE WHEN tu.role = 'OWNER' THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
@@ -47,7 +47,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     t.id,
     t.name,
     t.avatarUrl,
-    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    CASE WHEN tu.role = 'OWNER' THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
@@ -67,7 +67,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+    AND tu.role = 'OWNER'
     ORDER BY tu.joinedAt DESC
     """)
   List<TeamSummaryResponseDto> findUserOwnedTeams(@Param("userId") UUID userId, Pageable pageable);
@@ -82,7 +82,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+    AND tu.role = 'OWNER'
     AND tu.joinedAt < :cursor
     ORDER BY tu.joinedAt DESC
     """)
@@ -103,7 +103,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     t.id,
     t.name,
     t.avatarUrl,
-    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    CASE WHEN tu.role = 'OWNER' THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
@@ -119,7 +119,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     t.id,
     t.name,
     t.avatarUrl,
-    CASE WHEN tu.role = com.study.studypal.team.enums.TeamRole.OWNER THEN true ELSE false END
+    CASE WHEN tu.role = 'OWNER' THEN true ELSE false END
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
@@ -143,7 +143,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+    AND tu.role = 'OWNER'
     AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     ORDER BY tu.joinedAt DESC
     """)
@@ -160,7 +160,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     )
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+    AND tu.role = 'OWNER'
     AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     AND tu.joinedAt < :cursor
     ORDER BY tu.joinedAt DESC
@@ -185,7 +185,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     SELECT COUNT(t)
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
-    AND tu.role = com.study.studypal.team.enums.TeamRole.OWNER
+    AND tu.role = 'OWNER'
     AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     """)
   long countUserOwnedTeamByName(@Param("userId") UUID userId, @Param("keyword") String keyword);
