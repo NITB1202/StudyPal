@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.factory.AccountFactory;
 import com.study.studypal.auth.repository.AccountRepository;
@@ -69,7 +68,14 @@ class UserControllerIT {
 
   @BeforeEach
   void setUp() {
-    User currentUser = userRepository.save(UserFactory.createForSave("Current"));
+    User currentUser = UserFactory.createForSave("Current");
+    User user1 = UserFactory.createForSave("Stephany");
+    User user2 = UserFactory.createForSave("Stelio");
+
+    userRepository.save(currentUser);
+    userRepository.save(user1);
+    userRepository.save(user2);
+
     currentUserId = currentUser.getId();
 
     accessToken = jwtService.generateAccessToken(currentUserId, AccountRole.USER);
@@ -77,13 +83,9 @@ class UserControllerIT {
         .getCache(CacheNames.ACCESS_TOKENS)
         .put(CacheKeyUtils.of(currentUserId), accessToken);
 
-    userRepository.save(UserFactory.createForSave("Alice"));
-    userRepository.save(UserFactory.createForSave("alex"));
-
-    Account account = AccountFactory.createFullDetails();
-    account.setUser(currentUser);
-
-    accountRepository.save(account);
+    accountRepository.save(AccountFactory.createWithUser(currentUser));
+    accountRepository.save(AccountFactory.createWithUser(user1));
+    accountRepository.save(AccountFactory.createWithUser(user2));
   }
 
   // getUserProfile
@@ -118,13 +120,13 @@ class UserControllerIT {
     mockMvc
         .perform(
             get("/api/users/search")
-                .param("keyword", "al")
+                .param("keyword", "ste")
                 .param("size", "2")
                 .header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.users").isArray())
         .andExpect(jsonPath("$.users.length()").value(2))
-        .andExpect(jsonPath("$.users[*].name", containsInAnyOrder("Alice", "alex")))
+        .andExpect(jsonPath("$.users[*].name", containsInAnyOrder("Stephany", "Stelio")))
         .andExpect(jsonPath("$.total").value(2))
         .andExpect(jsonPath("$.nextCursor").exists());
   }
