@@ -4,6 +4,7 @@ import com.study.studypal.plan.dto.recurrence.request.CreatePlanRecurrenceRuleDt
 import com.study.studypal.plan.dto.task.request.CreateTaskForPersonalPlanDto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,4 +26,6 @@ public class CreatePersonalPlanRequestDto {
   @NotNull(message = "Tasks are required")
   @Size(min = 1, message = "The list must contain at least 1 item")
   private List<CreateTaskForPersonalPlanDto> tasks;
+
+  private List<LocalDateTime> reminderTimes;
 }

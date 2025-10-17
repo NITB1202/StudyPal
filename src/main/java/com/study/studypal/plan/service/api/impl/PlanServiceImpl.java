@@ -12,6 +12,7 @@ import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.api.PlanService;
 import com.study.studypal.plan.service.internal.PlanRecurrenceRuleInternalService;
+import com.study.studypal.plan.service.internal.PlanReminderInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -29,6 +30,7 @@ public class PlanServiceImpl implements PlanService {
   private final ModelMapper modelMapper;
   private final TaskInternalService taskService;
   private final PlanRecurrenceRuleInternalService ruleService;
+  private final PlanReminderInternalService reminderService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -50,6 +52,7 @@ public class PlanServiceImpl implements PlanService {
 
     taskService.createTasksForPersonalPlan(userId, planInfo, request.getTasks());
     ruleService.createPlanRecurrenceRule(planInfo, request.getRecurrenceRule());
+    reminderService.createRemindersForPersonalPlan(planInfo, request.getReminderTimes());
 
     return ActionResponseDto.builder().success(true).message("Create successfully.").build();
   }
