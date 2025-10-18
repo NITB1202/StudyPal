@@ -1,5 +1,6 @@
 package com.study.studypal.team.dto.membership.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.team.enums.TeamRole;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -20,5 +21,6 @@ public class TeamMemberResponseDto {
 
   private String avatarUrl;
 
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private TeamRole role;
 }
