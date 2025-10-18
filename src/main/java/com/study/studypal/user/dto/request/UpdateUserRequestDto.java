@@ -5,7 +5,11 @@ import com.study.studypal.user.enums.Gender;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -17,9 +21,8 @@ public class UpdateUserRequestDto {
   private String name;
 
   @Past(message = "Date of birth must be in the past")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+  @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate dateOfBirth;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private Gender gender;
 }
