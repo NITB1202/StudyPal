@@ -2,7 +2,6 @@ package com.study.studypal.plan.service.internal.impl;
 
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
-import com.study.studypal.plan.dto.reminder.request.CreateReminderDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.PlanReminder;
 import com.study.studypal.plan.exception.PlanReminderErrorCode;
@@ -17,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.quartz.Scheduler;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,18 +23,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PlanReminderInternalServiceImpl implements PlanReminderInternalService {
   private final PlanReminderRepository planReminderRepository;
-  private final Scheduler scheduler;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public void createRemindersForPersonalPlan(
-      PlanInfo planInfo, List<CreateReminderDto> reminderDtoList) {
-    List<PlanReminder> planReminders = new ArrayList<>();
+  public void createRemindersForPersonalPlan(PlanInfo planInfo, List<LocalDateTime> reminders) {
+    List<PlanReminder> savedReminders = new ArrayList<>();
     Set<LocalDateTime> savedTimes = new HashSet<>();
 
-    for (CreateReminderDto reminderDto : reminderDtoList) {
-      LocalDateTime remindAt = reminderDto.getRemindAt();
-
+    for (LocalDateTime remindAt : reminders) {
       if (savedTimes.contains(remindAt)) {
         throw new BaseException(PlanReminderErrorCode.REMINDER_ALREADY_EXISTS);
       } else {
@@ -51,9 +45,9 @@ public class PlanReminderInternalServiceImpl implements PlanReminderInternalServ
       Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
       PlanReminder planReminder = PlanReminder.builder().plan(plan).remindAt(remindAt).build();
 
-      planReminders.add(planReminder);
+      savedReminders.add(planReminder);
     }
 
-    planReminderRepository.saveAll(planReminders);
+    planReminderRepository.saveAll(savedReminders);
   }
 }
