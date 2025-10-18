@@ -6,7 +6,7 @@ import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePersonalPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
-import com.study.studypal.plan.dto.plan.response.PersonalPlanDetailResponseDto;
+import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
@@ -58,7 +58,7 @@ public class PlanServiceImpl implements PlanService {
   }
 
   @Override
-  public PersonalPlanDetailResponseDto getPersonalPlanDetail(UUID planId) {
+  public PlanDetailResponseDto getPlanDetail(UUID planId) {
 
     return null;
   }

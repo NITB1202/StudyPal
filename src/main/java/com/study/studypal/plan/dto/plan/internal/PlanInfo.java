@@ -9,6 +9,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PlanInfo {
   private UUID planId;
+
   private LocalDateTime planStartDate;
+
   private LocalDateTime planDueDate;
 }

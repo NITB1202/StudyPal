@@ -3,7 +3,7 @@ package com.study.studypal.plan.dto.plan.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.plan.enums.Priority;
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -19,7 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CreatePlanDto {
-  @NotEmpty(message = "Title is required")
+  @NotBlank(message = "Title is required")
   @Size(max = 50, message = "Title must be less than 50 characters")
   private String title;
 

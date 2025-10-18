@@ -2,7 +2,7 @@ package com.study.studypal.plan.dto.task.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CreateTaskForPersonalPlanDto {
-  @NotEmpty(message = "Content is required")
+  @NotBlank(message = "Content is required")
   private String content;
 
   @Future(message = "Due date must be in the future")

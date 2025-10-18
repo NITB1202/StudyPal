@@ -13,7 +13,9 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Service;
@@ -29,25 +31,29 @@ public class PlanReminderInternalServiceImpl implements PlanReminderInternalServ
   @Override
   public void createRemindersForPersonalPlan(
       PlanInfo planInfo, List<CreateReminderDto> reminderDtoList) {
-    List<PlanReminder> planReminderList = new ArrayList<>();
+    List<PlanReminder> planReminders = new ArrayList<>();
+    Set<LocalDateTime> savedTimes = new HashSet<>();
 
     for (CreateReminderDto reminderDto : reminderDtoList) {
-      validateReminderTime(planInfo, reminderDto.getRemindAt());
+      LocalDateTime remindAt = reminderDto.getRemindAt();
+
+      if (savedTimes.contains(remindAt)) {
+        throw new BaseException(PlanReminderErrorCode.REMINDER_ALREADY_EXISTS);
+      } else {
+        savedTimes.add(remindAt);
+      }
+
+      if (remindAt.isBefore(planInfo.getPlanStartDate())
+          || remindAt.isAfter(planInfo.getPlanDueDate())) {
+        throw new BaseException(PlanReminderErrorCode.INVALID_REMINDER);
+      }
 
       Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
-      PlanReminder planReminder =
-          PlanReminder.builder().plan(plan).remindAt(reminderDto.getRemindAt()).build();
+      PlanReminder planReminder = PlanReminder.builder().plan(plan).remindAt(remindAt).build();
 
-      planReminderList.add(planReminder);
+      planReminders.add(planReminder);
     }
 
-    planReminderRepository.saveAll(planReminderList);
-  }
-
-  private void validateReminderTime(PlanInfo planInfo, LocalDateTime reminder) {
-    if (reminder.isBefore(planInfo.getPlanStartDate())
-        || reminder.isAfter(planInfo.getPlanDueDate())) {
-      throw new BaseException(PlanReminderErrorCode.INVALID_REMINDER);
-    }
+    planReminderRepository.saveAll(planReminders);
   }
 }
