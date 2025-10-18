@@ -1,5 +1,6 @@
 package com.study.studypal.plan.dto.plan.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.plan.enums.Priority;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,10 +26,12 @@ public class CreatePlanDto {
   private String description;
 
   @NotNull(message = "Start date is required")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime startDate;
 
   @NotNull(message = "Due date is required")
   @Future(message = "Due date must be in the future")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dueDate;
 
   @NotNull(message = "Priority is required")

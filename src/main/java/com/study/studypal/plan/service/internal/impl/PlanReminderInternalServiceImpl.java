@@ -2,6 +2,7 @@ package com.study.studypal.plan.service.internal.impl;
 
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
+import com.study.studypal.plan.dto.reminder.request.CreateReminderDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.PlanReminder;
 import com.study.studypal.plan.exception.PlanReminderErrorCode;
@@ -26,19 +27,21 @@ public class PlanReminderInternalServiceImpl implements PlanReminderInternalServ
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public void createRemindersForPersonalPlan(PlanInfo planInfo, List<LocalDateTime> reminderTimes) {
-    List<PlanReminder> reminders = new ArrayList<>();
+  public void createRemindersForPersonalPlan(
+      PlanInfo planInfo, List<CreateReminderDto> reminderDtoList) {
+    List<PlanReminder> planReminderList = new ArrayList<>();
 
-    for (LocalDateTime reminderTime : reminderTimes) {
-      validateReminderTime(planInfo, reminderTime);
+    for (CreateReminderDto reminderDto : reminderDtoList) {
+      validateReminderTime(planInfo, reminderDto.getRemindAt());
 
       Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
-      PlanReminder reminder = PlanReminder.builder().plan(plan).remindAt(reminderTime).build();
+      PlanReminder planReminder =
+          PlanReminder.builder().plan(plan).remindAt(reminderDto.getRemindAt()).build();
 
-      reminders.add(reminder);
+      planReminderList.add(planReminder);
     }
 
-    planReminderRepository.saveAll(reminders);
+    planReminderRepository.saveAll(planReminderList);
   }
 
   private void validateReminderTime(PlanInfo planInfo, LocalDateTime reminder) {

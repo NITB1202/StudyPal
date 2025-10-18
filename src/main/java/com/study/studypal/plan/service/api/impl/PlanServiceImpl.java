@@ -6,7 +6,7 @@ import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePersonalPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
-import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
+import com.study.studypal.plan.dto.plan.response.PersonalPlanDetailResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
@@ -52,13 +52,14 @@ public class PlanServiceImpl implements PlanService {
 
     taskService.createTasksForPersonalPlan(userId, planInfo, request.getTasks());
     ruleService.createPlanRecurrenceRule(planInfo, request.getRecurrenceRule());
-    reminderService.createRemindersForPersonalPlan(planInfo, request.getReminderTimes());
+    reminderService.createRemindersForPersonalPlan(planInfo, request.getReminders());
 
     return ActionResponseDto.builder().success(true).message("Create successfully.").build();
   }
 
   @Override
-  public PlanDetailResponseDto getPlanDetail(UUID planId) {
+  public PersonalPlanDetailResponseDto getPersonalPlanDetail(UUID planId) {
+
     return null;
   }
 

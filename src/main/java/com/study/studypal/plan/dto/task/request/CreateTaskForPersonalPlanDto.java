@@ -1,5 +1,6 @@
 package com.study.studypal.plan.dto.task.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
@@ -19,5 +20,6 @@ public class CreateTaskForPersonalPlanDto {
   private String content;
 
   @Future(message = "Due date must be in the future")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dueDate;
 }
