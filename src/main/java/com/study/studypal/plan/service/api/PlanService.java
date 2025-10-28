@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface PlanService {
   ActionResponseDto createPersonalPlan(UUID userId, CreatePersonalPlanRequestDto request);
 
-  PlanDetailResponseDto getPlanDetail(UUID planId);
+  PlanDetailResponseDto getPlanDetail(UUID userId, UUID planId);
 
   ListPlanResponseDto getAssignedPlansOnDate(UUID userId, LocalDate date);
 }

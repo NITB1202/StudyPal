@@ -85,4 +85,9 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   public UserSummaryProfile getOwnerProfile(UUID teamId) {
     return teamUserRepository.getTeamOwner(teamId);
   }
+
+  @Override
+  public boolean isUserInTeam(UUID userId, UUID teamId) {
+    return teamUserRepository.existsByUserIdAndTeamId(userId, teamId);
+  }
 }

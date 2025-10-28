@@ -3,6 +3,7 @@ package com.study.studypal.plan.service.internal.impl;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPersonalPlanDto;
+import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.exception.TaskErrorCode;
@@ -18,12 +19,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class TaskInternalServiceImpl implements TaskInternalService {
   private final TaskRepository taskRepository;
+  private final ModelMapper modelMapper;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
@@ -57,5 +60,24 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     }
 
     taskRepository.saveAll(savedTasks);
+  }
+
+  @Override
+  public List<TaskResponseDto> getAll(UUID planId) {
+    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDueDateAsc(planId);
+    List<TaskResponseDto> responseDtoList = new ArrayList<>();
+
+    for (Task task : tasks) {
+      TaskResponseDto responseDto = modelMapper.map(task, TaskResponseDto.class);
+      User assignee = task.getAssignee();
+
+      responseDto.setAssigneeId(assignee.getId());
+      responseDto.setAssigneeAvatarUrl(assignee.getAvatarUrl());
+      responseDto.setCompleted(task.getCompleteDate() != null);
+
+      responseDtoList.add(responseDto);
+    }
+
+    return responseDtoList;
   }
 }

@@ -21,4 +21,6 @@ public interface TeamMembershipInternalService {
   List<UUID> getMemberIds(UUID teamId);
 
   UserSummaryProfile getOwnerProfile(UUID teamId);
+
+  boolean isUserInTeam(UUID userId, UUID teamId);
 }

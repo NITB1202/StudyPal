@@ -11,10 +11,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Service;
 public class PlanReminderInternalServiceImpl implements PlanReminderInternalService {
   private final PlanReminderRepository planReminderRepository;
   @PersistenceContext private final EntityManager entityManager;
+  private static final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   @Override
   public void createRemindersForPersonalPlan(PlanInfo planInfo, List<LocalDateTime> reminders) {
@@ -32,14 +36,15 @@ public class PlanReminderInternalServiceImpl implements PlanReminderInternalServ
 
     for (LocalDateTime remindAt : reminders) {
       if (savedTimes.contains(remindAt)) {
-        throw new BaseException(PlanReminderErrorCode.REMINDER_ALREADY_EXISTS);
+        throw new BaseException(
+            PlanReminderErrorCode.REMINDER_ALREADY_EXISTS, remindAt.format(formatter));
       } else {
         savedTimes.add(remindAt);
       }
 
       if (remindAt.isBefore(planInfo.getPlanStartDate())
           || remindAt.isAfter(planInfo.getPlanDueDate())) {
-        throw new BaseException(PlanReminderErrorCode.INVALID_REMINDER);
+        throw new BaseException(PlanReminderErrorCode.INVALID_REMINDER, remindAt.format(formatter));
       }
 
       Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
@@ -49,5 +54,11 @@ public class PlanReminderInternalServiceImpl implements PlanReminderInternalServ
     }
 
     planReminderRepository.saveAll(savedReminders);
+  }
+
+  @Override
+  public List<LocalDateTime> getAll(UUID planId) {
+    List<PlanReminder> reminders = planReminderRepository.findAllByPlanIdOrderByRemindAtAsc(planId);
+    return reminders.stream().map(PlanReminder::getRemindAt).toList();
   }
 }

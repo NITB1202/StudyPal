@@ -6,17 +6,16 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum PlanReminderErrorCode implements ErrorCode {
-  REMINDER_ALREADY_EXISTS(HttpStatus.CONFLICT, "REMINDER_001", "Duplicated reminders detected."),
+  REMINDER_ALREADY_EXISTS(
+      HttpStatus.CONFLICT, "REMINDER_001", "Reminder %s is already exists in the plan."),
   INVALID_REMINDER(
       HttpStatus.BAD_REQUEST,
       "REMINDER_002",
-      "Each reminder must be within the plan's start and due dates."),
+      "Reminder %s must be within the plan's start and due dates."),
   SCHEDULE_REMINDER_FAILED(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      "REMINDER_003",
-      "Failed to schedule reminder for plan with id: %s."),
+      HttpStatus.INTERNAL_SERVER_ERROR, "REMINDER_003", "Failed to schedule reminder %s."),
   CANCEL_REMINDER_FAILED(
-      HttpStatus.INTERNAL_SERVER_ERROR, "REMINDER_004", "Failed to cancel reminder with id: %s");
+      HttpStatus.INTERNAL_SERVER_ERROR, "REMINDER_004", "Failed to cancel reminder with id %s");
 
   private final HttpStatus httpStatus;
   private final String code;

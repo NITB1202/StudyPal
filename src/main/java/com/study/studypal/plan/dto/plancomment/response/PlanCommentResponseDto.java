@@ -2,6 +2,8 @@ package com.study.studypal.plan.dto.plancomment.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,12 +21,12 @@ public class PlanCommentResponseDto {
 
   private UUID userId;
 
-  private UUID avatarUrl;
+  private String avatarUrl;
 
   private String content;
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
 
-  private PlanCommentResponseDto parentComment;
+  private List<PlanCommentResponseDto> replies = new ArrayList<>();
 }
