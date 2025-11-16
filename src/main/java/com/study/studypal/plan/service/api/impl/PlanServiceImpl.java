@@ -7,7 +7,6 @@ import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
-import com.study.studypal.plan.dto.plancomment.response.PlanCommentResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
@@ -21,7 +20,6 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,14 +90,9 @@ public class PlanServiceImpl implements PlanService {
       throw new BaseException(PlanErrorCode.PERMISSION_VIEW_PLAN_DENIED);
     }
 
-    List<LocalDateTime> reminders = reminderService.getAll(planId);
-    List<TaskResponseDto> tasks = taskService.getAll(planId);
-    List<PlanCommentResponseDto> comments = commentService.getAll(planId);
-
     PlanDetailResponseDto dto = modelMapper.map(plan, PlanDetailResponseDto.class);
-    dto.setReminders(reminders);
+    List<TaskResponseDto> tasks = taskService.getAll(planId);
     dto.setTasks(tasks);
-    dto.setComments(comments);
 
     return dto;
   }

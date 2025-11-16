@@ -3,6 +3,7 @@ package com.study.studypal.plan.controller;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
+import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.service.api.PlanService;
@@ -27,13 +28,12 @@ public class PlanController {
   private final PlanService planService;
 
   @PostMapping
-  @Operation(summary = "Create a personal plan.")
+  @Operation(summary = "Create a new plan.")
   @ApiResponse(responseCode = "200", description = "Create successfully.")
   @BadRequestApiResponse
-  public ResponseEntity<CreatePlanResponseDto> createPersonalPlan(
-      @AuthenticationPrincipal UUID userId,
-      @Valid @RequestBody CreatePersonalPlanRequestDto request) {
-    return ResponseEntity.ok(planService.createPersonalPlan(userId, request));
+  public ResponseEntity<CreatePlanResponseDto> createPlan(
+      @AuthenticationPrincipal UUID userId, @Valid @RequestBody CreatePlanRequestDto request) {
+    return ResponseEntity.ok(planService.createPlan(userId, request));
   }
 
   @GetMapping("/{planId}")

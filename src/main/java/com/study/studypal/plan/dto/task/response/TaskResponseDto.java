@@ -1,6 +1,7 @@
 package com.study.studypal.plan.dto.task.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.study.studypal.plan.enums.Priority;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,9 @@ public class TaskResponseDto {
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dueDate;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Priority priority;
 
   private boolean isCompleted;
 }

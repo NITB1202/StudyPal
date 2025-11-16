@@ -37,11 +37,9 @@ public class PlanRecurrenceRuleInternalServiceImpl implements PlanRecurrenceRule
 
     TaskRecurrenceRule rule =
         TaskRecurrenceRule.builder()
-            .plan(plan)
             .weekDays(weekDays)
             .recurrenceStartDate(recurrenceStartDate)
             .recurrenceEndDate(recurrenceEndDate)
-            .isDeleted(false)
             .build();
 
     planRecurrenceRuleRepository.save(rule);
