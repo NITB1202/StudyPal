@@ -1,10 +1,12 @@
 package com.study.studypal.auth.service.impl;
 
+import static com.study.studypal.common.util.Constants.PASSWORD_RULE_MESSAGE;
+
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.enums.AuthProvider;
 import com.study.studypal.auth.enums.ExternalAuthProvider;
-import com.study.studypal.auth.exception.*;
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -27,8 +29,6 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
   private final AccountRepository accountRepository;
   private final PasswordEncoder passwordEncoder;
-  private static final String PASSWORD_RULE =
-      "Password must be at least 3 characters long and contain both letters and numbers.";
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -147,7 +147,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     if (!validatePassword(password)) {
-      return ActionResponseDto.builder().success(false).message(PASSWORD_RULE).build();
+      return ActionResponseDto.builder().success(false).message(PASSWORD_RULE_MESSAGE).build();
     }
 
     return ActionResponseDto.builder()
@@ -160,7 +160,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public ActionResponseDto resetPassword(String email, String newPassword) {
     if (!validatePassword(newPassword)) {
-      return ActionResponseDto.builder().success(false).message(PASSWORD_RULE).build();
+      return ActionResponseDto.builder().success(false).message(PASSWORD_RULE_MESSAGE).build();
     }
 
     Account account = accountRepository.findByEmail(email);
