@@ -1,10 +1,10 @@
 package com.study.studypal.plan.service.api.impl;
 
-import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePersonalPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanDto;
+import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plancomment.response.PlanCommentResponseDto;
@@ -17,6 +17,7 @@ import com.study.studypal.plan.service.internal.PlanCommentInternalService;
 import com.study.studypal.plan.service.internal.PlanRecurrenceRuleInternalService;
 import com.study.studypal.plan.service.internal.PlanReminderInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
+import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -25,6 +26,7 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -45,7 +47,8 @@ public class PlanServiceImpl implements PlanService {
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public ActionResponseDto createPersonalPlan(UUID userId, CreatePersonalPlanRequestDto request) {
+  public CreatePlanResponseDto createPersonalPlan(
+      UUID userId, CreatePersonalPlanRequestDto request) {
     CreatePlanDto planDto = request.getPlan();
 
     if (planDto.getStartDate().isAfter(planDto.getDueDate())) {
@@ -64,7 +67,7 @@ public class PlanServiceImpl implements PlanService {
     ruleService.createPlanRecurrenceRule(planInfo, request.getRecurrenceRule());
     reminderService.createRemindersForPersonalPlan(planInfo, request.getReminders());
 
-    return ActionResponseDto.builder().success(true).message("Create successfully.").build();
+    return modelMapper.map(plan, CreatePlanResponseDto.class);
   }
 
   @Override
@@ -74,11 +77,11 @@ public class PlanServiceImpl implements PlanService {
             .findById(planId)
             .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
-    UUID teamId = plan.getTeam().getId();
     boolean hasPermission =
-        teamId != null
-            ? memberService.isUserInTeam(userId, teamId)
-            : plan.getCreator().getId().equals(userId);
+        Optional.ofNullable(plan.getTeam())
+            .map(Team::getId)
+            .map(teamId -> memberService.isUserInTeam(userId, teamId))
+            .orElse(userId.equals(plan.getCreator().getId()));
 
     if (!hasPermission) {
       throw new BaseException(PlanErrorCode.PERMISSION_VIEW_PLAN_DENIED);
