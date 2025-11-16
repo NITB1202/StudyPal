@@ -1,5 +1,6 @@
 package com.study.studypal.common.util;
 
+import java.time.format.DateTimeFormatter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -15,4 +16,9 @@ public final class Constants {
 
   // Team constants
   public static final long MAX_OWNED_TEAMS = 5;
+
+  // Plan constants
+  public static final String PLAN_CODE_PREFIX = "PLN-";
+  public static final DateTimeFormatter JSON_DATETIME_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 }

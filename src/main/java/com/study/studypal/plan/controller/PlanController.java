@@ -3,7 +3,6 @@ package com.study.studypal.plan.controller;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
-import com.study.studypal.plan.dto.plan.request.CreatePersonalPlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.service.api.PlanService;

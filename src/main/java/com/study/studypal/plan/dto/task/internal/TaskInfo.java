@@ -1,4 +1,4 @@
-package com.study.studypal.plan.dto.plan.internal;
+package com.study.studypal.plan.dto.task.internal;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PlanInfo {
+public class TaskInfo {
   private UUID id;
 
   private LocalDateTime startDate;

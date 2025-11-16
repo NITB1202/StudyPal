@@ -1,8 +1,8 @@
 package com.study.studypal.plan.service.internal.impl;
 
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.recurrence.request.CreatePlanRecurrenceRuleDto;
+import com.study.studypal.plan.dto.task.internal.TaskInfo;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.TaskRecurrenceRule;
 import com.study.studypal.plan.exception.TaskRecurrenceRuleErrorCode;
@@ -23,7 +23,7 @@ public class PlanRecurrenceRuleInternalServiceImpl implements PlanRecurrenceRule
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public void createPlanRecurrenceRule(PlanInfo planInfo, CreatePlanRecurrenceRuleDto ruleDto) {
+  public void createPlanRecurrenceRule(TaskInfo planInfo, CreatePlanRecurrenceRuleDto ruleDto) {
     LocalDate recurrenceStartDate = planInfo.getStartDate().toLocalDate();
     LocalDate recurrenceEndDate = ruleDto.getRecurrenceEndDate();
 

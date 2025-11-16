@@ -1,9 +1,9 @@
 package com.study.studypal.plan.service.api.impl;
 
+import static com.study.studypal.common.util.Constants.PLAN_CODE_PREFIX;
+
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.plan.dto.plan.internal.PlanInfo;
-import com.study.studypal.plan.dto.plan.request.CreatePersonalPlanRequestDto;
-import com.study.studypal.plan.dto.plan.request.CreatePlanDto;
+import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
@@ -13,16 +13,13 @@ import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.api.PlanService;
-import com.study.studypal.plan.service.internal.PlanCommentInternalService;
-import com.study.studypal.plan.service.internal.PlanRecurrenceRuleInternalService;
-import com.study.studypal.plan.service.internal.PlanReminderInternalService;
+import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,36 +35,44 @@ public class PlanServiceImpl implements PlanService {
   private final PlanRepository planRepository;
   private final ModelMapper modelMapper;
   private final TaskInternalService taskService;
-  private final PlanRecurrenceRuleInternalService ruleService;
-  private final PlanReminderInternalService reminderService;
   private final TeamMembershipInternalService memberService;
-  private final PlanCommentInternalService commentService;
+  private final PlanHistoryInternalService historyService;
 
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  @Transactional
-  public CreatePlanResponseDto createPersonalPlan(
-      UUID userId, CreatePersonalPlanRequestDto request) {
-    CreatePlanDto planDto = request.getPlan();
+  public CreatePlanResponseDto createPlan(UUID userId, CreatePlanRequestDto request) {
+    UUID teamId = request.getTeamId();
 
-    if (planDto.getStartDate().isAfter(planDto.getDueDate())) {
-      throw new BaseException(PlanErrorCode.START_DATE_AFTER_DUE_DATE);
-    }
+    memberService.validateUpdatePlanPermission(userId, teamId);
 
     User creator = entityManager.getReference(User.class, userId);
-    Plan plan = Plan.builder().creator(creator).progress(0f).isDeleted(false).build();
+    Team team = entityManager.getReference(Team.class, teamId);
 
-    modelMapper.map(planDto, plan);
+    String planCode = generatePlanCode(teamId);
+
+    Plan plan =
+        Plan.builder()
+            .creator(creator)
+            .planCode(planCode)
+            .title(request.getTitle())
+            .description(request.getDescription())
+            .progress(0f)
+            .isDeleted(false)
+            .team(team)
+            .build();
+
     planRepository.save(plan);
 
-    PlanInfo planInfo = modelMapper.map(plan, PlanInfo.class);
-
-    taskService.createTasksForPersonalPlan(userId, planInfo, request.getTasks());
-    ruleService.createPlanRecurrenceRule(planInfo, request.getRecurrenceRule());
-    reminderService.createReminders(planInfo, request.getReminders());
+    taskService.createTasksForPlan(teamId, plan.getId(), request.getTasks());
+    historyService.logCreatePlan(userId, plan.getId());
 
     return modelMapper.map(plan, CreatePlanResponseDto.class);
+  }
+
+  private String generatePlanCode(UUID teamId) {
+    long planCount = planRepository.countByTeamId(teamId);
+    return PLAN_CODE_PREFIX + planCount;
   }
 
   @Override
