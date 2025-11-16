@@ -9,7 +9,7 @@ public enum TeamMembershipErrorCode implements ErrorCode {
   USER_MEMBERSHIP_NOT_FOUND(
       HttpStatus.NOT_FOUND, "TEAM_MEM_001", "You are not a member of this team."),
   TARGET_MEMBERSHIP_NOT_FOUND(
-      HttpStatus.NOT_FOUND, "TEAM_MEM_002", "The specified member is not part of this team."),
+      HttpStatus.NOT_FOUND, "TEAM_MEM_002", "The user with id %s is not part of this team."),
   PERMISSION_UPDATE_TEAM_DENIED(
       HttpStatus.FORBIDDEN, "TEAM_MEM_003", "Only the owner can update the team."),
   PERMISSION_UPDATE_MEMBER_ROLE_DENIED(

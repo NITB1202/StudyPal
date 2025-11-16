@@ -77,6 +77,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     for (CreateTaskForTeamPlanDto taskDto : tasks) {
       String content = taskDto.getContent();
       LocalDateTime dueDate = taskDto.getDueDate();
+      UUID assigneeId = taskDto.getAssigneeId();
 
       if (contents.contains(content)) {
         throw new BaseException(TaskErrorCode.TASK_ALREADY_EXISTS, content);
@@ -88,12 +89,11 @@ public class TaskInternalServiceImpl implements TaskInternalService {
         throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, content);
       }
 
-      if (!memberService.isUserInTeam(taskDto.getAssigneeId(), teamId)) {
-        throw new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND);
+      if (!memberService.isUserInTeam(assigneeId, teamId)) {
+        throw new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND, assigneeId);
       }
 
-      User assignee = entityManager.getReference(User.class, taskDto.getAssigneeId());
-
+      User assignee = entityManager.getReference(User.class, assigneeId);
       Task task =
           Task.builder().plan(plan).assignee(assignee).content(content).dueDate(dueDate).build();
 

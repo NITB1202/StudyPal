@@ -76,7 +76,8 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   public TeamUser getMemberShip(UUID teamId, UUID userId) {
     return teamUserRepository
         .findByUserIdAndTeamId(userId, teamId)
-        .orElseThrow(() -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
+        .orElseThrow(
+            () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND, userId));
   }
 
   @Override
