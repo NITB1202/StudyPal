@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface PlanReminderInternalService {
-  void createRemindersForPersonalPlan(PlanInfo planInfo, List<LocalDateTime> reminders);
+  void createReminders(PlanInfo planInfo, List<LocalDateTime> reminders);
 
   List<LocalDateTime> getAll(UUID planId);
 }

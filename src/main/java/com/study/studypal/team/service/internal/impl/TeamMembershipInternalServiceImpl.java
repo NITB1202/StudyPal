@@ -64,6 +64,15 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   }
 
   @Override
+  public void validateUpdatePlanPermission(UUID userId, UUID teamId) {
+    TeamUser membership = getMemberShip(teamId, userId);
+
+    if (membership.getRole() == TeamRole.MEMBER) {
+      throw new BaseException(TeamMembershipErrorCode.PERMISSION_UPDATE_PLAN_DENIED);
+    }
+  }
+
+  @Override
   public TeamUser getMemberShip(UUID teamId, UUID userId) {
     return teamUserRepository
         .findByUserIdAndTeamId(userId, teamId)

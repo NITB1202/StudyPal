@@ -24,14 +24,14 @@ public class PlanRecurrenceRuleInternalServiceImpl implements PlanRecurrenceRule
 
   @Override
   public void createPlanRecurrenceRule(PlanInfo planInfo, CreatePlanRecurrenceRuleDto ruleDto) {
-    LocalDate recurrenceStartDate = planInfo.getPlanStartDate().toLocalDate();
+    LocalDate recurrenceStartDate = planInfo.getStartDate().toLocalDate();
     LocalDate recurrenceEndDate = ruleDto.getRecurrenceEndDate();
 
-    if (!recurrenceEndDate.isAfter(planInfo.getPlanDueDate().toLocalDate())) {
+    if (!recurrenceEndDate.isAfter(planInfo.getDueDate().toLocalDate())) {
       throw new BaseException(PlanRecurrenceRuleErrorCode.INVALID_END_DATE);
     }
 
-    Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
+    Plan plan = entityManager.getReference(Plan.class, planInfo.getId());
     String weekDays =
         ruleDto.getWeekDays().stream().map(DayOfWeek::name).collect(Collectors.joining(","));
 

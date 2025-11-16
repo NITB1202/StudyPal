@@ -30,7 +30,9 @@ public class PlanReminderInternalServiceImpl implements PlanReminderInternalServ
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   @Override
-  public void createRemindersForPersonalPlan(PlanInfo planInfo, List<LocalDateTime> reminders) {
+  public void createReminders(PlanInfo planInfo, List<LocalDateTime> reminders) {
+    if (reminders == null) return;
+
     List<PlanReminder> savedReminders = new ArrayList<>();
     Set<LocalDateTime> savedTimes = new HashSet<>();
 
@@ -42,12 +44,11 @@ public class PlanReminderInternalServiceImpl implements PlanReminderInternalServ
         savedTimes.add(remindAt);
       }
 
-      if (remindAt.isBefore(planInfo.getPlanStartDate())
-          || remindAt.isAfter(planInfo.getPlanDueDate())) {
+      if (remindAt.isBefore(planInfo.getStartDate()) || remindAt.isAfter(planInfo.getDueDate())) {
         throw new BaseException(PlanReminderErrorCode.INVALID_REMINDER, remindAt.format(formatter));
       }
 
-      Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
+      Plan plan = entityManager.getReference(Plan.class, planInfo.getId());
       PlanReminder planReminder = PlanReminder.builder().plan(plan).remindAt(remindAt).build();
 
       savedReminders.add(planReminder);

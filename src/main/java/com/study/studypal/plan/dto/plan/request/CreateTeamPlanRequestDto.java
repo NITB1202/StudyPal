@@ -1,8 +1,11 @@
 package com.study.studypal.plan.dto.plan.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.study.studypal.plan.converter.LocalDateTimeListDeserializer;
 import com.study.studypal.plan.dto.task.request.CreateTaskForTeamPlanDto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -26,4 +29,7 @@ public class CreateTeamPlanRequestDto {
   @NotNull(message = "Tasks are required")
   @Size(min = 1, message = "The list must contain at least 1 item")
   private List<CreateTaskForTeamPlanDto> tasks;
+
+  @JsonDeserialize(using = LocalDateTimeListDeserializer.class)
+  private List<LocalDateTime> reminders;
 }

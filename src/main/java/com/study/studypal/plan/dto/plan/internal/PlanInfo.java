@@ -2,15 +2,15 @@ package com.study.studypal.plan.dto.plan.internal;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-@AllArgsConstructor
+@Setter
 public class PlanInfo {
-  private UUID planId;
+  private UUID id;
 
-  private LocalDateTime planStartDate;
+  private LocalDateTime startDate;
 
-  private LocalDateTime planDueDate;
+  private LocalDateTime dueDate;
 }

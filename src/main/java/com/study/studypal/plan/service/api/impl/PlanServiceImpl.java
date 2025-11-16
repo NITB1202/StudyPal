@@ -33,7 +33,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class PlanServiceImpl implements PlanService {
   private final PlanRepository planRepository;
@@ -47,6 +46,7 @@ public class PlanServiceImpl implements PlanService {
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
+  @Transactional
   public CreatePlanResponseDto createPersonalPlan(
       UUID userId, CreatePersonalPlanRequestDto request) {
     CreatePlanDto planDto = request.getPlan();
@@ -61,11 +61,11 @@ public class PlanServiceImpl implements PlanService {
     modelMapper.map(planDto, plan);
     planRepository.save(plan);
 
-    PlanInfo planInfo = new PlanInfo(plan.getId(), plan.getStartDate(), plan.getDueDate());
+    PlanInfo planInfo = modelMapper.map(plan, PlanInfo.class);
 
     taskService.createTasksForPersonalPlan(userId, planInfo, request.getTasks());
     ruleService.createPlanRecurrenceRule(planInfo, request.getRecurrenceRule());
-    reminderService.createRemindersForPersonalPlan(planInfo, request.getReminders());
+    reminderService.createReminders(planInfo, request.getReminders());
 
     return modelMapper.map(plan, CreatePlanResponseDto.class);
   }
