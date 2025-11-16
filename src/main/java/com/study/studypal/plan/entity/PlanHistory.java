@@ -1,7 +1,5 @@
 package com.study.studypal.plan.entity;
 
-import com.study.studypal.team.entity.Team;
-import com.study.studypal.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,33 +22,22 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "plans")
-public class Plan {
+@Table(name = "plan_histories")
+public class PlanHistory {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "id", nullable = false)
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "creator_id", nullable = false)
-  private User creator;
+  @JoinColumn(name = "plan_id", nullable = false)
+  private Plan plan;
 
-  @Column(name = "plan_code", nullable = false)
-  private String planCode;
+  @Column(name = "image_url")
+  private String imageUrl;
 
-  @Column(name = "title", nullable = false)
-  private String title;
+  @Column(name = "message", nullable = false)
+  private String message;
 
-  @Column(name = "description")
-  private String description;
-
-  @Column(name = "progress", nullable = false)
-  private Float progress;
-
-  @Column(name = "is_deleted", nullable = false)
-  private Boolean isDeleted;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "team_id")
-  private Team team;
+  @Column(name = "timestamp", nullable = false)
+  private String timestamp;
 }
