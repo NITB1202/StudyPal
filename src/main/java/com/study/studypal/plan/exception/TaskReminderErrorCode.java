@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum PlanReminderErrorCode implements ErrorCode {
+public enum TaskReminderErrorCode implements ErrorCode {
   REMINDER_ALREADY_EXISTS(
       HttpStatus.CONFLICT, "REMINDER_001", "Reminder %s is already exists in the plan."),
   INVALID_REMINDER(
@@ -21,7 +21,7 @@ public enum PlanReminderErrorCode implements ErrorCode {
   private final String code;
   private final String message;
 
-  PlanReminderErrorCode(final HttpStatus httpStatus, final String code, final String message) {
+  TaskReminderErrorCode(final HttpStatus httpStatus, final String code, final String message) {
     this.httpStatus = httpStatus;
     this.code = code;
     this.message = message;

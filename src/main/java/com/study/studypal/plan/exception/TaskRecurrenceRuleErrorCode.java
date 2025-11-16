@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum PlanRecurrenceRuleErrorCode implements ErrorCode {
+public enum TaskRecurrenceRuleErrorCode implements ErrorCode {
   INVALID_END_DATE(
       HttpStatus.BAD_REQUEST,
       "RECUR_001",
@@ -15,7 +15,7 @@ public enum PlanRecurrenceRuleErrorCode implements ErrorCode {
   private final String code;
   private final String message;
 
-  PlanRecurrenceRuleErrorCode(
+  TaskRecurrenceRuleErrorCode(
       final HttpStatus httpStatus, final String code, final String message) {
     this.httpStatus = httpStatus;
     this.code = code;

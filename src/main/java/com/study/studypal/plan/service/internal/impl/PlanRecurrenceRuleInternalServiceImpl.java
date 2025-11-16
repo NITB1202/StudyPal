@@ -4,9 +4,9 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.recurrence.request.CreatePlanRecurrenceRuleDto;
 import com.study.studypal.plan.entity.Plan;
-import com.study.studypal.plan.entity.PlanRecurrenceRule;
-import com.study.studypal.plan.exception.PlanRecurrenceRuleErrorCode;
-import com.study.studypal.plan.repository.PlanRecurrenceRuleRepository;
+import com.study.studypal.plan.entity.TaskRecurrenceRule;
+import com.study.studypal.plan.exception.TaskRecurrenceRuleErrorCode;
+import com.study.studypal.plan.repository.TaskRecurrenceRuleRepository;
 import com.study.studypal.plan.service.internal.PlanRecurrenceRuleInternalService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PlanRecurrenceRuleInternalServiceImpl implements PlanRecurrenceRuleInternalService {
-  private final PlanRecurrenceRuleRepository planRecurrenceRuleRepository;
+  private final TaskRecurrenceRuleRepository planRecurrenceRuleRepository;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
@@ -28,15 +28,15 @@ public class PlanRecurrenceRuleInternalServiceImpl implements PlanRecurrenceRule
     LocalDate recurrenceEndDate = ruleDto.getRecurrenceEndDate();
 
     if (!recurrenceEndDate.isAfter(planInfo.getDueDate().toLocalDate())) {
-      throw new BaseException(PlanRecurrenceRuleErrorCode.INVALID_END_DATE);
+      throw new BaseException(TaskRecurrenceRuleErrorCode.INVALID_END_DATE);
     }
 
     Plan plan = entityManager.getReference(Plan.class, planInfo.getId());
     String weekDays =
         ruleDto.getWeekDays().stream().map(DayOfWeek::name).collect(Collectors.joining(","));
 
-    PlanRecurrenceRule rule =
-        PlanRecurrenceRule.builder()
+    TaskRecurrenceRule rule =
+        TaskRecurrenceRule.builder()
             .plan(plan)
             .weekDays(weekDays)
             .recurrenceStartDate(recurrenceStartDate)

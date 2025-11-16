@@ -1,7 +1,6 @@
 package com.study.studypal.plan.service.internal.impl;
 
 import com.study.studypal.plan.dto.plancomment.response.PlanCommentResponseDto;
-import com.study.studypal.plan.entity.PlanComment;
 import com.study.studypal.plan.repository.PlanCommentRepository;
 import com.study.studypal.plan.service.internal.PlanCommentInternalService;
 import com.study.studypal.user.entity.User;

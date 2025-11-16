@@ -1,7 +1,10 @@
 package com.study.studypal.plan.entity;
 
+import com.study.studypal.plan.enums.RecurrenceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,19 +26,16 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "plan_recurrence_rules")
-public class PlanRecurrenceRule {
+@Table(name = "task_recurrence_rules")
+public class TaskRecurrenceRule {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", nullable = false)
   private UUID id;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "plan_id", unique = true, nullable = false)
-  private Plan plan;
-
-  @Column(name = "week_days", nullable = false)
-  private String weekDays; // Example: "MONDAY,WEDNESDAY,FRIDAY"
+  @JoinColumn(name = "task_id", unique = true, nullable = false)
+  private Task task;
 
   @Column(name = "recurrence_start_date", nullable = false)
   private LocalDate recurrenceStartDate;
@@ -43,6 +43,10 @@ public class PlanRecurrenceRule {
   @Column(name = "recurrence_end_date", nullable = false)
   private LocalDate recurrenceEndDate;
 
-  @Column(name = "is_deleted", nullable = false)
-  private Boolean isDeleted;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "recurrence_type", nullable = false)
+  private RecurrenceType recurrenceType;
+
+  @Column(name = "week_days")
+  private String weekDays; // Example: "MONDAY,WEDNESDAY,FRIDAY"
 }

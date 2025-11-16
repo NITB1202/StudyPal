@@ -1,8 +1,11 @@
 package com.study.studypal.plan.entity;
 
+import com.study.studypal.plan.enums.Priority;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,14 +38,24 @@ public class Task {
   @JoinColumn(name = "plan_id", nullable = false)
   private Plan plan;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "priority", nullable = false)
+  private Priority priority;
+
   @Column(name = "content", nullable = false)
   private String content;
+
+  @Column(name = "note")
+  private String note;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assignee_id", nullable = false)
   private User assignee;
 
-  @Column(name = "due_date")
+  @Column(name = "start_date", nullable = false)
+  private LocalDateTime startDate;
+
+  @Column(name = "due_date", nullable = false)
   private LocalDateTime dueDate;
 
   @Column(name = "complete_date")
