@@ -92,55 +92,25 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS plans (
     id UUID PRIMARY KEY,
     creator_id UUID NOT NULL,
+    plan_code VARCHAR(20) NOT NULL,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(255),
-    start_date TIMESTAMP NOT NULL,
-    due_date TIMESTAMP NOT NULL,
-    priority VARCHAR(50) NOT NULL,
     progress FLOAT NOT NULL,
-    complete_date TIMESTAMP,
     is_deleted BOOLEAN NOT NULL,
     team_id UUID,
-    parent_plan_id UUID,
     CONSTRAINT fk_plans_users_creator FOREIGN KEY (creator_id)
         REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_plans_teams_team FOREIGN KEY (team_id)
-        REFERENCES teams(id) ON DELETE CASCADE,
-    CONSTRAINT fk_plans_parent FOREIGN KEY (parent_plan_id)
-        REFERENCES plans(id) ON DELETE CASCADE
+        REFERENCES teams(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS plan_comments (
+CREATE TABLE plan_histories (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL,
-    user_id UUID NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    parent_comment_id UUID,
-    CONSTRAINT fk_comments_plans_plan FOREIGN KEY (plan_id)
-        REFERENCES plans(id) ON DELETE CASCADE,
-    CONSTRAINT fk_comments_users_user FOREIGN KEY (user_id)
-        REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_comment_id)
-        REFERENCES plan_comments(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS plan_recurrence_rules (
-    id UUID PRIMARY KEY,
-    plan_id UUID NOT NULL UNIQUE,
-    week_days VARCHAR(100) NOT NULL,
-    recurrence_start_date DATE NOT NULL,
-    recurrence_end_date DATE NOT NULL,
-    is_deleted BOOLEAN NOT NULL,
-    CONSTRAINT fk_rules_plans_plan FOREIGN KEY (plan_id)
-        REFERENCES plans(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS plan_reminders (
-    id UUID PRIMARY KEY,
-    plan_id UUID NOT NULL,
-    remind_at TIMESTAMP NOT NULL,
-    CONSTRAINT fk_plan_reminders_plans_plan FOREIGN KEY (plan_id)
+    image_url VARCHAR(255),
+    message VARCHAR(500) NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    CONSTRAINT fk_plans_plan_histories_plan FOREIGN KEY (plan_id)
         REFERENCES plans(id) ON DELETE CASCADE
 );
 
@@ -149,10 +119,32 @@ CREATE TABLE IF NOT EXISTS tasks (
     plan_id UUID NOT NULL,
     content VARCHAR(255) NOT NULL,
     assignee_id UUID NOT NULL,
+    start_date TIMESTAMP NOT NULL,
     due_date TIMESTAMP NOT NULL,
+    priority VARCHAR(50) NOT NULL,
+    note VARCHAR(255),
     complete_date TIMESTAMP,
     CONSTRAINT fk_tasks_plans_plan FOREIGN KEY (plan_id)
         REFERENCES plans(id) ON DELETE CASCADE,
     CONSTRAINT fk_tasks_users_assignee FOREIGN KEY (assignee_id)
         REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS task_recurrence_rules (
+    id UUID PRIMARY KEY,
+    task_id UUID NOT NULL UNIQUE,
+    recurrence_start_date DATE NOT NULL,
+    recurrence_end_date DATE,
+    recurrence_type VARCHAR(20) NOT NULL,
+    week_days VARCHAR(100) NOT NULL,
+    CONSTRAINT fk_rules_tasks_task FOREIGN KEY (task_id)
+        REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS task_reminders (
+    id UUID PRIMARY KEY,
+    task_id UUID NOT NULL,
+    remind_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_task_reminders_tasks_task FOREIGN KEY (task_id)
+        REFERENCES tasks(id) ON DELETE CASCADE
 );

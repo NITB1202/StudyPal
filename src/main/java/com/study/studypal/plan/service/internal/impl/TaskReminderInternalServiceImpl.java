@@ -59,8 +59,8 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
   }
 
   @Override
-  public List<LocalDateTime> getAll(UUID planId) {
-    List<TaskReminder> reminders = taskReminderRepository.findAllByPlanIdOrderByRemindAtAsc(planId);
+  public List<LocalDateTime> getAll(UUID taskId) {
+    List<TaskReminder> reminders = taskReminderRepository.findAllByTaskIdOrderByRemindAtAsc(taskId);
     return reminders.stream().map(TaskReminder::getRemindAt).toList();
   }
 }

@@ -15,6 +15,7 @@ import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TaskInternalServiceImpl implements TaskInternalService {
   private final TaskRepository taskRepository;
@@ -61,9 +63,13 @@ public class TaskInternalServiceImpl implements TaskInternalService {
       }
 
       User assignee = entityManager.getReference(User.class, assigneeId);
-      Task task = Task.builder().plan(plan).assignee(assignee).build();
+      Task task = modelMapper.map(taskDto, Task.class);
 
-      modelMapper.map(taskDto, task);
+      // Set the entity id to null to fix mapping assigneeId to id by ModelMapper.
+      task.setId(null);
+      task.setPlan(plan);
+      task.setAssignee(assignee);
+
       taskRepository.save(task);
 
       TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);

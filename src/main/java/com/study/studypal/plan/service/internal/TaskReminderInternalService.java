@@ -8,5 +8,5 @@ import java.util.UUID;
 public interface TaskReminderInternalService {
   void createReminders(TaskInfo taskInfo, List<LocalDateTime> reminders);
 
-  List<LocalDateTime> getAll(UUID planId);
+  List<LocalDateTime> getAll(UUID taskId);
 }

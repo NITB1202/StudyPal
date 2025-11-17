@@ -8,12 +8,14 @@ import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.service.internal.UserInternalService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalService {
   private final PlanHistoryRepository planHistoryRepository;

@@ -17,6 +17,8 @@ import lombok.Setter;
 public class PlanDetailResponseDto {
   private UUID id;
 
+  private String planCode;
+
   private String title;
 
   private String description;
