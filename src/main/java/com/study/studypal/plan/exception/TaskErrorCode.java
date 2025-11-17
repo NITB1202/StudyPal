@@ -6,9 +6,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum TaskErrorCode implements ErrorCode {
-  TASK_ALREADY_EXISTS(HttpStatus.CONFLICT, "TASK_001", "Task '%s' is already exists in the plan."),
   INVALID_DUE_DATE(
-      HttpStatus.BAD_REQUEST, "TASK_002", "Task '%s' must have a due date after its start date.");
+      HttpStatus.BAD_REQUEST, "TASK_001", "Task '%s' must have a due date after its start date.");
 
   private final HttpStatus httpStatus;
   private final String code;
