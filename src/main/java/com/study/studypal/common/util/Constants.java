@@ -14,11 +14,17 @@ public final class Constants {
   public static final String PASSWORD_RULE_MESSAGE =
       "Password must be at least 3 characters long and contain both letters and numbers.";
 
+  // System image folder
+  public static final String USER_AVATAR_FOLDER = "users";
+  public static final String TEAM_AVATAR_FOLDER = "teams";
+
   // Team constants
   public static final long MAX_OWNED_TEAMS = 5;
 
   // Plan constants
   public static final String PLAN_CODE_PREFIX = "PLN-";
+  public static final String TASK_CODE_PREFIX = "TSK-";
+  public static final String CODE_NUMBER_FORMAT = "%05d";
   public static final DateTimeFormatter JSON_DATETIME_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 }

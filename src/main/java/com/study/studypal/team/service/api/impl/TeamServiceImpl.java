@@ -1,6 +1,7 @@
 package com.study.studypal.team.service.api.impl;
 
 import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+import static com.study.studypal.common.util.Constants.TEAM_AVATAR_FOLDER;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -64,9 +65,7 @@ public class TeamServiceImpl implements TeamService {
   private final FileService fileService;
   private final ModelMapper modelMapper;
   private final ApplicationEventPublisher eventPublisher;
-
   @PersistenceContext private final EntityManager entityManager;
-  private static final String AVATAR_FOLDER = "teams";
 
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
@@ -337,7 +336,7 @@ public class TeamServiceImpl implements TeamService {
 
     try {
       String avatarUrl =
-          fileService.uploadFile(AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
+          fileService.uploadFile(TEAM_AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
       Team team =
           teamRepository
               .findById(teamId)
