@@ -1,7 +1,9 @@
 package com.study.studypal.plan.service.internal.impl;
 
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.entity.TeamTaskCounter;
 import com.study.studypal.plan.entity.UserTaskCounter;
+import com.study.studypal.plan.exception.TaskCounterErrorCode;
 import com.study.studypal.plan.repository.TeamTaskCounterRepository;
 import com.study.studypal.plan.repository.UserTaskCounterRepository;
 import com.study.studypal.plan.service.internal.TaskCounterService;
@@ -34,5 +36,19 @@ public class TaskCounterServiceImpl implements TaskCounterService {
     Team team = entityManager.getReference(Team.class, teamId);
     TeamTaskCounter teamTaskCounter = TeamTaskCounter.builder().team(team).counter(0L).build();
     teamTaskCounterRepository.save(teamTaskCounter);
+  }
+
+  @Override
+  public long increaseTeamTaskCounter(UUID teamId) {
+    TeamTaskCounter teamTaskCounter =
+        teamTaskCounterRepository
+            .findByIdForUpdate(teamId)
+            .orElseThrow(() -> new BaseException(TaskCounterErrorCode.TASK_COUNTER_ERROR_CODE));
+
+    long nextCounter = teamTaskCounter.getCounter() + 1;
+    teamTaskCounter.setCounter(nextCounter);
+
+    teamTaskCounterRepository.save(teamTaskCounter);
+    return nextCounter;
   }
 }
