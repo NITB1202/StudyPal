@@ -16,24 +16,7 @@ public class MailServiceImpl implements MailService {
   private final JavaMailSender mailSender;
 
   @Override
-  public void sendVerificationEmail(String email, String verificationCode) {
-    String subject = "Verify Your Email Address";
-
-    String htmlContent =
-        "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
-            + "<h2>Email Verification</h2>"
-            + "<p>Use the verification code below:</p>"
-            + "<div style='font-size: 24px; font-weight: bold; color: #2F54EB; margin: 20px 0;'>"
-            + verificationCode
-            + "</div>"
-            + "<p>This code will expire in 5 minutes.</p>"
-            + "<p style='margin-top: 40px;'>Regards,<br><strong>StudyPal</strong></p>"
-            + "</div>";
-
-    sendHtmlMail(email, subject, htmlContent);
-  }
-
-  private void sendHtmlMail(String email, String subject, String htmlContent) {
+  public void sendHtmlEmail(String email, String subject, String htmlContent) {
     if (email == null || email.isEmpty()) {
       throw new BaseException(MailErrorCode.EMAIL_EMPTY);
     }

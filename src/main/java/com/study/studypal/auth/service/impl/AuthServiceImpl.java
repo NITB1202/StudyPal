@@ -1,5 +1,8 @@
 package com.study.studypal.auth.service.impl;
 
+import static com.study.studypal.common.util.Constants.VERIFICATION_EMAIL_CONTENT;
+import static com.study.studypal.common.util.Constants.VERIFICATION_EMAIL_SUBJECT;
+
 import com.study.studypal.auth.dto.internal.OAuthUserInfo;
 import com.study.studypal.auth.dto.request.GenerateAccessTokenRequestDto;
 import com.study.studypal.auth.dto.request.LoginWithCredentialsRequestDto;
@@ -142,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
       registerCache.put(CacheKeyUtils.of(request.getEmail()), request);
       String verificationCode =
           codeService.generateVerificationCode(request.getEmail(), VerificationType.REGISTER);
-      mailService.sendVerificationEmail(request.getEmail(), verificationCode);
+      sendVerificationEmail(request.getEmail(), verificationCode);
     }
 
     return response;
@@ -179,7 +182,7 @@ public class AuthServiceImpl implements AuthService {
     if (isValid) {
       String verificationCode =
           codeService.generateVerificationCode(request.getEmail(), request.getType());
-      mailService.sendVerificationEmail(request.getEmail(), verificationCode);
+      sendVerificationEmail(request.getEmail(), verificationCode);
 
       return ActionResponseDto.builder()
           .success(true)
@@ -269,5 +272,12 @@ public class AuthServiceImpl implements AuthService {
     } else {
       throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
     }
+  }
+
+  private void sendVerificationEmail(String email, String verificationCode) {
+    mailService.sendHtmlEmail(
+        email,
+        VERIFICATION_EMAIL_SUBJECT,
+        String.format(VERIFICATION_EMAIL_CONTENT, verificationCode));
   }
 }
