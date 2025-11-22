@@ -1,7 +1,7 @@
 package com.study.studypal.auth.security;
 
-import com.study.studypal.auth.constant.AuthErrorCode;
 import com.study.studypal.auth.enums.AccountRole;
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.exception.JwtAuthenticationException;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.util.CacheKeyUtils;

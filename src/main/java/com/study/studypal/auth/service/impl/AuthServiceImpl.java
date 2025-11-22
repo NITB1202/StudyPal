@@ -4,7 +4,6 @@ import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_CODE_LE
 import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_CONTENT;
 import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_SUBJECT;
 
-import com.study.studypal.auth.constant.AuthErrorCode;
 import com.study.studypal.auth.dto.internal.OAuthUserInfo;
 import com.study.studypal.auth.dto.request.GenerateAccessTokenRequestDto;
 import com.study.studypal.auth.dto.request.LoginWithCredentialsRequestDto;
@@ -17,6 +16,7 @@ import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.VerificationType;
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.security.JwtService;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.auth.service.AuthService;

@@ -1,4 +1,4 @@
-package com.study.studypal.auth.constant;
+package com.study.studypal.auth.exception;
 
 import com.study.studypal.common.exception.ErrorCode;
 import lombok.Getter;

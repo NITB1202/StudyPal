@@ -2,11 +2,11 @@ package com.study.studypal.auth.service.impl;
 
 import static com.study.studypal.auth.constant.AuthConstant.PASSWORD_RULE_MESSAGE;
 
-import com.study.studypal.auth.constant.AuthErrorCode;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.enums.AuthProvider;
 import com.study.studypal.auth.enums.ExternalAuthProvider;
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.common.dto.ActionResponseDto;
