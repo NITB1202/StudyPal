@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class AuthConstant {
+public final class AuthConstant {
   public static final String PASSWORD_RULE_MESSAGE =
       "Password must be at least 3 characters long and contain both letters and numbers.";
   public static final int VERIFICATION_CODE_LENGTH = 6;

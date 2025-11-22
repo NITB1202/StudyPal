@@ -1,6 +1,6 @@
 package com.study.studypal.user.service.api.impl;
 
-import static com.study.studypal.common.util.Constants.USER_AVATAR_FOLDER;
+import static com.study.studypal.user.constant.UserConstant.USER_AVATAR_FOLDER;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;

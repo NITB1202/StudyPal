@@ -1,7 +1,8 @@
 package com.study.studypal.team.service.api.impl;
 
-import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
-import static com.study.studypal.common.util.Constants.TEAM_AVATAR_FOLDER;
+import static com.study.studypal.team.constant.TeamConstant.MAX_OWNED_TEAMS;
+import static com.study.studypal.team.constant.TeamConstant.TEAM_AVATAR_FOLDER;
+import static com.study.studypal.team.constant.TeamConstant.TEAM_CODE_LENGTH;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -82,7 +83,7 @@ public class TeamServiceImpl implements TeamService {
     User creator = entityManager.getReference(User.class, userId);
 
     while (true) {
-      String randomCode = codeService.generateTeamCode();
+      String randomCode = generateTeamCode();
 
       try {
         Team team =
@@ -288,9 +289,9 @@ public class TeamServiceImpl implements TeamService {
 
     teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
-    String teamCode = codeService.generateTeamCode();
+    String teamCode = generateTeamCode();
     while (teamRepository.existsByTeamCode(teamCode)) {
-      teamCode = codeService.generateTeamCode();
+      teamCode = generateTeamCode();
     }
 
     team.setTeamCode(teamCode);
@@ -364,5 +365,9 @@ public class TeamServiceImpl implements TeamService {
     } catch (IOException e) {
       throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
     }
+  }
+
+  private String generateTeamCode() {
+    return codeService.generateRandomCode(TEAM_CODE_LENGTH);
   }
 }
