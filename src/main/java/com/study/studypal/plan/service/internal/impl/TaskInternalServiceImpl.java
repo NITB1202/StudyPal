@@ -78,8 +78,15 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
       TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
       reminderService.createReminders(taskInfo, taskDto.getReminders());
-      notificationService.publishTaskAssignedNotification(task.getId(), assigneeId);
+      notificationService.publishTaskAssignedNotification(taskInfo.getId());
     }
+  }
+
+  @Override
+  public Task getById(UUID id) {
+    return taskRepository
+        .findById(id)
+        .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
   }
 
   private String generateTaskCode(UUID teamId) {

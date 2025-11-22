@@ -7,11 +7,13 @@ import com.study.studypal.plan.dto.task.internal.TaskInfo;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.entity.TaskReminder;
 import com.study.studypal.plan.exception.TaskReminderErrorCode;
+import com.study.studypal.plan.job.TaskReminderJob;
 import com.study.studypal.plan.repository.TaskReminderRepository;
-import com.study.studypal.plan.service.internal.TaskReminderInternalService;
+import com.study.studypal.plan.service.internal.TaskReminderService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,13 +21,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TaskReminderInternalServiceImpl implements TaskReminderInternalService {
+public class TaskReminderServiceImpl implements TaskReminderService {
   private final TaskReminderRepository taskReminderRepository;
+  private final Scheduler scheduler;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
@@ -53,6 +62,7 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
       TaskReminder taskReminder = TaskReminder.builder().task(task).remindAt(remindAt).build();
 
       savedReminders.add(taskReminder);
+      scheduleReminder(taskReminder);
     }
 
     taskReminderRepository.saveAll(savedReminders);
@@ -62,5 +72,25 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
   public List<LocalDateTime> getAll(UUID taskId) {
     List<TaskReminder> reminders = taskReminderRepository.findAllByTaskIdOrderByRemindAtAsc(taskId);
     return reminders.stream().map(TaskReminder::getRemindAt).toList();
+  }
+
+  private void scheduleReminder(TaskReminder reminder) {
+    JobDetail jobDetail =
+        JobBuilder.newJob(TaskReminderJob.class)
+            .withIdentity("reminder_" + reminder.getId())
+            .usingJobData("taskId", reminder.getTask().getId().toString())
+            .build();
+
+    Trigger trigger =
+        TriggerBuilder.newTrigger()
+            .withIdentity("trigger_" + reminder.getId())
+            .startAt(Timestamp.valueOf(reminder.getRemindAt()))
+            .build();
+
+    try {
+      scheduler.scheduleJob(jobDetail, trigger);
+    } catch (SchedulerException e) {
+      throw new BaseException(TaskReminderErrorCode.SCHEDULE_REMINDER_FAILED);
+    }
   }
 }
