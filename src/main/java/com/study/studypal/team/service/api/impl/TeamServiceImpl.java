@@ -12,6 +12,7 @@ import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
+import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
@@ -64,6 +65,7 @@ public class TeamServiceImpl implements TeamService {
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CodeService codeService;
   private final FileService fileService;
+  private final TaskCounterService taskCounterService;
   private final ModelMapper modelMapper;
   private final ApplicationEventPublisher eventPublisher;
   @PersistenceContext private final EntityManager entityManager;
@@ -99,6 +101,7 @@ public class TeamServiceImpl implements TeamService {
         teamRepository.save(team);
         teamMembershipService.createMembership(team.getId(), userId, TeamRole.OWNER);
         teamNotificationSettingService.createSettings(userId, team.getId());
+        taskCounterService.createTeamTaskCounter(team.getId());
 
         return modelMapper.map(team, TeamResponseDto.class);
       } catch (DataIntegrityViolationException e) {
