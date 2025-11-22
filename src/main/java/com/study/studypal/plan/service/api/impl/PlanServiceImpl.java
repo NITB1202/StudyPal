@@ -4,6 +4,7 @@ import static com.study.studypal.plan.constant.PlanConstant.CODE_NUMBER_FORMAT;
 import static com.study.studypal.plan.constant.PlanConstant.PLAN_CODE_PREFIX;
 
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
@@ -66,7 +67,10 @@ public class PlanServiceImpl implements PlanService {
 
     planRepository.save(plan);
 
-    taskService.createTasksForPlan(teamId, plan.getId(), request.getTasks());
+    PlanInfo planInfo =
+        PlanInfo.builder().assignerId(userId).teamId(teamId).planId(plan.getId()).build();
+
+    taskService.createTasksForPlan(planInfo, request.getTasks());
     historyService.logCreatePlan(userId, plan.getId());
 
     return modelMapper.map(plan, CreatePlanResponseDto.class);

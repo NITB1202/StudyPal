@@ -4,6 +4,7 @@ import static com.study.studypal.plan.constant.PlanConstant.CODE_NUMBER_FORMAT;
 import static com.study.studypal.plan.constant.PlanConstant.TASK_CODE_PREFIX;
 
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.internal.TaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
@@ -43,8 +44,8 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public void createTasksForPlan(UUID teamId, UUID planId, List<CreateTaskForPlanDto> tasks) {
-    Plan plan = entityManager.getReference(Plan.class, planId);
+  public void createTasksForPlan(PlanInfo planInfo, List<CreateTaskForPlanDto> tasks) {
+    Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
 
     for (CreateTaskForPlanDto taskDto : tasks) {
       UUID assigneeId = taskDto.getAssigneeId();
@@ -55,12 +56,12 @@ public class TaskInternalServiceImpl implements TaskInternalService {
         throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, taskDto.getContent());
       }
 
-      if (!memberService.isUserInTeam(assigneeId, teamId)) {
+      if (!memberService.isUserInTeam(assigneeId, planInfo.getTeamId())) {
         throw new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND, assigneeId);
       }
 
       User assignee = entityManager.getReference(User.class, assigneeId);
-      String taskCode = generateTaskCode(teamId);
+      String taskCode = generateTaskCode(planInfo.getTeamId());
 
       Task task =
           Task.builder()
@@ -78,7 +79,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
       TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
       reminderService.createReminders(taskInfo, taskDto.getReminders());
-      notificationService.publishTaskAssignedNotification(taskInfo.getId());
+      notificationService.publishTaskAssignedNotification(planInfo.getAssignerId(), task);
     }
   }
 

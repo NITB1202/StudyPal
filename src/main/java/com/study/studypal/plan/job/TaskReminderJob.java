@@ -26,6 +26,6 @@ public class TaskReminderJob implements Job {
     // If task is completed, doesn't need to send notification
     if (task.getCompleteDate() != null) return;
 
-    notificationService.publishTaskRemindedNotification(taskId);
+    notificationService.publishTaskRemindedNotification(task);
   }
 }
