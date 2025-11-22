@@ -24,8 +24,8 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "team_code_counters")
-public class TeamCodeCounter {
+@Table(name = "team_task_counters")
+public class TeamTaskCounter {
   @Id
   @Column(name = "id", nullable = false)
   private UUID id;
@@ -36,9 +36,6 @@ public class TeamCodeCounter {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Team team;
 
-  @Column(name = "plan_counter", nullable = false)
-  private Long planCounter;
-
-  @Column(name = "task_counter", nullable = false)
-  private Long taskCounter;
+  @Column(name = "counter", nullable = false)
+  private Long counter;
 }

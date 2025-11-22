@@ -1,6 +1,6 @@
 package com.study.studypal.team.service.api.impl;
 
-import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+import static com.study.studypal.team.constant.TeamConstant.MAX_OWNED_TEAMS;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
