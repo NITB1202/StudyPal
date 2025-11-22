@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS invitations (
     invitee_id UUID NOT NULL,
     team_id UUID NOT NULL,
     invited_at TIMESTAMP NOT NULL,
-    CONSTRAINT uq_invitations_team_invitee UNIQUE (team_id, invitee_id),
+    CONSTRAINT uq_invitations_teams_invitee UNIQUE (team_id, invitee_id),
     CONSTRAINT fk_invitations_users_inviter FOREIGN KEY (inviter_id)
         REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_invitations_users_invitee FOREIGN KEY (invitee_id)
@@ -104,19 +104,20 @@ CREATE TABLE IF NOT EXISTS plans (
         REFERENCES teams(id) ON DELETE CASCADE
 );
 
-CREATE TABLE plan_histories (
+CREATE TABLE IF NOT EXISTS plan_histories (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL,
     image_url VARCHAR(255),
     message VARCHAR(500) NOT NULL,
     timestamp TIMESTAMP NOT NULL,
-    CONSTRAINT fk_plans_plan_histories_plan FOREIGN KEY (plan_id)
+    CONSTRAINT fk_plan_histories_plans_plan FOREIGN KEY (plan_id)
         REFERENCES plans(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL,
+    task_code VARCHAR(20) NOT NULL,
     content VARCHAR(255) NOT NULL,
     assignee_id UUID NOT NULL,
     start_date TIMESTAMP NOT NULL,
@@ -147,4 +148,12 @@ CREATE TABLE IF NOT EXISTS task_reminders (
     remind_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_task_reminders_tasks_task FOREIGN KEY (task_id)
         REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS team_code_counters (
+    team_id UUID NOT NULL PRIMARY KEY,
+    plan_counter BIGINT NOT NULL 1,
+    task_counter BIGINT NOT NULL 1,
+    CONSTRAINT fk_team_code_counters_teams_team FOREIGN KEY (team_id)
+        REFERENCES teams(team_id) ON DELETE CASCADE
 );
