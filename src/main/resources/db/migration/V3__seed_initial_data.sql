@@ -63,33 +63,25 @@ VALUES
     ('ac2d2a0c-b654-4fd6-b2cb-cbbb6c92872f', '618c10ee-923f-4323-b32b-086caa534b46', 'ANDROID', 'fcm_android_9z7h6x4b3p1k2w8nq0', '2025-09-15 00:00:00'),
     ('e567f27a-f5c5-4597-8837-752e20e47611', '9f5d79f2-83a2-411d-bb66-caeb640a62b0', 'ANDROID', 'fcm_android_0q1w2e3r4t5y6u7i8o9p','2025-09-15 00:00:00');
 
-INSERT INTO notifications (id, user_id, title, content, created_at, is_read, subject, subject_id)
+INSERT INTO notifications (id, user_id, image_url, title, content, created_at, is_read, subject, subject_id)
 VALUES
     (
         '1e84fc88-1a6d-4e99-9022-3a0191a5c1f1',
         '041c77e0-ae77-4005-b745-ea12dca9bec6',
+        'https://res.cloudinary.com/drvyagz4w/image/upload/v1750258714/618c10ee-923f-4323-b32b-086caa534b46.png',
         'Team deleted',
-        'TEST-TEAM-01 has been deleted by David Becker.',
+        'David Becker deleted Team01.',
         '2025-09-20 10:30:00',
         FALSE,
         'TEAM',
         null
     ),
     (
-        'b7c4aa7d-5896-45db-93ea-f4e35e91d20e',
-        '041c77e0-ae77-4005-b745-ea12dca9bec6',
-        'Expired plan',
-        'Plan PLAN01 has expired.',
-        '2025-09-19 15:45:00',
-        TRUE,
-        'PLAN',
-        '72aeebcf-6d02-4fa2-b4c5-394dbf5b4e88'
-    ),
-    (
         'a2bdf7e9-45c7-4ec0-b53e-8e9a5d9a9fbc',
         '041c77e0-ae77-4005-b745-ea12dca9bec6',
+        'https://res.cloudinary.com/drvyagz4w/image/upload/v1750258714/618c10ee-923f-4323-b32b-086caa534b46.png',
         'New team member',
-        'David Becker has joined the Biology team.',
+        'David Becker joined Biology.',
         '2025-09-21 08:00:00',
         FALSE,
         'TEAM',

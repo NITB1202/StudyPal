@@ -14,4 +14,4 @@ public class TeamDeletedEvent {
   private List<UUID> memberIds;
 }
 
-// Message: TEAM01 was deleted by User01.
+// Message: User01 deleted Team01.

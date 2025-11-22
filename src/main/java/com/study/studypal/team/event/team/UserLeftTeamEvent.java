@@ -12,3 +12,5 @@ public class UserLeftTeamEvent {
   private UUID teamId;
   private List<UUID> memberIds;
 }
+
+// Message: User01 left Team01.

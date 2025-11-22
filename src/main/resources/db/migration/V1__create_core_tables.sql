@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS device_tokens (
 CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
+    image_url VARCHAR(255),
     title VARCHAR(255) NOT NULL,
     content VARCHAR(1000) NOT NULL,
     created_at TIMESTAMP NOT NULL,

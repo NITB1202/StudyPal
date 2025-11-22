@@ -21,6 +21,8 @@ public class NotificationResponseDto {
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
 
+  private String imageUrl;
+
   private String title;
 
   private String content;
