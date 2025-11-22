@@ -12,6 +12,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TeamCodeCounterRepository extends JpaRepository<TeamCodeCounter, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("SELECT c FROM TeamCodeCounter c WHERE c.team.teamId = :teamId")
+  @Query("SELECT c FROM TeamCodeCounter c WHERE c.team.id = :teamId")
   Optional<TeamCodeCounter> findByTeamIdForUpdate(UUID teamId);
 }

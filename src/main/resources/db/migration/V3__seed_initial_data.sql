@@ -96,8 +96,7 @@ VALUES
         '111e8400-e29b-41d4-a716-446655440001'
     );
 
-INSERT INTO team_code_counters (team_id, plan_counter, task_counter)
+INSERT INTO team_code_counters (id, plan_counter, task_counter)
 VALUES
-    ('3fa85f64-5717-4562-b3fc-2c963f66afa6', 0, 0),
-    ('6b1e8f42-1234-4fcd-89ab-1234567890ab', 0, 0),
-    ('9c2f7a31-5678-4def-9abc-0987654321cd', 0, 0);
+    ('111e8400-e29b-41d4-a716-446655440001', 0, 0),
+    ('555e8400-e29b-41d4-a716-446655440006', 0, 0);

@@ -151,9 +151,9 @@ CREATE TABLE IF NOT EXISTS task_reminders (
 );
 
 CREATE TABLE IF NOT EXISTS team_code_counters (
-    team_id UUID NOT NULL PRIMARY KEY,
-    plan_counter BIGINT NOT NULL 1,
-    task_counter BIGINT NOT NULL 1,
-    CONSTRAINT fk_team_code_counters_teams_team FOREIGN KEY (team_id)
-        REFERENCES teams(team_id) ON DELETE CASCADE
+    id UUID NOT NULL PRIMARY KEY,
+    plan_counter BIGINT NOT NULL,
+    task_counter BIGINT NOT NULL,
+    CONSTRAINT fk_team_code_counters_teams_team FOREIGN KEY (id)
+        REFERENCES teams(id) ON DELETE CASCADE
 );

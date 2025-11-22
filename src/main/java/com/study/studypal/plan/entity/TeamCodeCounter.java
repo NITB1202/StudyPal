@@ -27,11 +27,11 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "team_code_counters")
 public class TeamCodeCounter {
   @Id
-  @Column(name = "team_id", nullable = false)
-  private UUID teamId;
+  @Column(name = "id", nullable = false)
+  private UUID id;
 
   @MapsId
-  @JoinColumn(name = "team_id")
+  @JoinColumn(name = "id")
   @OneToOne(fetch = FetchType.LAZY, optional = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Team team;
