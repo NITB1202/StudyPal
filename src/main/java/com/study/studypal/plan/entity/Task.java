@@ -45,6 +45,9 @@ public class Task {
   @Column(name = "content", nullable = false)
   private String content;
 
+  @Column(name = "task_code", nullable = false)
+  private String taskCode;
+
   @Column(name = "note")
   private String note;
 

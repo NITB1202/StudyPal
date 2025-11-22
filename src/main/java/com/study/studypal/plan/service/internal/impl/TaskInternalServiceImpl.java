@@ -1,5 +1,8 @@
 package com.study.studypal.plan.service.internal.impl;
 
+import static com.study.studypal.plan.constant.PlanConstant.CODE_NUMBER_FORMAT;
+import static com.study.studypal.plan.constant.PlanConstant.TASK_CODE_PREFIX;
+
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.task.internal.TaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanDto;
@@ -8,8 +11,10 @@ import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.exception.TaskErrorCode;
 import com.study.studypal.plan.repository.TaskRepository;
+import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
-import com.study.studypal.plan.service.internal.TaskReminderInternalService;
+import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskReminderService;
 import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -18,9 +23,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -33,29 +36,23 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   private final TaskRepository taskRepository;
   private final ModelMapper modelMapper;
   private final TeamMembershipInternalService memberService;
-  private final TaskReminderInternalService reminderService;
+  private final TaskReminderService reminderService;
+  private final TaskCounterService taskCounterService;
+  private final TaskNotificationService notificationService;
 
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
   public void createTasksForPlan(UUID teamId, UUID planId, List<CreateTaskForPlanDto> tasks) {
-    Set<String> contents = new HashSet<>();
     Plan plan = entityManager.getReference(Plan.class, planId);
 
     for (CreateTaskForPlanDto taskDto : tasks) {
       UUID assigneeId = taskDto.getAssigneeId();
-      String content = taskDto.getContent();
       LocalDateTime startDate = taskDto.getStartDate();
       LocalDateTime dueDate = taskDto.getDueDate();
 
-      if (contents.contains(content)) {
-        throw new BaseException(TaskErrorCode.TASK_ALREADY_EXISTS, content);
-      } else {
-        contents.add(content);
-      }
-
       if (dueDate.isBefore(startDate)) {
-        throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, content);
+        throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, taskDto.getContent());
       }
 
       if (!memberService.isUserInTeam(assigneeId, teamId)) {
@@ -63,18 +60,31 @@ public class TaskInternalServiceImpl implements TaskInternalService {
       }
 
       User assignee = entityManager.getReference(User.class, assigneeId);
-      Task task = modelMapper.map(taskDto, Task.class);
+      String taskCode = generateTaskCode(teamId);
 
-      // Set the entity id to null to fix mapping assigneeId to id by ModelMapper.
-      task.setId(null);
-      task.setPlan(plan);
-      task.setAssignee(assignee);
+      Task task =
+          Task.builder()
+              .taskCode(taskCode)
+              .content(taskDto.getContent())
+              .startDate(taskDto.getStartDate())
+              .dueDate(taskDto.getDueDate())
+              .note(taskDto.getNote())
+              .priority(taskDto.getPriority())
+              .plan(plan)
+              .assignee(assignee)
+              .build();
 
       taskRepository.save(task);
 
       TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
       reminderService.createReminders(taskInfo, taskDto.getReminders());
+      notificationService.publishTaskAssignedNotification(task.getId(), assigneeId);
     }
+  }
+
+  private String generateTaskCode(UUID teamId) {
+    return TASK_CODE_PREFIX
+        + String.format(CODE_NUMBER_FORMAT, taskCounterService.increaseTeamTaskCounter(teamId));
   }
 
   @Override
