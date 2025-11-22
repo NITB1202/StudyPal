@@ -40,7 +40,11 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
     data.put("id", id);
 
     Notification notification =
-        Notification.builder().setTitle(dto.getTitle()).setBody(dto.getContent()).build();
+        Notification.builder()
+            .setTitle(dto.getTitle())
+            .setBody(dto.getContent())
+            .setImage(dto.getImageUrl())
+            .build();
 
     for (DeviceToken token : tokens) {
       Message message =

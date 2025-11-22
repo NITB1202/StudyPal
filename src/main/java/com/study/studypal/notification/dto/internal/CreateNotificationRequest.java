@@ -16,6 +16,8 @@ import lombok.Setter;
 public class CreateNotificationRequest {
   private UUID userId;
 
+  private String imageUrl;
+
   private String title;
 
   private String content;

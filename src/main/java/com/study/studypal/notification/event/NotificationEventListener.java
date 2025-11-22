@@ -35,11 +35,12 @@ public class NotificationEventListener {
     String teamName = teamService.getTeamName(event.getTeamId());
 
     String title = "Team invitation";
-    String content = inviter.getName() + " has invited you to the team " + teamName + ".";
+    String content = String.format("%s invited you to join %s.", inviter.getName(), teamName);
 
     CreateNotificationRequest notification =
         CreateNotificationRequest.builder()
             .userId(event.getInviteeId())
+            .imageUrl(inviter.getAvatarUrl())
             .title(title)
             .content(content)
             .subject(LinkedSubject.INVITATION)
@@ -55,8 +56,7 @@ public class NotificationEventListener {
     UserSummaryProfile deletedBy = userService.getUserSummaryProfile(event.getDeletedBy());
 
     String title = "Team deleted";
-    String content =
-        "Team " + event.getTeamName() + " has been deleted by " + deletedBy.getName() + ".";
+    String content = String.format("%s deleted %s.", deletedBy.getName(), event.getTeamName());
 
     for (UUID memberId : event.getMemberIds()) {
       if (event.getDeletedBy().equals(memberId)) continue;
@@ -64,6 +64,7 @@ public class NotificationEventListener {
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
               .userId(memberId)
+              .imageUrl(deletedBy.getAvatarUrl())
               .title(title)
               .content(content)
               .subject(LinkedSubject.TEAM)
@@ -83,10 +84,8 @@ public class NotificationEventListener {
 
     String title = "Team updated";
     String content =
-        updatedBy.getName()
-            + " has updated team "
-            + event.getTeamName()
-            + "'s general information.";
+        String.format(
+            "%s updated the general information of %s", updatedBy.getName(), event.getTeamName());
 
     for (UUID memberId : event.getMemberIds()) {
       if (event.getUpdatedBy().equals(memberId)
@@ -95,6 +94,7 @@ public class NotificationEventListener {
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
               .userId(memberId)
+              .imageUrl(updatedBy.getAvatarUrl())
               .title(title)
               .content(content)
               .subject(LinkedSubject.TEAM)
@@ -114,7 +114,7 @@ public class NotificationEventListener {
     String teamName = teamService.getTeamName(event.getTeamId());
 
     String title = "New team member";
-    String content = user.getName() + " has joined the " + teamName + " team.";
+    String content = String.format("%s joined %s.", user.getName(), teamName);
 
     for (UUID memberId : event.getMemberIds()) {
       if (event.getUserId().equals(memberId)
@@ -123,6 +123,7 @@ public class NotificationEventListener {
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
               .userId(memberId)
+              .imageUrl(user.getAvatarUrl())
               .title(title)
               .content(content)
               .subject(LinkedSubject.TEAM)
@@ -142,7 +143,7 @@ public class NotificationEventListener {
     String teamName = teamService.getTeamName(event.getTeamId());
 
     String title = "Member left";
-    String content = user.getName() + " has left team " + teamName + ".";
+    String content = String.format("%s left %s.", user.getName(), teamName);
 
     for (UUID memberId : event.getMemberIds()) {
       if (event.getUserId().equals(memberId)
@@ -151,6 +152,7 @@ public class NotificationEventListener {
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
               .userId(memberId)
+              .imageUrl(user.getAvatarUrl())
               .title(title)
               .content(content)
               .subject(LinkedSubject.TEAM)
