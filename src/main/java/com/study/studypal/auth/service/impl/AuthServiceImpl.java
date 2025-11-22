@@ -1,8 +1,10 @@
 package com.study.studypal.auth.service.impl;
 
-import static com.study.studypal.common.util.Constants.VERIFICATION_EMAIL_CONTENT;
-import static com.study.studypal.common.util.Constants.VERIFICATION_EMAIL_SUBJECT;
+import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_CODE_LENGTH;
+import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_CONTENT;
+import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_SUBJECT;
 
+import com.study.studypal.auth.constant.AuthErrorCode;
 import com.study.studypal.auth.dto.internal.OAuthUserInfo;
 import com.study.studypal.auth.dto.request.GenerateAccessTokenRequestDto;
 import com.study.studypal.auth.dto.request.LoginWithCredentialsRequestDto;
@@ -15,7 +17,6 @@ import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
 import com.study.studypal.auth.entity.Account;
 import com.study.studypal.auth.enums.VerificationType;
-import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.security.JwtService;
 import com.study.studypal.auth.service.AccountService;
 import com.study.studypal.auth.service.AuthService;
@@ -51,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
   private final CacheManager cacheManager;
   private Cache registerCache;
   private Cache resetPasswordCache;
+  private Cache verificationCodeCache;
   private Cache accessTokenCache;
   private Cache refreshTokenCache;
 
@@ -58,6 +60,7 @@ public class AuthServiceImpl implements AuthService {
   public void initCaches() {
     this.registerCache = cacheManager.getCache(CacheNames.REGISTER);
     this.resetPasswordCache = cacheManager.getCache(CacheNames.RESET_PASSWORD);
+    this.verificationCodeCache = cacheManager.getCache(CacheNames.VERIFICATION_CODES);
     this.accessTokenCache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
     this.refreshTokenCache = cacheManager.getCache(CacheNames.REFRESH_TOKENS);
   }
@@ -144,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
     if (response.isSuccess()) {
       registerCache.put(CacheKeyUtils.of(request.getEmail()), request);
       String verificationCode =
-          codeService.generateVerificationCode(request.getEmail(), VerificationType.REGISTER);
+          generateVerificationCode(request.getEmail(), VerificationType.REGISTER);
       sendVerificationEmail(request.getEmail(), verificationCode);
     }
 
@@ -180,8 +183,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     if (isValid) {
-      String verificationCode =
-          codeService.generateVerificationCode(request.getEmail(), request.getType());
+      String verificationCode = generateVerificationCode(request.getEmail(), request.getType());
       sendVerificationEmail(request.getEmail(), verificationCode);
 
       return ActionResponseDto.builder()
@@ -196,7 +198,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public ActionResponseDto verifyRegistrationCode(VerifyCodeRequestDto request) {
-    if (codeService.verifyCode(request.getEmail(), request.getCode(), VerificationType.REGISTER)) {
+    if (verifyCode(request.getEmail(), request.getCode(), VerificationType.REGISTER)) {
       RegisterWithCredentialsRequestDto info =
           registerCache.get(
               CacheKeyUtils.of(request.getEmail()), RegisterWithCredentialsRequestDto.class);
@@ -226,8 +228,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public ActionResponseDto verifyResetPasswordCode(VerifyCodeRequestDto request) {
-    if (codeService.verifyCode(
-        request.getEmail(), request.getCode(), VerificationType.RESET_PASSWORD)) {
+    if (verifyCode(request.getEmail(), request.getCode(), VerificationType.RESET_PASSWORD)) {
       resetPasswordCache.put(CacheKeyUtils.of(request.getEmail()), true);
 
       return ActionResponseDto.builder()
@@ -274,10 +275,27 @@ public class AuthServiceImpl implements AuthService {
     }
   }
 
+  private String generateVerificationCode(String email, VerificationType type) {
+    String code = codeService.generateRandomCode(VERIFICATION_CODE_LENGTH);
+    verificationCodeCache.put(CacheKeyUtils.of(email, type), code);
+    return code;
+  }
+
   private void sendVerificationEmail(String email, String verificationCode) {
     mailService.sendHtmlEmail(
         email,
         VERIFICATION_EMAIL_SUBJECT,
         String.format(VERIFICATION_EMAIL_CONTENT, verificationCode));
+  }
+
+  private boolean verifyCode(String email, String code, VerificationType type) {
+    String storedCode = verificationCodeCache.get(CacheKeyUtils.of(email, type), String.class);
+
+    if (storedCode == null || !storedCode.equals(code)) {
+      return false;
+    }
+
+    verificationCodeCache.evict(CacheKeyUtils.of(email));
+    return true;
   }
 }
