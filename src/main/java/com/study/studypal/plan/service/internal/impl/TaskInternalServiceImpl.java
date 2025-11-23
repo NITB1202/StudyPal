@@ -5,6 +5,7 @@ import static com.study.studypal.plan.constant.PlanConstant.TASK_CODE_PREFIX;
 
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
+import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.internal.TaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
@@ -21,12 +22,12 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.internal.Pair;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,35 +45,14 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
   @Override
   public void createTasksForPlan(PlanInfo planInfo, List<CreateTaskForPlanRequestDto> tasks) {
-    Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
-
     for (CreateTaskForPlanRequestDto taskDto : tasks) {
       UUID assigneeId = taskDto.getAssigneeId();
-      LocalDateTime startDate = taskDto.getStartDate();
-      LocalDateTime dueDate = taskDto.getDueDate();
-
-      if (dueDate.isBefore(startDate)) {
-        throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, taskDto.getContent());
-      }
-
       memberService.validateUserBelongsToTeam(assigneeId, planInfo.getTeamId());
 
-      User assignee = entityManager.getReference(User.class, assigneeId);
-      String taskCode = generateTaskCode(planInfo.getTeamId());
+      CreateTaskInfo createTaskInfo = modelMapper.map(taskDto, CreateTaskInfo.class);
+      Pair<UUID, UUID> createPlanInfo = Pair.of(planInfo.getPlanId(), planInfo.getTeamId());
 
-      Task task =
-          Task.builder()
-              .taskCode(taskCode)
-              .content(taskDto.getContent())
-              .startDate(taskDto.getStartDate())
-              .dueDate(taskDto.getDueDate())
-              .note(taskDto.getNote())
-              .priority(taskDto.getPriority())
-              .plan(plan)
-              .assignee(assignee)
-              .build();
-
-      taskRepository.save(task);
+      Task task = createTask(assigneeId, createPlanInfo, createTaskInfo);
 
       TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
       reminderService.createReminders(taskInfo, taskDto.getReminders());
@@ -81,15 +61,42 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
+  public Task createTask(UUID assigneeId, Pair<UUID, UUID> planInfo, CreateTaskInfo taskInfo) {
+    if (taskInfo.getDueDate().isBefore(taskInfo.getStartDate())) {
+      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, taskInfo.getContent());
+    }
+
+    UUID planId = planInfo.getLeft();
+    UUID teamId = planInfo.getRight();
+
+    User assignee = entityManager.getReference(User.class, assigneeId);
+    Plan plan = planId != null ? entityManager.getReference(Plan.class, planId) : null;
+    String taskCode =
+        teamId != null ? generateTeamTaskCode(teamId) : generateUserTaskCode(assigneeId);
+
+    Task task = modelMapper.map(taskInfo, Task.class);
+    task.setAssignee(assignee);
+    task.setPlan(plan);
+    task.setTaskCode(taskCode);
+
+    return taskRepository.save(task);
+  }
+
+  private String generateUserTaskCode(UUID userId) {
+    return TASK_CODE_PREFIX
+        + String.format(CODE_NUMBER_FORMAT, taskCounterService.increaseUserTaskCounter(userId));
+  }
+
+  private String generateTeamTaskCode(UUID teamId) {
+    return TASK_CODE_PREFIX
+        + String.format(CODE_NUMBER_FORMAT, taskCounterService.increaseTeamTaskCounter(teamId));
+  }
+
+  @Override
   public Task getById(UUID id) {
     return taskRepository
         .findById(id)
         .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
-  }
-
-  private String generateTaskCode(UUID teamId) {
-    return TASK_CODE_PREFIX
-        + String.format(CODE_NUMBER_FORMAT, taskCounterService.increaseTeamTaskCounter(teamId));
   }
 
   @Override
@@ -108,5 +115,15 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     }
 
     return responseDtoList;
+  }
+
+  @Override
+  public int getTotalTasksCount(UUID planId) {
+    return taskRepository.countByPlanId(planId);
+  }
+
+  @Override
+  public int getCompletedTasksCount(UUID planId) {
+    return taskRepository.countByPlanIdAndCompleteDateIsNotNull(planId);
   }
 }
