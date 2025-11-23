@@ -6,7 +6,10 @@ import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
+import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
+import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.service.api.PlanService;
+import com.study.studypal.plan.service.api.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/plans")
 public class PlanController {
   private final PlanService planService;
+  private final TaskService taskService;
 
   @PostMapping
   @Operation(summary = "Create a new plan.")
@@ -45,5 +49,17 @@ public class PlanController {
   public ResponseEntity<PlanDetailResponseDto> getPlanDetail(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID planId) {
     return ResponseEntity.ok(planService.getPlanDetail(userId, planId));
+  }
+
+  @PostMapping("/{planId}/task")
+  @Operation(summary = "Create a new task for plan.")
+  @ApiResponse(responseCode = "200", description = "Create successfully.")
+  @UnauthorizedApiResponse
+  @BadRequestApiResponse
+  public ResponseEntity<CreateTaskResponseDto> createTaskForPlan(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID planId,
+      @Valid @RequestBody CreateTaskForPlanRequestDto request) {
+    return ResponseEntity.ok(taskService.createTaskForPlan(userId, planId, request));
   }
 }

@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,6 +39,4 @@ public class CreateTaskRequestDto {
 
   @JsonDeserialize(using = LocalDateTimeListDeserializer.class)
   private List<LocalDateTime> reminders;
-
-  private UUID planId;
 }
