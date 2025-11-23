@@ -5,6 +5,8 @@ import com.study.studypal.notification.enums.LinkedSubject;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
+import com.study.studypal.plan.event.TaskAssignedEvent;
+import com.study.studypal.plan.event.TaskRemindedEvent;
 import com.study.studypal.team.event.invitation.InvitationCreatedEvent;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
@@ -13,6 +15,9 @@ import com.study.studypal.team.event.team.UserLeftTeamEvent;
 import com.study.studypal.team.service.internal.TeamInternalService;
 import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.service.internal.UserInternalService;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -71,9 +76,7 @@ public class NotificationEventListener {
               .subjectId(null)
               .build();
 
-      notificationService.createNotification(dto);
-      notificationService.evictNotificationCache(memberId);
-      deviceTokenService.sendPushNotification(dto);
+      processNotification(dto);
     }
   }
 
@@ -101,9 +104,7 @@ public class NotificationEventListener {
               .subjectId(event.getTeamId())
               .build();
 
-      notificationService.createNotification(dto);
-      notificationService.evictNotificationCache(memberId);
-      deviceTokenService.sendPushNotification(dto);
+      processNotification(dto);
     }
   }
 
@@ -130,9 +131,7 @@ public class NotificationEventListener {
               .subjectId(event.getTeamId())
               .build();
 
-      notificationService.createNotification(dto);
-      notificationService.evictNotificationCache(memberId);
-      deviceTokenService.sendPushNotification(dto);
+      processNotification(dto);
     }
   }
 
@@ -159,9 +158,73 @@ public class NotificationEventListener {
               .subjectId(event.getTeamId())
               .build();
 
-      notificationService.createNotification(dto);
-      notificationService.evictNotificationCache(memberId);
-      deviceTokenService.sendPushNotification(dto);
+      processNotification(dto);
     }
+  }
+
+  @Async
+  @EventListener
+  public void handleTaskAssignedEvent(TaskAssignedEvent event) {
+    if (event.getAssignerId().equals(event.getAssigneeId())) return;
+
+    UserSummaryProfile assigner = userService.getUserSummaryProfile(event.getAssignerId());
+
+    String title = "New task assigned";
+    String content =
+        String.format("%s assigned a task [%s] to you.", assigner.getName(), event.getTaskCode());
+
+    CreateNotificationRequest dto =
+        CreateNotificationRequest.builder()
+            .userId(event.getAssigneeId())
+            .imageUrl(assigner.getAvatarUrl())
+            .title(title)
+            .content(content)
+            .subject(LinkedSubject.TASK)
+            .subjectId(event.getTaskId())
+            .build();
+
+    processNotification(dto);
+  }
+
+  @Async
+  @EventListener
+  public void handleTaskRemindedEvent(TaskRemindedEvent event) {
+    UUID userId = event.getUserId();
+    UUID teamId = event.getTeamId();
+
+    if (teamId != null && !settingService.getTeamPlanReminderSetting(userId, teamId)) return;
+
+    boolean isOverDueTask = event.getDueDate().isBefore(LocalDateTime.now());
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+    String imageUrl = Optional.ofNullable(teamId).map(teamService::getTeamAvatarUrl).orElse(null);
+    String title = isOverDueTask ? "Expired task" : "Task reminded";
+    String content =
+        isOverDueTask
+            ? String.format("Task [%s] is overdue.", event.getTaskCode())
+            : String.format(
+                "Task [%s] will expire at %s on %s.",
+                event.getTaskCode(),
+                event.getDueDate().format(timeFormatter),
+                event.getDueDate().format(dateFormatter));
+
+    CreateNotificationRequest dto =
+        CreateNotificationRequest.builder()
+            .userId(userId)
+            .imageUrl(imageUrl)
+            .title(title)
+            .content(content)
+            .subject(LinkedSubject.TASK)
+            .subjectId(event.getTaskId())
+            .build();
+
+    processNotification(dto);
+  }
+
+  private void processNotification(CreateNotificationRequest request) {
+    notificationService.createNotification(request);
+    notificationService.evictNotificationCache(request.getUserId());
+    deviceTokenService.sendPushNotification(request);
   }
 }

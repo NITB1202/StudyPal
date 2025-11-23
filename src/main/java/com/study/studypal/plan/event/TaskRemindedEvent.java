@@ -9,15 +9,14 @@ import lombok.Getter;
 @Builder
 public class TaskRemindedEvent {
   private UUID taskId;
+  private UUID teamId;
+  private UUID userId;
   private String taskCode;
-  private String taskContent;
   private LocalDateTime dueDate;
 }
 
 // now < dueDate
-// Message: Your task will expire at 10:00:00 on 12-02-2025
-// [TSK-00001] Research school history. -> Linked: taskId
+// Message: Task [TSK-00001] will expire at 10:00:00 on 12-02-2025 -> Linked: taskId
 
 // else
-// Message: Your task is overdue
-// [TSK-00001] Research school history. -> Linked: taskId
+// Message: Task [TSK-00001] is overdue.-> Linked: taskId

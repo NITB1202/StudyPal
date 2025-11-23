@@ -11,5 +11,7 @@ public interface TeamInternalService {
 
   String getTeamName(UUID teamId);
 
+  String getTeamAvatarUrl(UUID teamId);
+
   long countTeamsOwnerByUser(UUID userId);
 }

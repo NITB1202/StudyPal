@@ -1,9 +1,12 @@
 package com.study.studypal.plan.service.internal.impl;
 
+import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.event.TaskAssignedEvent;
 import com.study.studypal.plan.event.TaskRemindedEvent;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.team.entity.Team;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,7 +24,6 @@ public class TaskNotificationServiceImpl implements TaskNotificationService {
             .assignerId(assignerId)
             .taskId(task.getId())
             .taskCode(task.getTaskCode())
-            .taskContent(task.getContent())
             .assigneeId(task.getAssignee().getId())
             .build();
 
@@ -30,11 +32,15 @@ public class TaskNotificationServiceImpl implements TaskNotificationService {
 
   @Override
   public void publishTaskRemindedNotification(Task task) {
+    UUID teamId =
+        Optional.ofNullable(task.getPlan()).map(Plan::getTeam).map(Team::getId).orElse(null);
+
     TaskRemindedEvent event =
         TaskRemindedEvent.builder()
             .taskId(task.getId())
+            .userId(task.getAssignee().getId())
+            .teamId(teamId)
             .taskCode(task.getTaskCode())
-            .taskContent(task.getContent())
             .dueDate(task.getDueDate())
             .build();
 
