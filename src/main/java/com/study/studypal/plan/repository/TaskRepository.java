@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 public interface TaskRepository extends JpaRepository<Task, UUID> {
   List<Task> findAllByPlanIdOrderByDueDateAsc(UUID planId);
 
+  List<Task> findAllByPlanId(UUID planId);
+
   int countByPlanId(UUID planId);
 
   int countByPlanIdAndCompleteDateIsNotNull(UUID planId);

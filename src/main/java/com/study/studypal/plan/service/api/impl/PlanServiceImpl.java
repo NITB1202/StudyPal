@@ -24,10 +24,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.internal.Pair;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -91,8 +93,17 @@ public class PlanServiceImpl implements PlanService {
     memberService.validateUserBelongsToTeam(userId, teamId);
 
     PlanDetailResponseDto dto = modelMapper.map(plan, PlanDetailResponseDto.class);
+
     List<TaskResponseDto> tasks = taskService.getAll(planId);
+    int totalTasksCount = taskService.getTotalTasksCount(planId);
+    int completedTasksCount = taskService.getCompletedTasksCount(planId);
+    Pair<LocalDateTime, LocalDateTime> planPeriod = taskService.getPlanPeriod(planId);
+
     dto.setTasks(tasks);
+    dto.setTotalTasksCount(totalTasksCount);
+    dto.setCompletedTaskCount(completedTasksCount);
+    dto.setStartDate(planPeriod.getLeft());
+    dto.setDueDate(planPeriod.getRight());
 
     return dto;
   }

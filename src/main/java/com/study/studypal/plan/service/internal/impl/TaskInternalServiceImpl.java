@@ -22,6 +22,7 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -108,7 +109,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
       TaskResponseDto responseDto = modelMapper.map(task, TaskResponseDto.class);
       User assignee = task.getAssignee();
 
-      responseDto.setAssigneeId(assignee.getId());
+      responseDto.setAssigneeName(assignee.getName());
       responseDto.setAssigneeAvatarUrl(assignee.getAvatarUrl());
 
       responseDtoList.add(responseDto);
@@ -125,5 +126,21 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @Override
   public int getCompletedTasksCount(UUID planId) {
     return taskRepository.countByPlanIdAndCompleteDateIsNotNull(planId);
+  }
+
+  @Override
+  public Pair<LocalDateTime, LocalDateTime> getPlanPeriod(UUID planId) {
+    List<Task> tasks = taskRepository.findAllByPlanId(planId);
+    LocalDateTime startDate = null;
+    LocalDateTime dueDate = null;
+
+    for (Task task : tasks) {
+      if (startDate == null || task.getStartDate().isBefore(startDate))
+        startDate = task.getStartDate();
+
+      if (dueDate == null || task.getDueDate().isAfter(dueDate)) dueDate = task.getDueDate();
+    }
+
+    return Pair.of(startDate, dueDate);
   }
 }

@@ -5,6 +5,7 @@ import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Task;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.modelmapper.internal.Pair;
@@ -21,4 +22,6 @@ public interface TaskInternalService {
   int getTotalTasksCount(UUID planId);
 
   int getCompletedTasksCount(UUID planId);
+
+  Pair<LocalDateTime, LocalDateTime> getPlanPeriod(UUID planId);
 }
