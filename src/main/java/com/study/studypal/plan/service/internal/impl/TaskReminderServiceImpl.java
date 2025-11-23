@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -29,6 +30,7 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -41,6 +43,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
   public void createReminders(TaskInfo taskInfo, List<LocalDateTime> reminders) {
     if (reminders == null) return;
 
+    Task task = entityManager.getReference(Task.class, taskInfo.getId());
     List<TaskReminder> savedReminders = new ArrayList<>();
     Set<LocalDateTime> savedTimes = new HashSet<>();
 
@@ -58,14 +61,16 @@ public class TaskReminderServiceImpl implements TaskReminderService {
             TaskReminderErrorCode.INVALID_REMINDER, remindAt.format(JSON_DATETIME_FORMATTER));
       }
 
-      TaskReminder reminder = saveAndScheduleReminder(taskInfo.getId(), remindAt);
+      TaskReminder reminder = TaskReminder.builder().task(task).remindAt(remindAt).build();
       savedReminders.add(reminder);
     }
 
-    TaskReminder dueDateReminder = saveAndScheduleReminder(taskInfo.getId(), taskInfo.getDueDate());
+    TaskReminder dueDateReminder =
+        TaskReminder.builder().task(task).remindAt(taskInfo.getDueDate()).build();
     savedReminders.add(dueDateReminder);
 
     taskReminderRepository.saveAll(savedReminders);
+    scheduleReminders(savedReminders);
   }
 
   @Override
@@ -74,11 +79,8 @@ public class TaskReminderServiceImpl implements TaskReminderService {
     return reminders.stream().map(TaskReminder::getRemindAt).toList();
   }
 
-  private TaskReminder saveAndScheduleReminder(UUID taskId, LocalDateTime remindAt) {
-    Task task = entityManager.getReference(Task.class, taskId);
-    TaskReminder taskReminder = TaskReminder.builder().task(task).remindAt(remindAt).build();
-    scheduleReminder(taskReminder);
-    return taskReminder;
+  private void scheduleReminders(List<TaskReminder> reminders) {
+    for (TaskReminder reminder : reminders) scheduleReminder(reminder);
   }
 
   private void scheduleReminder(TaskReminder reminder) {
@@ -97,7 +99,10 @@ public class TaskReminderServiceImpl implements TaskReminderService {
     try {
       scheduler.scheduleJob(jobDetail, trigger);
     } catch (SchedulerException e) {
-      throw new BaseException(TaskReminderErrorCode.SCHEDULE_REMINDER_FAILED);
+      log.warn(e.getMessage());
+      throw new BaseException(
+          TaskReminderErrorCode.SCHEDULE_REMINDER_FAILED,
+          reminder.getRemindAt().format(JSON_DATETIME_FORMATTER));
     }
   }
 }

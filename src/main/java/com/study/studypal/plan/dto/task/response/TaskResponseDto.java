@@ -30,5 +30,6 @@ public class TaskResponseDto {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private Priority priority;
 
-  private boolean isCompleted;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime completeDate;
 }

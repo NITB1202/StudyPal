@@ -106,7 +106,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
       responseDto.setAssigneeId(assignee.getId());
       responseDto.setAssigneeAvatarUrl(assignee.getAvatarUrl());
-      responseDto.setCompleted(task.getCompleteDate() != null);
 
       responseDtoList.add(responseDto);
     }
