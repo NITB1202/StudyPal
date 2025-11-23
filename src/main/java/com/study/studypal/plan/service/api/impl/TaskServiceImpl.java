@@ -45,6 +45,10 @@ public class TaskServiceImpl implements TaskService {
   @Override
   @Transactional
   public CreateTaskResponseDto createTask(UUID userId, CreateTaskRequestDto request) {
+    if (request.getDueDate().isBefore(request.getStartDate())) {
+      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, request.getContent());
+    }
+
     String taskCode = generateUserTaskCode(userId);
     User user = entityManager.getReference(User.class, userId);
 
@@ -75,8 +79,13 @@ public class TaskServiceImpl implements TaskService {
     memberService.validateUpdatePlanPermission(userId, teamId);
     memberService.validateUserBelongsToTeam(request.getAssigneeId(), teamId);
 
+    if (request.getDueDate().isBefore(request.getStartDate())) {
+      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, request.getContent());
+    }
+
     String taskCode = generateTeamTaskCode(teamId);
     User assignee = entityManager.getReference(User.class, request.getAssigneeId());
+    Plan plan = entityManager.getReference(Plan.class, planId);
 
     Task task =
         Task.builder()
@@ -87,13 +96,14 @@ public class TaskServiceImpl implements TaskService {
             .note(request.getNote())
             .priority(request.getPriority())
             .assignee(assignee)
+            .plan(plan)
             .build();
 
     taskRepository.save(task);
 
     TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
     reminderService.createReminders(taskInfo, request.getReminders());
-    notificationService.publishTaskAssignedNotification(request.getAssigneeId(), task);
+    notificationService.publishTaskAssignedNotification(userId, task);
 
     return modelMapper.map(task, CreateTaskResponseDto.class);
   }
