@@ -1,7 +1,12 @@
 package com.study.studypal.plan.service.api;
 
+import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
+import java.util.UUID;
 
 public interface TaskService {
-  CreateTaskResponseDto createTask();
+  CreateTaskResponseDto createTask(UUID userId, CreateTaskRequestDto request);
+
+  TaskDetailResponseDto getTaskDetail(UUID userId, UUID taskId);
 }

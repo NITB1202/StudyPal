@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS plan_histories (
 
 CREATE TABLE IF NOT EXISTS tasks (
     id UUID PRIMARY KEY,
-    plan_id UUID NOT NULL,
+    plan_id UUID,
     task_code VARCHAR(20) NOT NULL,
     content VARCHAR(255) NOT NULL,
     assignee_id UUID NOT NULL,

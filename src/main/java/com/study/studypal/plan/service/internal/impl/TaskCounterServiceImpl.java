@@ -51,4 +51,18 @@ public class TaskCounterServiceImpl implements TaskCounterService {
     teamTaskCounterRepository.save(teamTaskCounter);
     return nextCounter;
   }
+
+  @Override
+  public long increaseUserTaskCounter(UUID userId) {
+    UserTaskCounter userTaskCounter =
+        userTaskCounterRepository
+            .findByIdForUpdate(userId)
+            .orElseThrow(() -> new BaseException(TaskCounterErrorCode.TASK_COUNTER_ERROR_CODE));
+
+    long nextCounter = userTaskCounter.getCounter() + 1;
+    userTaskCounter.setCounter(nextCounter);
+
+    userTaskCounterRepository.save(userTaskCounter);
+    return nextCounter;
+  }
 }

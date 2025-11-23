@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 public enum TaskErrorCode implements ErrorCode {
   INVALID_DUE_DATE(
       HttpStatus.BAD_REQUEST, "TASK_001", "Task '%s' must have a due date after its start date."),
-  TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_002", "Task not found.");
+  TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_002", "Task not found."),
+  PERMISSION_VIEW_TASK_DENIED(
+      HttpStatus.FORBIDDEN, "TASK_003", "You don't have permission to view this task.");
 
   private final HttpStatus httpStatus;
   private final String code;

@@ -16,7 +16,6 @@ import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.plan.service.internal.TaskReminderService;
-import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -56,9 +55,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
         throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, taskDto.getContent());
       }
 
-      if (!memberService.isUserInTeam(assigneeId, planInfo.getTeamId())) {
-        throw new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND, assigneeId);
-      }
+      memberService.validateUserBelongsToTeam(assigneeId, planInfo.getTeamId());
 
       User assignee = entityManager.getReference(User.class, assigneeId);
       String taskCode = generateTaskCode(planInfo.getTeamId());

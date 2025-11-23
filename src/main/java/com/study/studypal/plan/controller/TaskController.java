@@ -3,10 +3,10 @@ package com.study.studypal.plan.controller;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
-import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
-import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
-import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
-import com.study.studypal.plan.service.api.PlanService;
+import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
+import com.study.studypal.plan.service.api.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -23,27 +23,27 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/plans")
-public class PlanController {
-  private final PlanService planService;
+@RequestMapping("/api/tasks")
+public class TaskController {
+  private final TaskService taskService;
 
   @PostMapping
-  @Operation(summary = "Create a new plan.")
+  @Operation(summary = "Create a new task.")
   @ApiResponse(responseCode = "200", description = "Create successfully.")
   @UnauthorizedApiResponse
   @BadRequestApiResponse
-  public ResponseEntity<CreatePlanResponseDto> createPlan(
-      @AuthenticationPrincipal UUID userId, @Valid @RequestBody CreatePlanRequestDto request) {
-    return ResponseEntity.ok(planService.createPlan(userId, request));
+  public ResponseEntity<CreateTaskResponseDto> createTask(
+      @AuthenticationPrincipal UUID userId, @Valid @RequestBody CreateTaskRequestDto request) {
+    return ResponseEntity.ok(taskService.createTask(userId, request));
   }
 
-  @GetMapping("/{planId}")
-  @Operation(summary = "Get plan's details")
+  @GetMapping("/{taskId}")
+  @Operation(summary = "Get task's details")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @UnauthorizedApiResponse
   @NotFoundApiResponse
-  public ResponseEntity<PlanDetailResponseDto> getPlanDetail(
-      @AuthenticationPrincipal UUID userId, @PathVariable UUID planId) {
-    return ResponseEntity.ok(planService.getPlanDetail(userId, planId));
+  public ResponseEntity<TaskDetailResponseDto> getTaskDetail(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
+    return ResponseEntity.ok(taskService.getTaskDetail(userId, taskId));
   }
 }

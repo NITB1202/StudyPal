@@ -73,6 +73,13 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   }
 
   @Override
+  public void validateUserBelongsToTeam(UUID userId, UUID teamId) {
+    if (!teamUserRepository.existsByUserIdAndTeamId(userId, teamId)) {
+      throw new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND, userId);
+    }
+  }
+
+  @Override
   public TeamUser getMemberShip(UUID teamId, UUID userId) {
     return teamUserRepository
         .findByUserIdAndTeamId(userId, teamId)
@@ -94,10 +101,5 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   @Override
   public UserSummaryProfile getOwnerProfile(UUID teamId) {
     return teamUserRepository.getTeamOwner(teamId);
-  }
-
-  @Override
-  public boolean isUserInTeam(UUID userId, UUID teamId) {
-    return teamUserRepository.existsByUserIdAndTeamId(userId, teamId);
   }
 }

@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobBuilder;
@@ -76,7 +77,10 @@ public class TaskReminderServiceImpl implements TaskReminderService {
   @Override
   public List<LocalDateTime> getAll(UUID taskId) {
     List<TaskReminder> reminders = taskReminderRepository.findAllByTaskIdOrderByRemindAtAsc(taskId);
-    return reminders.stream().map(TaskReminder::getRemindAt).toList();
+    // Return mutable list for later changes
+    return reminders.stream()
+        .map(TaskReminder::getRemindAt)
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private void scheduleReminders(List<TaskReminder> reminders) {

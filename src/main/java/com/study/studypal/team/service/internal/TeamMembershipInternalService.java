@@ -16,6 +16,8 @@ public interface TeamMembershipInternalService {
 
   void validateUpdatePlanPermission(UUID userId, UUID teamId);
 
+  void validateUserBelongsToTeam(UUID userId, UUID teamId);
+
   TeamUser getMemberShip(UUID teamId, UUID userId);
 
   LocalDateTime getTeamListCursor(UUID userId, UUID lastTeamId, int listSize, int size);
@@ -23,6 +25,4 @@ public interface TeamMembershipInternalService {
   List<UUID> getMemberIds(UUID teamId);
 
   UserSummaryProfile getOwnerProfile(UUID teamId);
-
-  boolean isUserInTeam(UUID userId, UUID teamId);
 }

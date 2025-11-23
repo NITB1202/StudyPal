@@ -25,7 +25,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -88,15 +87,8 @@ public class PlanServiceImpl implements PlanService {
             .findById(planId)
             .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
-    boolean hasPermission =
-        Optional.ofNullable(plan.getTeam())
-            .map(Team::getId)
-            .map(teamId -> memberService.isUserInTeam(userId, teamId))
-            .orElse(userId.equals(plan.getCreator().getId()));
-
-    if (!hasPermission) {
-      throw new BaseException(PlanErrorCode.PERMISSION_VIEW_PLAN_DENIED);
-    }
+    UUID teamId = plan.getTeam().getId();
+    memberService.validateUserBelongsToTeam(userId, teamId);
 
     PlanDetailResponseDto dto = modelMapper.map(plan, PlanDetailResponseDto.class);
     List<TaskResponseDto> tasks = taskService.getAll(planId);

@@ -8,4 +8,6 @@ public interface TaskCounterService {
   void createTeamTaskCounter(UUID teamId);
 
   long increaseTeamTaskCounter(UUID teamId);
+
+  long increaseUserTaskCounter(UUID userId);
 }
