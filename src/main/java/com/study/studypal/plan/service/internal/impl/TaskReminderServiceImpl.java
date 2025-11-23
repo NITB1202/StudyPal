@@ -53,17 +53,17 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         savedTimes.add(remindAt);
       }
 
-      if (remindAt.isBefore(taskInfo.getStartDate()) || remindAt.isAfter(taskInfo.getDueDate())) {
+      if (!remindAt.isAfter(taskInfo.getStartDate()) || !remindAt.isBefore(taskInfo.getDueDate())) {
         throw new BaseException(
             TaskReminderErrorCode.INVALID_REMINDER, remindAt.format(JSON_DATETIME_FORMATTER));
       }
 
-      Task task = entityManager.getReference(Task.class, taskInfo.getId());
-      TaskReminder taskReminder = TaskReminder.builder().task(task).remindAt(remindAt).build();
-
-      savedReminders.add(taskReminder);
-      scheduleReminder(taskReminder);
+      TaskReminder reminder = saveAndScheduleReminder(taskInfo.getId(), remindAt);
+      savedReminders.add(reminder);
     }
+
+    TaskReminder dueDateReminder = saveAndScheduleReminder(taskInfo.getId(), taskInfo.getDueDate());
+    savedReminders.add(dueDateReminder);
 
     taskReminderRepository.saveAll(savedReminders);
   }
@@ -72,6 +72,13 @@ public class TaskReminderServiceImpl implements TaskReminderService {
   public List<LocalDateTime> getAll(UUID taskId) {
     List<TaskReminder> reminders = taskReminderRepository.findAllByTaskIdOrderByRemindAtAsc(taskId);
     return reminders.stream().map(TaskReminder::getRemindAt).toList();
+  }
+
+  private TaskReminder saveAndScheduleReminder(UUID taskId, LocalDateTime remindAt) {
+    Task task = entityManager.getReference(Task.class, taskId);
+    TaskReminder taskReminder = TaskReminder.builder().task(task).remindAt(remindAt).build();
+    scheduleReminder(taskReminder);
+    return taskReminder;
   }
 
   private void scheduleReminder(TaskReminder reminder) {
