@@ -21,7 +21,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateTaskForPlanDto {
+public class CreateTaskForPlanRequestDto {
   @NotEmpty(message = "Content is required")
   private String content;
 

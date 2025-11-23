@@ -6,7 +6,7 @@ import static com.study.studypal.plan.constant.PlanConstant.TASK_CODE_PREFIX;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.internal.TaskInfo;
-import com.study.studypal.plan.dto.task.request.CreateTaskForPlanDto;
+import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
@@ -44,10 +44,10 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public void createTasksForPlan(PlanInfo planInfo, List<CreateTaskForPlanDto> tasks) {
+  public void createTasksForPlan(PlanInfo planInfo, List<CreateTaskForPlanRequestDto> tasks) {
     Plan plan = entityManager.getReference(Plan.class, planInfo.getPlanId());
 
-    for (CreateTaskForPlanDto taskDto : tasks) {
+    for (CreateTaskForPlanRequestDto taskDto : tasks) {
       UUID assigneeId = taskDto.getAssigneeId();
       LocalDateTime startDate = taskDto.getStartDate();
       LocalDateTime dueDate = taskDto.getDueDate();
