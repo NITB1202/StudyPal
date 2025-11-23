@@ -85,27 +85,14 @@ public class TeamController {
     return ResponseEntity.ok(teamService.getTeamPreview(teamCode));
   }
 
-  @GetMapping("/all")
-  @Operation(summary = "Get user's teams.")
-  @ApiResponse(responseCode = "200", description = "Get successfully.")
-  @NotFoundApiResponse
-  public ResponseEntity<ListTeamResponseDto> getTeams(
-      @AuthenticationPrincipal UUID userId,
-      @RequestParam TeamFilter filter,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
-      @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
-    return ResponseEntity.ok(teamService.getTeams(userId, filter, cursor, size));
-  }
-
   @GetMapping("/search")
-  @Operation(summary = "Search for user's teams by name.")
+  @Operation(summary = "Search for teams by name.")
   @ApiResponse(responseCode = "200", description = "Search successfully.")
   @NotFoundApiResponse
   public ResponseEntity<ListTeamResponseDto> searchTeamsByName(
       @AuthenticationPrincipal UUID userId,
       @RequestParam TeamFilter filter,
-      @RequestParam String keyword,
+      @RequestParam(required = false) String keyword,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {

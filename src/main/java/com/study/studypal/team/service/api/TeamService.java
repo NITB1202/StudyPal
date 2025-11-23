@@ -22,8 +22,6 @@ public interface TeamService {
 
   TeamPreviewResponseDto getTeamPreview(String teamCode);
 
-  ListTeamResponseDto getTeams(UUID userId, TeamFilter filter, LocalDateTime cursor, int size);
-
   ListTeamResponseDto searchTeamsByName(
       UUID userId, TeamFilter filter, String keyword, LocalDateTime cursor, int size);
 

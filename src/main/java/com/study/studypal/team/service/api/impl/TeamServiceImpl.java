@@ -165,62 +165,34 @@ public class TeamServiceImpl implements TeamService {
       value = CacheNames.USER_TEAMS,
       key = "@keys.of(#userId)",
       condition =
-          "#cursor == null && #size == 10 && #filter == T(com.study.studypal.team.enums.TeamFilter).JOINED")
-  public ListTeamResponseDto getTeams(
-      UUID userId, TeamFilter filter, LocalDateTime cursor, int size) {
-    Pageable pageable = PageRequest.of(0, size);
-
-    List<TeamSummaryResponseDto> teams =
-        switch (filter) {
-          case JOINED -> getUserJoinedTeams(userId, cursor, pageable);
-          case OWNED -> getUserOwnedTeams(userId, cursor, pageable);
-        };
-
-    long total =
-        switch (filter) {
-          case JOINED -> teamRepository.countUserJoinedTeam(userId);
-          case OWNED -> teamRepository.countUserOwnedTeams(userId);
-        };
-
-    LocalDateTime nextCursor = null;
-    if (!teams.isEmpty()) {
-      UUID lastTeamId = teams.get(teams.size() - 1).getId();
-      nextCursor = teamMembershipService.getTeamListCursor(userId, lastTeamId, teams.size(), size);
-    }
-
-    return ListTeamResponseDto.builder().teams(teams).total(total).nextCursor(nextCursor).build();
-  }
-
-  private List<TeamSummaryResponseDto> getUserJoinedTeams(
-      UUID userId, LocalDateTime cursor, Pageable pageable) {
-    return cursor == null
-        ? teamRepository.findUserJoinedTeams(userId, pageable)
-        : teamRepository.findUserJoinedTeamsWithCursor(userId, cursor, pageable);
-  }
-
-  private List<TeamSummaryResponseDto> getUserOwnedTeams(
-      UUID userId, LocalDateTime cursor, Pageable pageable) {
-    return cursor == null
-        ? teamRepository.findUserOwnedTeams(userId, pageable)
-        : teamRepository.findUserOwnedTeamsWithCursor(userId, cursor, pageable);
-  }
-
-  @Override
+          "#keyword == null && #cursor == null && #size == 10 && #filter == T(com.study.studypal.team.enums.TeamFilter).JOINED")
   public ListTeamResponseDto searchTeamsByName(
       UUID userId, TeamFilter filter, String keyword, LocalDateTime cursor, int size) {
-    String handledKeyword = keyword.toLowerCase().trim();
+    String handledKeyword = keyword != null ? keyword.toLowerCase().trim() : null;
     Pageable pageable = PageRequest.of(0, size);
 
     List<TeamSummaryResponseDto> teams =
         switch (filter) {
-          case JOINED -> searchUserJoinedTeamsByName(userId, handledKeyword, cursor, pageable);
-          case OWNED -> searchUserOwnedTeamsByName(userId, handledKeyword, cursor, pageable);
+          case JOINED ->
+              handledKeyword != null
+                  ? searchUserJoinedTeamsByName(userId, handledKeyword, cursor, pageable)
+                  : getUserJoinedTeams(userId, cursor, pageable);
+          case OWNED ->
+              handledKeyword != null
+                  ? searchUserOwnedTeamsByName(userId, handledKeyword, cursor, pageable)
+                  : getUserOwnedTeams(userId, cursor, pageable);
         };
 
     long total =
         switch (filter) {
-          case JOINED -> teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
-          case OWNED -> teamRepository.countUserOwnedTeamByName(userId, handledKeyword);
+          case JOINED ->
+              handledKeyword != null
+                  ? teamRepository.countUserJoinedTeamsByName(userId, handledKeyword)
+                  : teamRepository.countUserJoinedTeams(userId);
+          case OWNED ->
+              handledKeyword != null
+                  ? teamRepository.countUserOwnedTeamsByName(userId, handledKeyword)
+                  : teamRepository.countUserOwnedTeams(userId);
         };
 
     LocalDateTime nextCursor = null;
@@ -246,6 +218,20 @@ public class TeamServiceImpl implements TeamService {
         ? teamRepository.searchUserOwnedTeamsByName(userId, handledKeyword, pageable)
         : teamRepository.searchUserOwnedTeamsByNameWithCursor(
             userId, handledKeyword, cursor, pageable);
+  }
+
+  private List<TeamSummaryResponseDto> getUserJoinedTeams(
+      UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.findUserJoinedTeams(userId, pageable)
+        : teamRepository.findUserJoinedTeamsWithCursor(userId, cursor, pageable);
+  }
+
+  private List<TeamSummaryResponseDto> getUserOwnedTeams(
+      UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.findUserOwnedTeams(userId, pageable)
+        : teamRepository.findUserOwnedTeamsWithCursor(userId, cursor, pageable);
   }
 
   @Override
