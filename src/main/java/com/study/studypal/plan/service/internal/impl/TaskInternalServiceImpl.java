@@ -6,7 +6,6 @@ import static com.study.studypal.plan.constant.PlanConstant.TASK_CODE_PREFIX;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
-import com.study.studypal.plan.dto.task.internal.TaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
@@ -16,7 +15,6 @@ import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
-import com.study.studypal.plan.service.internal.TaskReminderService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -39,7 +37,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   private final TaskRepository taskRepository;
   private final ModelMapper modelMapper;
   private final TeamMembershipInternalService memberService;
-  private final TaskReminderService reminderService;
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
 
@@ -56,8 +53,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
       Task task = createTask(assigneeId, createPlanInfo, createTaskInfo);
 
-      TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
-      reminderService.createReminders(taskInfo, taskDto.getReminders());
       notificationService.publishTaskAssignedNotification(planInfo.getAssignerId(), task);
     }
   }
@@ -150,6 +145,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
       TaskResponseDto responseDto = modelMapper.map(task, TaskResponseDto.class);
       User assignee = task.getAssignee();
 
+      responseDto.setAssigneeId(assignee.getId());
       responseDto.setAssigneeName(assignee.getName());
       responseDto.setAssigneeAvatarUrl(assignee.getAvatarUrl());
 

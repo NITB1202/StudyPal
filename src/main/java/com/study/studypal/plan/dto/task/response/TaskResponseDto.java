@@ -20,6 +20,8 @@ public class TaskResponseDto {
 
   private String content;
 
+  private UUID assigneeId;
+
   private String assigneeName;
 
   private String assigneeAvatarUrl;

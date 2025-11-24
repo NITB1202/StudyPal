@@ -1,14 +1,11 @@
 package com.study.studypal.plan.dto.task.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.study.studypal.plan.converter.LocalDateTimeListDeserializer;
 import com.study.studypal.plan.enums.Priority;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,7 +37,4 @@ public class CreateTaskForPlanRequestDto {
   private Priority priority;
 
   private String note;
-
-  @JsonDeserialize(using = LocalDateTimeListDeserializer.class)
-  private List<LocalDateTime> reminders;
 }
