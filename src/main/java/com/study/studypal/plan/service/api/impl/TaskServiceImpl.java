@@ -5,6 +5,7 @@ import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.TaskAdditionalDataResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
@@ -76,8 +77,11 @@ public class TaskServiceImpl implements TaskService {
     else validateTaskOwnership(userId, assignee);
 
     TaskDetailResponseDto response = modelMapper.map(task, TaskDetailResponseDto.class);
-    response.setAssigneeId(assignee.getId());
-    response.setAssigneeAvatarUrl(assignee.getAvatarUrl());
+
+    if (plan != null) {
+      TaskAdditionalDataResponseDto additionalData = buildTaskAdditionalData(plan, assignee);
+      response.setAdditionalData(additionalData);
+    }
 
     return response;
   }
@@ -91,5 +95,15 @@ public class TaskServiceImpl implements TaskService {
     if (!userId.equals(assignee.getId())) {
       throw new BaseException(TaskErrorCode.PERMISSION_VIEW_TASK_DENIED);
     }
+  }
+
+  private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
+    return TaskAdditionalDataResponseDto.builder()
+        .planId(plan.getId())
+        .planCode(plan.getPlanCode())
+        .assigneeId(assignee.getId())
+        .assigneeName(assignee.getName())
+        .assigneeAvatarUrl(assignee.getAvatarUrl())
+        .build();
   }
 }

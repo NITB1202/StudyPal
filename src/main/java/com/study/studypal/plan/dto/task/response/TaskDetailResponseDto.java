@@ -12,18 +12,11 @@ import lombok.Setter;
 public class TaskDetailResponseDto {
   private UUID id;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private Priority priority;
+  private String taskCode;
 
   private String content;
 
-  private String taskCode;
-
   private String note;
-
-  private UUID assigneeId;
-
-  private String assigneeAvatarUrl;
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime startDate;
@@ -33,4 +26,9 @@ public class TaskDetailResponseDto {
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime completeDate;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Priority priority;
+
+  private TaskAdditionalDataResponseDto additionalData;
 }
