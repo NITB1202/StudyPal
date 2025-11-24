@@ -171,7 +171,7 @@ public class NotificationEventListener {
 
     String title = "New task assigned";
     String content =
-        String.format("%s assigned a task [%s] to you.", assigner.getName(), event.getTaskCode());
+        String.format("%s assigned task [%s] to you.", assigner.getName(), event.getTaskCode());
 
     CreateNotificationRequest dto =
         CreateNotificationRequest.builder()

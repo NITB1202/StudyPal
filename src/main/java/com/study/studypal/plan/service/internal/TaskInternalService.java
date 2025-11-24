@@ -5,6 +5,7 @@ import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Task;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +15,8 @@ public interface TaskInternalService {
   void createTasksForPlan(PlanInfo planInfo, List<CreateTaskForPlanRequestDto> tasks);
 
   Task createTask(UUID assigneeId, Pair<UUID, UUID> planInfo, CreateTaskInfo taskInfo);
+
+  void cloneTask(UUID rootTaskId, List<LocalDate> recurrenceDates);
 
   Task getById(UUID id);
 

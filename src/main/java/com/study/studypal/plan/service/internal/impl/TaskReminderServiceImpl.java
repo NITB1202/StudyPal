@@ -45,6 +45,8 @@ public class TaskReminderServiceImpl implements TaskReminderService {
     if (reminders == null) return;
 
     Task task = entityManager.getReference(Task.class, taskInfo.getId());
+    LocalDateTime now = LocalDateTime.now();
+
     List<TaskReminder> savedReminders = new ArrayList<>();
     Set<LocalDateTime> savedTimes = new HashSet<>();
 
@@ -61,6 +63,11 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         throw new BaseException(
             TaskReminderErrorCode.INVALID_REMINDER, remindAt.format(JSON_DATETIME_FORMATTER));
       }
+
+      if (remindAt.isBefore(now))
+        throw new BaseException(
+            TaskReminderErrorCode.PAST_REMINDER_NOT_ALLOWED,
+            remindAt.format(JSON_DATETIME_FORMATTER));
 
       TaskReminder reminder = TaskReminder.builder().task(task).remindAt(remindAt).build();
       savedReminders.add(reminder);

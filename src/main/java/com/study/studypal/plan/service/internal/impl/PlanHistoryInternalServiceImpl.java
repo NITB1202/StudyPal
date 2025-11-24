@@ -38,4 +38,25 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
 
     planHistoryRepository.save(planHistory);
   }
+
+  @Override
+  public void logAssignTask(UUID assignerId, UUID assigneeId, UUID planId, String taskCode) {
+    UserSummaryProfile assigner = userService.getUserSummaryProfile(assignerId);
+    UserSummaryProfile assignee = userService.getUserSummaryProfile(assigneeId);
+    Plan plan = entityManager.getReference(Plan.class, planId);
+
+    String message =
+        String.format(
+            "%s assigned task [%s] to %s.", assigner.getName(), taskCode, assignee.getName());
+
+    PlanHistory planHistory =
+        PlanHistory.builder()
+            .plan(plan)
+            .imageUrl(assigner.getAvatarUrl())
+            .message(message)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    planHistoryRepository.save(planHistory);
+  }
 }

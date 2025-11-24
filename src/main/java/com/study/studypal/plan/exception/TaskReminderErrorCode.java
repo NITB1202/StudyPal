@@ -15,7 +15,10 @@ public enum TaskReminderErrorCode implements ErrorCode {
   SCHEDULE_REMINDER_FAILED(
       HttpStatus.INTERNAL_SERVER_ERROR, "REMINDER_003", "Failed to schedule reminder %s."),
   CANCEL_REMINDER_FAILED(
-      HttpStatus.INTERNAL_SERVER_ERROR, "REMINDER_004", "Failed to cancel reminder with id %s");
+      HttpStatus.INTERNAL_SERVER_ERROR, "REMINDER_004", "Failed to cancel reminder with id %s"),
+  PAST_REMINDER_NOT_ALLOWED(
+      HttpStatus.BAD_REQUEST, "REMINDER_005", "Reminder %s cannot be set in the past."),
+  ;
 
   private final HttpStatus httpStatus;
   private final String code;

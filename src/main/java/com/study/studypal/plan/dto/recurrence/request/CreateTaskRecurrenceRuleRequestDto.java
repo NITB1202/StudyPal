@@ -1,9 +1,9 @@
 package com.study.studypal.plan.dto.recurrence.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.study.studypal.plan.enums.RecurrenceType;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,9 +18,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreatePlanRecurrenceRuleDto {
-  @NotNull(message = "Week days are required")
-  @Size(min = 1, message = "The list must contain at least 1 item")
+public class CreateTaskRecurrenceRuleRequestDto {
+  @NotNull(message = "Recurrence type is required")
+  private RecurrenceType type;
+
   private List<DayOfWeek> weekDays;
 
   @NotNull(message = "Recurrence end date is required")

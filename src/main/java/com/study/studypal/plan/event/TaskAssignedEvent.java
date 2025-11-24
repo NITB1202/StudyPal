@@ -13,4 +13,4 @@ public class TaskAssignedEvent {
   private UUID assigneeId;
 }
 
-// Message: User01 assigned a task [TSK-00001] to you -> Linked: taskId
+// Message: User01 assigned task [TSK-00001] to you -> Linked: taskId

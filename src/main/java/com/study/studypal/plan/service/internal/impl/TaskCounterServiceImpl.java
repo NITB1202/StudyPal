@@ -56,7 +56,7 @@ public class TaskCounterServiceImpl implements TaskCounterService {
   public long increaseUserTaskCounter(UUID userId) {
     UserTaskCounter userTaskCounter =
         userTaskCounterRepository
-            .findByIdForUpdate(userId)
+            .findById(userId)
             .orElseThrow(() -> new BaseException(TaskCounterErrorCode.TASK_COUNTER_ERROR_CODE));
 
     long nextCounter = userTaskCounter.getCounter() + 1;
@@ -64,5 +64,26 @@ public class TaskCounterServiceImpl implements TaskCounterService {
 
     userTaskCounterRepository.save(userTaskCounter);
     return nextCounter;
+  }
+
+  @Override
+  public long getCurrentUserTaskCounter(UUID userId) {
+    UserTaskCounter userTaskCounter =
+        userTaskCounterRepository
+            .findById(userId)
+            .orElseThrow(() -> new BaseException(TaskCounterErrorCode.TASK_COUNTER_ERROR_CODE));
+
+    return userTaskCounter.getCounter();
+  }
+
+  @Override
+  public void updateUserTaskCounter(UUID userId, long counter) {
+    UserTaskCounter userTaskCounter =
+        userTaskCounterRepository
+            .findById(userId)
+            .orElseThrow(() -> new BaseException(TaskCounterErrorCode.TASK_COUNTER_ERROR_CODE));
+
+    userTaskCounter.setCounter(counter);
+    userTaskCounterRepository.save(userTaskCounter);
   }
 }

@@ -126,10 +126,13 @@ CREATE TABLE IF NOT EXISTS tasks (
     priority VARCHAR(50) NOT NULL,
     note VARCHAR(255),
     complete_date TIMESTAMP,
+    parent_task_id UUID,
     CONSTRAINT fk_tasks_plans_plan FOREIGN KEY (plan_id)
         REFERENCES plans(id) ON DELETE CASCADE,
     CONSTRAINT fk_tasks_users_assignee FOREIGN KEY (assignee_id)
-        REFERENCES users(id) ON DELETE CASCADE
+        REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tasks_parent_task FOREIGN KEY (parent_task_id)
+            REFERENCES tasks(id)
 );
 
 CREATE TABLE IF NOT EXISTS task_recurrence_rules (
@@ -138,7 +141,7 @@ CREATE TABLE IF NOT EXISTS task_recurrence_rules (
     recurrence_start_date DATE NOT NULL,
     recurrence_end_date DATE,
     recurrence_type VARCHAR(20) NOT NULL,
-    week_days VARCHAR(100) NOT NULL,
+    week_days VARCHAR(100),
     CONSTRAINT fk_rules_tasks_task FOREIGN KEY (task_id)
         REFERENCES tasks(id) ON DELETE CASCADE
 );

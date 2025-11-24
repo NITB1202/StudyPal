@@ -63,4 +63,8 @@ public class Task {
 
   @Column(name = "complete_date")
   private LocalDateTime completeDate;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "parent_task_id")
+  private Task parentTask;
 }

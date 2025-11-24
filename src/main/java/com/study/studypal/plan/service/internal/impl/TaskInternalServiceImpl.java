@@ -22,6 +22,7 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,9 +84,49 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     return taskRepository.save(task);
   }
 
+  @Override
+  public void cloneTask(UUID rootTaskId, List<LocalDate> recurrenceDates) {
+    Task rootTask =
+        taskRepository
+            .findById(rootTaskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    List<Task> clonedTasks = new ArrayList<>();
+
+    UUID userId = rootTask.getAssignee().getId();
+    long counter = taskCounterService.getCurrentUserTaskCounter(userId);
+
+    for (LocalDate recurrenceDate : recurrenceDates) {
+      String taskCode = generateUserTaskCode(++counter);
+      LocalDateTime startDate =
+          LocalDateTime.of(recurrenceDate, rootTask.getStartDate().toLocalTime());
+      LocalDateTime dueDate = LocalDateTime.of(recurrenceDate, rootTask.getDueDate().toLocalTime());
+
+      Task clonedTask =
+          Task.builder()
+              .priority(rootTask.getPriority())
+              .content(rootTask.getContent())
+              .taskCode(taskCode)
+              .assignee(rootTask.getAssignee())
+              .startDate(startDate)
+              .dueDate(dueDate)
+              .parentTask(rootTask)
+              .build();
+
+      clonedTasks.add(clonedTask);
+    }
+
+    taskRepository.saveAll(clonedTasks);
+    taskCounterService.updateUserTaskCounter(userId, counter);
+  }
+
   private String generateUserTaskCode(UUID userId) {
     return TASK_CODE_PREFIX
         + String.format(CODE_NUMBER_FORMAT, taskCounterService.increaseUserTaskCounter(userId));
+  }
+
+  private String generateUserTaskCode(long counter) {
+    return TASK_CODE_PREFIX + String.format(CODE_NUMBER_FORMAT, counter);
   }
 
   private String generateTeamTaskCode(UUID teamId) {
