@@ -2,7 +2,6 @@ package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
-import com.study.studypal.plan.dto.task.internal.TaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
@@ -16,7 +15,6 @@ import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
 import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
-import com.study.studypal.plan.service.internal.TaskRecurrenceRuleService;
 import com.study.studypal.plan.service.internal.TaskReminderService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -40,18 +38,12 @@ public class TaskServiceImpl implements TaskService {
   private final TaskNotificationService notificationService;
   private final TaskInternalService internalService;
   private final PlanHistoryInternalService historyService;
-  private final TaskRecurrenceRuleService recurrenceService;
 
   @Override
   @Transactional
   public CreateTaskResponseDto createTask(UUID userId, CreateTaskRequestDto request) {
     CreateTaskInfo createTaskInfo = modelMapper.map(request, CreateTaskInfo.class);
     Task task = internalService.createTask(userId, Pair.of(null, null), createTaskInfo);
-
-    TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
-    reminderService.createReminders(taskInfo, request.getReminders());
-    recurrenceService.createRecurrenceRule(taskInfo, request.getRecurrenceRule());
-
     return modelMapper.map(task, CreateTaskResponseDto.class);
   }
 
@@ -68,10 +60,7 @@ public class TaskServiceImpl implements TaskService {
     Pair<UUID, UUID> createPlanInfo = Pair.of(planId, teamId);
     Task task = internalService.createTask(assigneeId, createPlanInfo, createTaskInfo);
 
-    TaskInfo taskInfo = modelMapper.map(task, TaskInfo.class);
-    reminderService.createReminders(taskInfo, request.getReminders());
     notificationService.publishTaskAssignedNotification(userId, task);
-
     planService.updatePlanProgress(planId);
     historyService.logAssignTask(userId, assigneeId, planId, task.getTaskCode());
 
