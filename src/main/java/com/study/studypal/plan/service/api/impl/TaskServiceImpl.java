@@ -15,12 +15,9 @@ import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
 import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
-import com.study.studypal.plan.service.internal.TaskReminderService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -32,7 +29,6 @@ import org.springframework.stereotype.Service;
 public class TaskServiceImpl implements TaskService {
   private final TaskRepository taskRepository;
   private final ModelMapper modelMapper;
-  private final TaskReminderService reminderService;
   private final TeamMembershipInternalService memberService;
   private final PlanInternalService planService;
   private final TaskNotificationService notificationService;
@@ -82,10 +78,6 @@ public class TaskServiceImpl implements TaskService {
     TaskDetailResponseDto response = modelMapper.map(task, TaskDetailResponseDto.class);
     response.setAssigneeId(assignee.getId());
     response.setAssigneeAvatarUrl(assignee.getAvatarUrl());
-
-    List<LocalDateTime> reminders = reminderService.getAll(taskId);
-    reminders.remove(task.getDueDate());
-    response.setReminders(reminders);
 
     return response;
   }
