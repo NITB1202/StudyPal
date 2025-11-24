@@ -180,4 +180,36 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
     return Pair.of(startDate, dueDate);
   }
+
+  @Override
+  public void validateViewTaskPermission(UUID userId, Task task) {
+    Plan plan = task.getPlan();
+    if (plan != null) validateUserBelongsToTeam(userId, plan);
+    else validateTaskOwnership(userId, task);
+  }
+
+  @Override
+  public void validateTaskOwnership(UUID userId, Task task) {
+    User assignee = task.getAssignee();
+    if (!userId.equals(assignee.getId())) {
+      throw new BaseException(TaskErrorCode.PERMISSION_TASK_OWNER_DENIED);
+    }
+  }
+
+  @Override
+  public void validateUpdateTaskPermission(UUID userId, Task task) {
+    Plan plan = task.getPlan();
+    if (plan != null) validateUpdateTaskPermission(userId, plan);
+    else validateTaskOwnership(userId, task);
+  }
+
+  private void validateUserBelongsToTeam(UUID userId, Plan plan) {
+    UUID teamId = plan.getTeam().getId();
+    memberService.validateUserBelongsToTeam(userId, teamId);
+  }
+
+  private void validateUpdateTaskPermission(UUID userId, Plan plan) {
+    UUID teamId = plan.getTeam().getId();
+    memberService.validateUpdatePlanPermission(userId, teamId);
+  }
 }

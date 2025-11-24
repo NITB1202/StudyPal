@@ -151,7 +151,8 @@ CREATE TABLE IF NOT EXISTS task_reminders (
     task_id UUID NOT NULL,
     remind_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_task_reminders_tasks_task FOREIGN KEY (task_id)
-        REFERENCES tasks(id) ON DELETE CASCADE
+        REFERENCES tasks(id) ON DELETE CASCADE,
+    CONSTRAINT uq_task_remind_at UNIQUE (task_id, remind_at)
 );
 
 CREATE TABLE IF NOT EXISTS user_task_counters (

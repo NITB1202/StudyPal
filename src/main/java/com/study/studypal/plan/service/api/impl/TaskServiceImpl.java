@@ -16,6 +16,7 @@ import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
 import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.transaction.Transactional;
@@ -35,12 +36,14 @@ public class TaskServiceImpl implements TaskService {
   private final TaskNotificationService notificationService;
   private final TaskInternalService internalService;
   private final PlanHistoryInternalService historyService;
+  private final TaskReminderInternalService reminderService;
 
   @Override
   @Transactional
   public CreateTaskResponseDto createTask(UUID userId, CreateTaskRequestDto request) {
     CreateTaskInfo createTaskInfo = modelMapper.map(request, CreateTaskInfo.class);
     Task task = internalService.createTask(userId, Pair.of(null, null), createTaskInfo);
+    reminderService.scheduleReminder(task.getDueDate(), task);
     return modelMapper.map(task, CreateTaskResponseDto.class);
   }
 
@@ -57,6 +60,7 @@ public class TaskServiceImpl implements TaskService {
     Pair<UUID, UUID> createPlanInfo = Pair.of(planId, teamId);
     Task task = internalService.createTask(assigneeId, createPlanInfo, createTaskInfo);
 
+    reminderService.scheduleReminder(task.getDueDate(), task);
     notificationService.publishTaskAssignedNotification(userId, task);
     planService.updatePlanProgress(planId);
     historyService.logAssignTask(userId, assigneeId, planId, task.getTaskCode());
@@ -71,12 +75,11 @@ public class TaskServiceImpl implements TaskService {
             .findById(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
+    internalService.validateViewTaskPermission(userId, task);
+    TaskDetailResponseDto response = modelMapper.map(task, TaskDetailResponseDto.class);
+
     Plan plan = task.getPlan();
     User assignee = task.getAssignee();
-    if (plan != null) validateUserBelongsToTeam(userId, plan);
-    else validateTaskOwnership(userId, assignee);
-
-    TaskDetailResponseDto response = modelMapper.map(task, TaskDetailResponseDto.class);
 
     if (plan != null) {
       TaskAdditionalDataResponseDto additionalData = buildTaskAdditionalData(plan, assignee);
@@ -84,17 +87,6 @@ public class TaskServiceImpl implements TaskService {
     }
 
     return response;
-  }
-
-  private void validateUserBelongsToTeam(UUID userId, Plan plan) {
-    UUID teamId = plan.getTeam().getId();
-    memberService.validateUserBelongsToTeam(userId, teamId);
-  }
-
-  private void validateTaskOwnership(UUID userId, User assignee) {
-    if (!userId.equals(assignee.getId())) {
-      throw new BaseException(TaskErrorCode.PERMISSION_VIEW_TASK_DENIED);
-    }
   }
 
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
