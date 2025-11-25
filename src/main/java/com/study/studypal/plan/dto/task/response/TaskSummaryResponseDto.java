@@ -31,5 +31,7 @@ public class TaskSummaryResponseDto {
 
   private Boolean isCopy;
 
+  private Boolean isTeamTask;
+
   private Boolean isCompleted;
 }

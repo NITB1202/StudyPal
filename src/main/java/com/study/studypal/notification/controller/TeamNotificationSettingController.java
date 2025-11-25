@@ -16,16 +16,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/team-notification-settings")
 public class TeamNotificationSettingController {
   private final TeamNotificationSettingService teamNotificationSettingsService;
 
-  @GetMapping("/{teamId}")
+  @GetMapping("/api/teams/{teamId}/notification-settings")
   @Operation(summary = "Get notification setting of a user in a team.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @NotFoundApiResponse
@@ -35,7 +33,7 @@ public class TeamNotificationSettingController {
         teamNotificationSettingsService.getTeamNotificationSetting(userId, teamId));
   }
 
-  @PatchMapping("/{settingId}")
+  @PatchMapping("/api/notification-settings/{settingId}")
   @Operation(summary = "Update team notification setting.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
   @UnauthorizedApiResponse
