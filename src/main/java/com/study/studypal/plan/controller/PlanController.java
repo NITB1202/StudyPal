@@ -6,6 +6,7 @@ import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
+import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.service.api.PlanService;
@@ -13,6 +14,8 @@ import com.study.studypal.plan.service.api.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -61,5 +65,15 @@ public class PlanController {
       @PathVariable UUID planId,
       @Valid @RequestBody CreateTaskForPlanRequestDto request) {
     return ResponseEntity.ok(taskService.createTaskForPlan(userId, planId, request));
+  }
+
+  @GetMapping("/by-team/{teamId}")
+  @Operation(summary = "Get all team plans for a specific date.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  public ResponseEntity<List<PlanSummaryResponseDto>> getPlansOnDate(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID teamId,
+      @RequestParam LocalDate date) {
+    return ResponseEntity.ok(planService.getPlansOnDate(userId, teamId, date));
   }
 }

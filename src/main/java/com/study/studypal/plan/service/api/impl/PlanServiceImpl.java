@@ -7,8 +7,8 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
-import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
+import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
@@ -25,6 +25,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -109,7 +110,10 @@ public class PlanServiceImpl implements PlanService {
   }
 
   @Override
-  public ListPlanResponseDto getAssignedPlansOnDate(UUID userId, LocalDate date) {
-    return null;
+  public List<PlanSummaryResponseDto> getPlansOnDate(UUID userId, UUID teamId, LocalDate date) {
+    memberService.validateUserBelongsToTeam(userId, teamId);
+    LocalDateTime startOfDay = date.atStartOfDay();
+    LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+    return planRepository.findPlansOnDate(userId, teamId, startOfDay, endOfDay);
   }
 }

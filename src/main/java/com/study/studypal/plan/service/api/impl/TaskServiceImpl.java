@@ -97,17 +97,17 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   public List<TaskSummaryResponseDto> getAssignedTasksOnDate(UUID userId, LocalDate date) {
-    LocalDateTime startOfDate = date.atStartOfDay();
-    LocalDateTime endOfDate = date.atTime(LocalTime.MAX);
+    LocalDateTime startOfDay = date.atStartOfDay();
+    LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
-    List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDate, endOfDate);
+    List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDay, endOfDay);
 
     return tasks.stream()
         .map(
             t -> {
               TaskSummaryResponseDto summary = modelMapper.map(t, TaskSummaryResponseDto.class);
-              summary.setCompleted(t.getCompleteDate() != null);
-              summary.setCopy(t.getParentTask() != null);
+              summary.setIsCompleted(t.getCompleteDate() != null);
+              summary.setIsCopy(t.getParentTask() != null);
               return summary;
             })
         .toList();

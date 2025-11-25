@@ -2,9 +2,10 @@ package com.study.studypal.plan.service.api;
 
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
-import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
+import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface PlanService {
@@ -12,5 +13,5 @@ public interface PlanService {
 
   PlanDetailResponseDto getPlanDetail(UUID userId, UUID planId);
 
-  ListPlanResponseDto getAssignedPlansOnDate(UUID userId, LocalDate date);
+  List<PlanSummaryResponseDto> getPlansOnDate(UUID userId, UUID teamId, LocalDate date);
 }
