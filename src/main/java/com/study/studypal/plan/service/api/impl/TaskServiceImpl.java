@@ -108,6 +108,7 @@ public class TaskServiceImpl implements TaskService {
               TaskSummaryResponseDto summary = modelMapper.map(t, TaskSummaryResponseDto.class);
               summary.setIsCompleted(t.getCompleteDate() != null);
               summary.setIsCopy(t.getParentTask() != null);
+              summary.setIsTeamTask(t.getPlan() != null);
               return summary;
             })
         .toList();

@@ -3,18 +3,22 @@ package com.study.studypal.plan.controller;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
+import com.study.studypal.plan.dto.history.ListPlanHistoryResponseDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
+import com.study.studypal.plan.service.api.PlanHistoryService;
 import com.study.studypal.plan.service.api.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PlanController {
   private final PlanService planService;
+  private final PlanHistoryService historyService;
 
   @PostMapping("/api/plans")
   @Operation(summary = "Create a new plan.")
@@ -69,5 +74,18 @@ public class PlanController {
       @RequestParam(required = false) Integer year) {
     return ResponseEntity.ok(
         planService.getDatesWithPlanDueDatesInMonth(userId, teamId, month, year));
+  }
+
+  @GetMapping("/api/plans/{planId}/history")
+  @Operation(summary = "Get plan history")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  @UnauthorizedApiResponse
+  public ResponseEntity<ListPlanHistoryResponseDto> getPlanHistory(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID planId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          LocalDateTime cursor,
+      @RequestParam(defaultValue = "10") int size) {
+    return ResponseEntity.ok(historyService.getPlanHistory(userId, planId, cursor, size));
   }
 }
