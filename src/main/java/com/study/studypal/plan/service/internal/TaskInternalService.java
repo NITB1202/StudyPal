@@ -32,5 +32,7 @@ public interface TaskInternalService {
 
   void validateTaskOwnership(UUID userId, Task task);
 
+  void validatePersonalTask(Task task);
+
   void validateUpdateTaskPermission(UUID userId, Task task);
 }

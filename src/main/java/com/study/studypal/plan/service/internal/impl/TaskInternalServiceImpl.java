@@ -191,9 +191,13 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @Override
   public void validateTaskOwnership(UUID userId, Task task) {
     User assignee = task.getAssignee();
-    if (!userId.equals(assignee.getId())) {
+    if (!userId.equals(assignee.getId()))
       throw new BaseException(TaskErrorCode.PERMISSION_TASK_OWNER_DENIED);
-    }
+  }
+
+  @Override
+  public void validatePersonalTask(Task task) {
+    if (task.getPlan() != null) throw new BaseException(TaskErrorCode.PERSONAL_TASK_REQUIRED);
   }
 
   @Override

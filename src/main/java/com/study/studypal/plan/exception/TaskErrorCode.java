@@ -11,6 +11,8 @@ public enum TaskErrorCode implements ErrorCode {
   TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_002", "Task not found."),
   PERMISSION_TASK_OWNER_DENIED(
       HttpStatus.FORBIDDEN, "TASK_003", "You are not the owner of this task."),
+  PERSONAL_TASK_REQUIRED(
+      HttpStatus.BAD_REQUEST, "TASK_004", "This operation is only allowed for personal tasks."),
   ;
 
   private final HttpStatus httpStatus;
