@@ -37,4 +37,15 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       @Param("userId") UUID userId,
       @Param("startOfDay") LocalDateTime startOfDay,
       @Param("endOfDay") LocalDateTime endOfDay);
+
+  @Query(
+      """
+        SELECT t
+        FROM Task t
+        WHERE t.assignee.id = :userId
+          AND MONTH(t.dueDate) = :month
+          AND YEAR(t.dueDate) = :year
+    """)
+  List<Task> findTasksByAssigneeAndDueDateInMonth(
+      @Param("userId") UUID userId, @Param("month") Integer month, @Param("year") Integer year);
 }

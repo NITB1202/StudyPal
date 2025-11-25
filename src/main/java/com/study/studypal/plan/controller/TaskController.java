@@ -111,4 +111,14 @@ public class TaskController {
       @AuthenticationPrincipal UUID userId, @RequestParam LocalDate date) {
     return ResponseEntity.ok(taskService.getAssignedTasksOnDate(userId, date));
   }
+
+  @GetMapping("/dates")
+  @Operation(summary = "Get dates with assigned task deadlines in a month.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  public ResponseEntity<List<String>> getDatesWithDeadlineInMonth(
+      @AuthenticationPrincipal UUID userId,
+      @RequestParam(required = false) Integer month,
+      @RequestParam(required = false) Integer year) {
+    return ResponseEntity.ok(taskService.getDatesWithDeadlineInMonth(userId, month, year));
+  }
 }
