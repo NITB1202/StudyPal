@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.user.service.internal.impl.UserInternalServiceImpl;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserInternalServiceTest {
   @Mock private UserRepository userRepository;
+  @Mock private TaskCounterService taskCounterService;
 
   @InjectMocks private UserInternalServiceImpl userInternalService;
 
