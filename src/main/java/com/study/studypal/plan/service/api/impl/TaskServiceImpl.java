@@ -114,7 +114,7 @@ public class TaskServiceImpl implements TaskService {
   }
 
   @Override
-  public List<String> getDatesWithDeadlineInMonth(UUID userId, Integer month, Integer year) {
+  public List<String> getDatesWithTaskDueDateInMonth(UUID userId, Integer month, Integer year) {
     LocalDate now = LocalDate.now();
     int handledMonth = month == null ? now.getMonthValue() : month;
     int handledYear = year == null ? now.getYear() : year;

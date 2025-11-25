@@ -76,4 +76,16 @@ public class PlanController {
       @RequestParam LocalDate date) {
     return ResponseEntity.ok(planService.getPlansOnDate(userId, teamId, date));
   }
+
+  @GetMapping("/by-team/{teamId}/dates")
+  @Operation(summary = "Get dates with assigned task due dates in a month.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  public ResponseEntity<List<String>> getDatesWithTaskDueDateInMonth(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID teamId,
+      @RequestParam(required = false) Integer month,
+      @RequestParam(required = false) Integer year) {
+    return ResponseEntity.ok(
+        planService.getDatesWithPlanDueDatesInMonth(userId, teamId, month, year));
+  }
 }

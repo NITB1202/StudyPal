@@ -4,6 +4,7 @@ import static com.study.studypal.plan.constant.PlanConstant.CODE_NUMBER_FORMAT;
 import static com.study.studypal.plan.constant.PlanConstant.PLAN_CODE_PREFIX;
 
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.code.DateErrorCode;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
@@ -115,5 +116,28 @@ public class PlanServiceImpl implements PlanService {
     LocalDateTime startOfDay = date.atStartOfDay();
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
     return planRepository.findPlansOnDate(userId, teamId, startOfDay, endOfDay);
+  }
+
+  @Override
+  public List<String> getDatesWithPlanDueDatesInMonth(
+      UUID userId, UUID teamId, Integer month, Integer year) {
+    memberService.validateUserBelongsToTeam(userId, teamId);
+
+    LocalDate now = LocalDate.now();
+    int handledMonth = month == null ? now.getMonthValue() : month;
+    int handledYear = year == null ? now.getYear() : year;
+
+    if (handledMonth < 1 || handledMonth > 12) {
+      throw new BaseException(DateErrorCode.INVALID_M0NTH);
+    }
+
+    if (handledYear <= 0) {
+      throw new BaseException(DateErrorCode.INVALID_YEAR);
+    }
+
+    List<LocalDate> dueDates =
+        planRepository.findPlanDueDatesInMonthByTeam(teamId, handledMonth, handledYear);
+
+    return dueDates.stream().map(LocalDate::toString).distinct().sorted().toList();
   }
 }

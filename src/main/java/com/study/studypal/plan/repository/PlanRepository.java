@@ -2,6 +2,7 @@ package com.study.studypal.plan.repository;
 
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.entity.Plan;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -42,4 +43,18 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
       @Param("teamId") UUID teamId,
       @Param("startOfDay") LocalDateTime startOfDay,
       @Param("endOfDay") LocalDateTime endOfDay);
+
+  @Query(
+      """
+    SELECT DATE(MAX(t.dueDate))
+    FROM Plan p
+    JOIN p.tasks t
+    WHERE p.isDeleted = false
+    AND p.team.id = :teamId
+    GROUP BY p.id
+    HAVING MONTH(MAX(t.dueDate)) = :month
+    AND YEAR(MAX(t.dueDate)) = :year
+    """)
+  List<LocalDate> findPlanDueDatesInMonthByTeam(
+      @Param("teamId") UUID teamId, @Param("month") int month, @Param("year") int year);
 }

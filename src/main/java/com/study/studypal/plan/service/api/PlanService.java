@@ -14,4 +14,7 @@ public interface PlanService {
   PlanDetailResponseDto getPlanDetail(UUID userId, UUID planId);
 
   List<PlanSummaryResponseDto> getPlansOnDate(UUID userId, UUID teamId, LocalDate date);
+
+  List<String> getDatesWithPlanDueDatesInMonth(
+      UUID userId, UUID teamId, Integer month, Integer year);
 }
