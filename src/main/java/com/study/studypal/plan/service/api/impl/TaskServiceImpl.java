@@ -7,6 +7,7 @@ import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskAdditionalDataResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
+import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.exception.TaskErrorCode;
@@ -20,6 +21,10 @@ import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -87,6 +92,24 @@ public class TaskServiceImpl implements TaskService {
     }
 
     return response;
+  }
+
+  @Override
+  public List<TaskSummaryResponseDto> getAssignedTasksOnDate(UUID userId, LocalDate date) {
+    LocalDateTime startOfDate = date.atStartOfDay();
+    LocalDateTime endOfDate = date.atTime(LocalTime.MAX);
+
+    List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDate, endOfDate);
+
+    return tasks.stream()
+        .map(
+            t -> {
+              TaskSummaryResponseDto summary = modelMapper.map(t, TaskSummaryResponseDto.class);
+              summary.setCompleted(t.getCompleteDate() != null);
+              summary.setCopy(t.getParentTask() != null);
+              return summary;
+            })
+        .toList();
   }
 
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {

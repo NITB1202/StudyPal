@@ -11,12 +11,14 @@ import com.study.studypal.plan.dto.reminder.response.TaskReminderResponseDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
+import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.service.api.TaskReminderService;
 import com.study.studypal.plan.service.api.TaskService;
 import com.study.studypal.plan.service.internal.TaskRecurrenceRuleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +29,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Valid
 @RequiredArgsConstructor
 @RequestMapping("/api/tasks")
 public class TaskController {
@@ -98,5 +102,13 @@ public class TaskController {
   public ResponseEntity<TaskRecurrenceRuleResponseDto> getRecurrenceRule(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
     return ResponseEntity.ok(ruleService.getRecurrenceRule(userId, taskId));
+  }
+
+  @GetMapping
+  @Operation(summary = "Get assigned tasks for a specific date.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  public ResponseEntity<List<TaskSummaryResponseDto>> getAssignedTasksOnDate(
+      @AuthenticationPrincipal UUID userId, @RequestParam LocalDate date) {
+    return ResponseEntity.ok(taskService.getAssignedTasksOnDate(userId, date));
   }
 }
