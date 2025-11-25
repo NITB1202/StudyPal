@@ -7,10 +7,7 @@ import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
-import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
-import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.service.api.PlanService;
-import com.study.studypal.plan.service.api.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -24,18 +21,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/plans")
 public class PlanController {
   private final PlanService planService;
-  private final TaskService taskService;
 
-  @PostMapping
+  @PostMapping("/api/plans")
   @Operation(summary = "Create a new plan.")
   @ApiResponse(responseCode = "200", description = "Create successfully.")
   @UnauthorizedApiResponse
@@ -45,7 +39,7 @@ public class PlanController {
     return ResponseEntity.ok(planService.createPlan(userId, request));
   }
 
-  @GetMapping("/{planId}")
+  @GetMapping("/api/plans/{planId}")
   @Operation(summary = "Get plan's details")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @UnauthorizedApiResponse
@@ -55,19 +49,7 @@ public class PlanController {
     return ResponseEntity.ok(planService.getPlanDetail(userId, planId));
   }
 
-  @PostMapping("/{planId}/task")
-  @Operation(summary = "Create a new task for plan.")
-  @ApiResponse(responseCode = "200", description = "Create successfully.")
-  @UnauthorizedApiResponse
-  @BadRequestApiResponse
-  public ResponseEntity<CreateTaskResponseDto> createTaskForPlan(
-      @AuthenticationPrincipal UUID userId,
-      @PathVariable UUID planId,
-      @Valid @RequestBody CreateTaskForPlanRequestDto request) {
-    return ResponseEntity.ok(taskService.createTaskForPlan(userId, planId, request));
-  }
-
-  @GetMapping("/by-team/{teamId}")
+  @GetMapping("/api/teams/{teamId}/plans")
   @Operation(summary = "Get all team plans for a specific date.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<List<PlanSummaryResponseDto>> getPlansOnDate(
@@ -77,7 +59,7 @@ public class PlanController {
     return ResponseEntity.ok(planService.getPlansOnDate(userId, teamId, date));
   }
 
-  @GetMapping("/by-team/{teamId}/dates")
+  @GetMapping("/api/teams/{teamId}/plans/dates")
   @Operation(summary = "Get dates with team plan due dates in a month.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<List<String>> getDatesWithTaskDueDateInMonth(
