@@ -78,7 +78,7 @@ public class PlanController {
   }
 
   @GetMapping("/by-team/{teamId}/dates")
-  @Operation(summary = "Get dates with assigned task due dates in a month.")
+  @Operation(summary = "Get dates with team plan due dates in a month.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<List<String>> getDatesWithTaskDueDateInMonth(
       @AuthenticationPrincipal UUID userId,

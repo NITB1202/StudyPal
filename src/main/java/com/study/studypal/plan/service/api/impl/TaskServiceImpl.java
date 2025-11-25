@@ -126,14 +126,10 @@ public class TaskServiceImpl implements TaskService {
       throw new BaseException(DateErrorCode.INVALID_YEAR);
     }
 
-    List<Task> tasksInMonth =
-        taskRepository.findTasksByAssigneeAndDueDateInMonth(userId, handledMonth, handledYear);
+    List<LocalDateTime> dueDates =
+        taskRepository.findTaskDueDatesByUserIdInMonth(userId, handledMonth, handledYear);
 
-    return tasksInMonth.stream()
-        .map(task -> task.getDueDate().toLocalDate().toString())
-        .distinct()
-        .sorted()
-        .toList();
+    return dueDates.stream().map(d -> d.toLocalDate().toString()).distinct().sorted().toList();
   }
 
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {

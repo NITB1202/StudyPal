@@ -40,12 +40,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   @Query(
       """
-        SELECT t
+        SELECT t.dueDate
         FROM Task t
         WHERE t.assignee.id = :userId
           AND MONTH(t.dueDate) = :month
           AND YEAR(t.dueDate) = :year
     """)
-  List<Task> findTasksByAssigneeAndDueDateInMonth(
+  List<LocalDateTime> findTaskDueDatesByUserIdInMonth(
       @Param("userId") UUID userId, @Param("month") Integer month, @Param("year") Integer year);
 }

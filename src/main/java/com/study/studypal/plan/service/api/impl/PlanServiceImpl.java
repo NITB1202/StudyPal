@@ -135,9 +135,9 @@ public class PlanServiceImpl implements PlanService {
       throw new BaseException(DateErrorCode.INVALID_YEAR);
     }
 
-    List<LocalDate> dueDates =
-        planRepository.findPlanDueDatesInMonthByTeam(teamId, handledMonth, handledYear);
+    List<LocalDateTime> dueDates =
+        planRepository.findPlanDueDatesByTeamIdInMonth(teamId, handledMonth, handledYear);
 
-    return dueDates.stream().map(LocalDate::toString).distinct().sorted().toList();
+    return dueDates.stream().map(d -> d.toLocalDate().toString()).distinct().sorted().toList();
   }
 }
