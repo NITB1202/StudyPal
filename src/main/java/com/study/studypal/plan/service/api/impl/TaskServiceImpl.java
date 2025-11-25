@@ -1,6 +1,7 @@
 package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.code.DateErrorCode;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
@@ -109,6 +110,29 @@ public class TaskServiceImpl implements TaskService {
               summary.setCopy(t.getParentTask() != null);
               return summary;
             })
+        .toList();
+  }
+
+  @Override
+  public List<String> getDatesWithDeadlineInMonth(UUID userId, Integer month, Integer year) {
+    LocalDate now = LocalDate.now();
+    int handledMonth = month == null ? now.getMonthValue() : month;
+    int handledYear = year == null ? now.getYear() : year;
+
+    if (handledMonth < 1 || handledMonth > 12) {
+      throw new BaseException(DateErrorCode.INVALID_M0NTH);
+    }
+    if (handledYear <= 0) {
+      throw new BaseException(DateErrorCode.INVALID_YEAR);
+    }
+
+    List<Task> tasksInMonth =
+        taskRepository.findTasksByAssigneeAndDueDateInMonth(userId, handledMonth, handledYear);
+
+    return tasksInMonth.stream()
+        .map(task -> task.getDueDate().toLocalDate().toString())
+        .distinct()
+        .sorted()
         .toList();
   }
 

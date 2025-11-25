@@ -18,4 +18,6 @@ public interface TaskService {
   TaskDetailResponseDto getTaskDetail(UUID userId, UUID taskId);
 
   List<TaskSummaryResponseDto> getAssignedTasksOnDate(UUID userId, LocalDate date);
+
+  List<String> getDatesWithDeadlineInMonth(UUID userId, Integer month, Integer year);
 }
