@@ -29,7 +29,7 @@ public class TaskSummaryResponseDto {
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dueDate;
 
-  private boolean isCopy;
+  private Boolean isCopy;
 
-  private boolean isCompleted;
+  private Boolean isCompleted;
 }

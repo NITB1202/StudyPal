@@ -97,24 +97,24 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   public List<TaskSummaryResponseDto> getAssignedTasksOnDate(UUID userId, LocalDate date) {
-    LocalDateTime startOfDate = date.atStartOfDay();
-    LocalDateTime endOfDate = date.atTime(LocalTime.MAX);
+    LocalDateTime startOfDay = date.atStartOfDay();
+    LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
-    List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDate, endOfDate);
+    List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDay, endOfDay);
 
     return tasks.stream()
         .map(
             t -> {
               TaskSummaryResponseDto summary = modelMapper.map(t, TaskSummaryResponseDto.class);
-              summary.setCompleted(t.getCompleteDate() != null);
-              summary.setCopy(t.getParentTask() != null);
+              summary.setIsCompleted(t.getCompleteDate() != null);
+              summary.setIsCopy(t.getParentTask() != null);
               return summary;
             })
         .toList();
   }
 
   @Override
-  public List<String> getDatesWithDeadlineInMonth(UUID userId, Integer month, Integer year) {
+  public List<String> getDatesWithTaskDueDateInMonth(UUID userId, Integer month, Integer year) {
     LocalDate now = LocalDate.now();
     int handledMonth = month == null ? now.getMonthValue() : month;
     int handledYear = year == null ? now.getYear() : year;
@@ -126,14 +126,10 @@ public class TaskServiceImpl implements TaskService {
       throw new BaseException(DateErrorCode.INVALID_YEAR);
     }
 
-    List<Task> tasksInMonth =
-        taskRepository.findTasksByAssigneeAndDueDateInMonth(userId, handledMonth, handledYear);
+    List<LocalDateTime> dueDates =
+        taskRepository.findTaskDueDatesByUserIdInMonth(userId, handledMonth, handledYear);
 
-    return tasksInMonth.stream()
-        .map(task -> task.getDueDate().toLocalDate().toString())
-        .distinct()
-        .sorted()
-        .toList();
+    return dueDates.stream().map(d -> d.toLocalDate().toString()).distinct().sorted().toList();
   }
 
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
