@@ -68,6 +68,16 @@ public class TeamInternalServiceImpl implements TeamInternalService {
   }
 
   @Override
+  public String getTeamAvatarUrl(UUID teamId) {
+    Team team =
+        teamRepository
+            .findById(teamId)
+            .orElseThrow(() -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND));
+
+    return team.getAvatarUrl();
+  }
+
+  @Override
   public long countTeamsOwnerByUser(UUID userId) {
     return teamRepository.countUserOwnedTeams(userId);
   }

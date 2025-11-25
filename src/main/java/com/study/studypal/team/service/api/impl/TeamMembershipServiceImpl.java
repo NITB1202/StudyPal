@@ -1,6 +1,6 @@
 package com.study.studypal.team.service.api.impl;
 
-import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+import static com.study.studypal.team.constant.TeamConstant.MAX_OWNED_TEAMS;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -214,7 +214,9 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
         teamUserRepository
             .findByUserIdAndTeamId(memberId, teamId)
             .orElseThrow(
-                () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
+                () ->
+                    new BaseException(
+                        TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND, memberId));
 
     if (userInfo.getRole() != TeamRole.OWNER) {
       throw new BaseException(TeamMembershipErrorCode.PERMISSION_UPDATE_MEMBER_ROLE_DENIED);
@@ -248,23 +250,28 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
             key = "@keys.of(#request.memberId, #request.teamId)")
       })
   public ActionResponseDto removeTeamMember(UUID userId, RemoveTeamMemberRequestDto request) {
-    if (userId.equals(request.getMemberId())) {
+    UUID memberId = request.getMemberId();
+    UUID teamId = request.getTeamId();
+
+    if (userId.equals(memberId)) {
       throw new BaseException(TeamMembershipErrorCode.CANNOT_REMOVE_SELF);
     }
 
     // Lock user performing action
     TeamUser userInfo =
         teamUserRepository
-            .findByUserIdAndTeamIdForUpdate(userId, request.getTeamId())
+            .findByUserIdAndTeamIdForUpdate(userId, teamId)
             .orElseThrow(
                 () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND));
 
     // Lock member being removed
     TeamUser memberInfo =
         teamUserRepository
-            .findByUserIdAndTeamIdForUpdate(request.getMemberId(), request.getTeamId())
+            .findByUserIdAndTeamIdForUpdate(memberId, teamId)
             .orElseThrow(
-                () -> new BaseException(TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND));
+                () ->
+                    new BaseException(
+                        TeamMembershipErrorCode.TARGET_MEMBERSHIP_NOT_FOUND, memberId));
 
     // Permission check
     switch (userInfo.getRole()) {
@@ -292,13 +299,13 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
       throw new BaseException(TeamMembershipErrorCode.MEMBER_ALREADY_REMOVED);
     }
 
-    teamService.decreaseMember(request.getTeamId());
+    teamService.decreaseMember(teamId);
 
     UserLeftTeamEvent event =
         UserLeftTeamEvent.builder()
-            .userId(request.getMemberId())
-            .teamId(request.getTeamId())
-            .memberIds(internalService.getMemberIds(request.getTeamId()))
+            .userId(memberId)
+            .teamId(teamId)
+            .memberIds(internalService.getMemberIds(teamId))
             .build();
 
     eventPublisher.publishEvent(event);

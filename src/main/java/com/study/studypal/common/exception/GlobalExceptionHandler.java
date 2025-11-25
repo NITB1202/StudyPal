@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
 
     int httpStatus = ex.getErrorCode().getHttpStatus().value();
     String code = ex.getErrorCode().getCode();
-    String message = ex.getErrorCode().getMessage();
+    String message = ex.getMessage();
 
     ErrorResponse errorResponse = new ErrorResponse(httpStatus, code, message);
 

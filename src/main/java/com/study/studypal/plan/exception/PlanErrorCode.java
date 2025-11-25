@@ -6,8 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum PlanErrorCode implements ErrorCode {
-  START_DATE_AFTER_DUE_DATE(
-      HttpStatus.BAD_REQUEST, "PLAN_001", "Start date must be before the due date.");
+  PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN_001", "Plan not found.");
 
   private final HttpStatus httpStatus;
   private final String code;

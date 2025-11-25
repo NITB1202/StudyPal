@@ -10,7 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface TeamRepository extends JpaRepository<Team, UUID> {
   boolean existsByNameAndCreatorId(String name, UUID creatorId);
 
@@ -95,7 +97,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     FROM Team t JOIN TeamUser tu ON t.id = tu.team.id
     WHERE tu.user.id = :userId
     """)
-  long countUserJoinedTeam(@Param("userId") UUID userId);
+  long countUserJoinedTeams(@Param("userId") UUID userId);
 
   @Query(
       """
@@ -178,7 +180,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     WHERE tu.user.id = :userId
     AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     """)
-  long countUserJoinedTeamByName(@Param("userId") UUID userId, @Param("keyword") String keyword);
+  long countUserJoinedTeamsByName(@Param("userId") UUID userId, @Param("keyword") String keyword);
 
   @Query(
       """
@@ -188,5 +190,5 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     AND tu.role = 'OWNER'
     AND LOWER(t.name) LIKE CONCAT('%', :keyword, '%')
     """)
-  long countUserOwnedTeamByName(@Param("userId") UUID userId, @Param("keyword") String keyword);
+  long countUserOwnedTeamsByName(@Param("userId") UUID userId, @Param("keyword") String keyword);
 }

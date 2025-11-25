@@ -20,7 +20,7 @@ public class UserResponseDto {
 
   private String name;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+  @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate dateOfBirth;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)

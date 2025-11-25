@@ -14,6 +14,10 @@ public interface TeamMembershipInternalService {
 
   void validateInviteMemberPermission(UUID userId, UUID teamId, UUID inviteeId);
 
+  void validateUpdatePlanPermission(UUID userId, UUID teamId);
+
+  void validateUserBelongsToTeam(UUID userId, UUID teamId);
+
   TeamUser getMemberShip(UUID teamId, UUID userId);
 
   LocalDateTime getTeamListCursor(UUID userId, UUID lastTeamId, int listSize, int size);

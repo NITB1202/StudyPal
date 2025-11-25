@@ -9,7 +9,7 @@ public enum TeamMembershipErrorCode implements ErrorCode {
   USER_MEMBERSHIP_NOT_FOUND(
       HttpStatus.NOT_FOUND, "TEAM_MEM_001", "You are not a member of this team."),
   TARGET_MEMBERSHIP_NOT_FOUND(
-      HttpStatus.NOT_FOUND, "TEAM_MEM_002", "The specified member is not part of this team."),
+      HttpStatus.NOT_FOUND, "TEAM_MEM_002", "The user with id %s is not part of this team."),
   PERMISSION_UPDATE_TEAM_DENIED(
       HttpStatus.FORBIDDEN, "TEAM_MEM_003", "Only the owner can update the team."),
   PERMISSION_UPDATE_MEMBER_ROLE_DENIED(
@@ -39,8 +39,10 @@ public enum TeamMembershipErrorCode implements ErrorCode {
   CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "TEAM_MEM_013", "Failed to decode cursor: %s"),
   TEAM_OWNER_LIMIT_REACHED(
       HttpStatus.BAD_REQUEST,
-      "TEAM_MEM_013",
-      "The selected member already owns the maximum number of teams allowed.");
+      "TEAM_MEM_014",
+      "The selected member already owns the maximum number of teams allowed."),
+  PERMISSION_UPDATE_PLAN_DENIED(
+      HttpStatus.FORBIDDEN, "TEAM_MEM_015", "Only the owner or an admin can update team's plan.");
 
   private final HttpStatus httpStatus;
   private final String code;

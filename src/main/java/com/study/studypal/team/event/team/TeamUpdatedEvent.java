@@ -15,4 +15,4 @@ public class TeamUpdatedEvent {
   private boolean shouldEvictCache;
 }
 
-// Message: User01 updated the general information of team TEAM01. -> Linked: teamId
+// Message: User01 updated the general information of Team01. -> Linked: teamId

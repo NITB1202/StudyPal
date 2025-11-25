@@ -12,3 +12,5 @@ public class UserJoinedTeamEvent {
   private UUID teamId;
   private List<UUID> memberIds;
 }
+
+// Message: User01 joined Team01.

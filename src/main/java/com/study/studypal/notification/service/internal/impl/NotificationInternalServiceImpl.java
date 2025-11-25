@@ -33,6 +33,7 @@ public class NotificationInternalServiceImpl implements NotificationInternalServ
     Notification notification =
         Notification.builder()
             .user(user)
+            .imageUrl(request.getImageUrl())
             .title(request.getTitle())
             .content(request.getContent())
             .createdAt(LocalDateTime.now())

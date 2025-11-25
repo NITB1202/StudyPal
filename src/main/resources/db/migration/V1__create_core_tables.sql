@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS invitations (
     invitee_id UUID NOT NULL,
     team_id UUID NOT NULL,
     invited_at TIMESTAMP NOT NULL,
-    CONSTRAINT uq_invitations_team_invitee UNIQUE (team_id, invitee_id),
+    CONSTRAINT uq_invitations_teams_invitee UNIQUE (team_id, invitee_id),
     CONSTRAINT fk_invitations_users_inviter FOREIGN KEY (inviter_id)
         REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_invitations_users_invitee FOREIGN KEY (invitee_id)
@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS device_tokens (
 CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
+    image_url VARCHAR(255),
     title VARCHAR(255) NOT NULL,
     content VARCHAR(1000) NOT NULL,
     created_at TIMESTAMP NOT NULL,
@@ -92,67 +93,78 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS plans (
     id UUID PRIMARY KEY,
     creator_id UUID NOT NULL,
+    plan_code VARCHAR(20) NOT NULL,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(255),
-    start_date TIMESTAMP NOT NULL,
-    due_date TIMESTAMP NOT NULL,
-    priority VARCHAR(50) NOT NULL,
     progress FLOAT NOT NULL,
-    complete_date TIMESTAMP,
     is_deleted BOOLEAN NOT NULL,
     team_id UUID,
-    parent_plan_id UUID,
     CONSTRAINT fk_plans_users_creator FOREIGN KEY (creator_id)
         REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_plans_teams_team FOREIGN KEY (team_id)
-        REFERENCES teams(id) ON DELETE CASCADE,
-    CONSTRAINT fk_plans_parent FOREIGN KEY (parent_plan_id)
-        REFERENCES plans(id) ON DELETE CASCADE
+        REFERENCES teams(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS plan_comments (
+CREATE TABLE IF NOT EXISTS plan_histories (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL,
-    user_id UUID NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    parent_comment_id UUID,
-    CONSTRAINT fk_comments_plans_plan FOREIGN KEY (plan_id)
-        REFERENCES plans(id) ON DELETE CASCADE,
-    CONSTRAINT fk_comments_users_user FOREIGN KEY (user_id)
-        REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_comment_id)
-        REFERENCES plan_comments(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS plan_recurrence_rules (
-    id UUID PRIMARY KEY,
-    plan_id UUID NOT NULL UNIQUE,
-    week_days VARCHAR(100) NOT NULL,
-    recurrence_start_date DATE NOT NULL,
-    recurrence_end_date DATE NOT NULL,
-    is_deleted BOOLEAN NOT NULL,
-    CONSTRAINT fk_rules_plans_plan FOREIGN KEY (plan_id)
-        REFERENCES plans(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS plan_reminders (
-    id UUID PRIMARY KEY,
-    plan_id UUID NOT NULL,
-    remind_at TIMESTAMP NOT NULL,
-    CONSTRAINT fk_plan_reminders_plans_plan FOREIGN KEY (plan_id)
+    image_url VARCHAR(255),
+    message VARCHAR(500) NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    CONSTRAINT fk_plan_histories_plans_plan FOREIGN KEY (plan_id)
         REFERENCES plans(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
     id UUID PRIMARY KEY,
-    plan_id UUID NOT NULL,
+    plan_id UUID,
+    task_code VARCHAR(20) NOT NULL,
     content VARCHAR(255) NOT NULL,
     assignee_id UUID NOT NULL,
+    start_date TIMESTAMP NOT NULL,
     due_date TIMESTAMP NOT NULL,
+    priority VARCHAR(50) NOT NULL,
+    note VARCHAR(255),
     complete_date TIMESTAMP,
+    parent_task_id UUID,
     CONSTRAINT fk_tasks_plans_plan FOREIGN KEY (plan_id)
         REFERENCES plans(id) ON DELETE CASCADE,
     CONSTRAINT fk_tasks_users_assignee FOREIGN KEY (assignee_id)
+        REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tasks_parent_task FOREIGN KEY (parent_task_id)
+            REFERENCES tasks(id)
+);
+
+CREATE TABLE IF NOT EXISTS task_recurrence_rules (
+    id UUID PRIMARY KEY,
+    task_id UUID NOT NULL UNIQUE,
+    recurrence_start_date DATE NOT NULL,
+    recurrence_end_date DATE,
+    recurrence_type VARCHAR(20) NOT NULL,
+    week_days VARCHAR(100),
+    CONSTRAINT fk_rules_tasks_task FOREIGN KEY (task_id)
+        REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS task_reminders (
+    id UUID PRIMARY KEY,
+    task_id UUID NOT NULL,
+    remind_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_task_reminders_tasks_task FOREIGN KEY (task_id)
+        REFERENCES tasks(id) ON DELETE CASCADE,
+    CONSTRAINT uq_task_remind_at UNIQUE (task_id, remind_at)
+);
+
+CREATE TABLE IF NOT EXISTS user_task_counters (
+    id UUID NOT NULL PRIMARY KEY,
+    counter BIGINT NOT NULL,
+    CONSTRAINT fk_user_task_counters_users_user FOREIGN KEY (id)
         REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS team_task_counters (
+    id UUID NOT NULL PRIMARY KEY,
+    counter BIGINT NOT NULL,
+    CONSTRAINT fk_team_task_counters_teams_team FOREIGN KEY (id)
+        REFERENCES teams(id) ON DELETE CASCADE
 );

@@ -19,6 +19,6 @@ public class ListTeamResponseDto {
 
   private Long total;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   private LocalDateTime nextCursor;
 }

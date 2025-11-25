@@ -18,8 +18,10 @@ import lombok.Setter;
 public class NotificationResponseDto {
   private UUID id;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
+
+  private String imageUrl;
 
   private String title;
 

@@ -1,5 +1,7 @@
 package com.study.studypal.auth.security;
 
+import static com.study.studypal.common.util.Constants.DATE_PATTERN;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,8 +23,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType("application/json");
 
-    String timestamp =
-        LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+    String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN));
 
     String json =
         "{"

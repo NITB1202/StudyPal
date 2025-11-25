@@ -1,6 +1,5 @@
 package com.study.studypal.team.dto.membership.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.team.enums.TeamRole;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
@@ -23,6 +22,5 @@ public class UpdateMemberRoleRequestDto {
   private UUID memberId;
 
   @NotNull(message = "Role is required")
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private TeamRole role;
 }

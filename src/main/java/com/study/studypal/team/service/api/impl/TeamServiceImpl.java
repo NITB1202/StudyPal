@@ -1,6 +1,8 @@
 package com.study.studypal.team.service.api.impl;
 
-import static com.study.studypal.common.util.Constants.MAX_OWNED_TEAMS;
+import static com.study.studypal.team.constant.TeamConstant.MAX_OWNED_TEAMS;
+import static com.study.studypal.team.constant.TeamConstant.TEAM_AVATAR_FOLDER;
+import static com.study.studypal.team.constant.TeamConstant.TEAM_CODE_LENGTH;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -10,6 +12,7 @@ import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
+import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
@@ -62,11 +65,10 @@ public class TeamServiceImpl implements TeamService {
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CodeService codeService;
   private final FileService fileService;
+  private final TaskCounterService taskCounterService;
   private final ModelMapper modelMapper;
   private final ApplicationEventPublisher eventPublisher;
-
   @PersistenceContext private final EntityManager entityManager;
-  private static final String AVATAR_FOLDER = "teams";
 
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
@@ -83,7 +85,7 @@ public class TeamServiceImpl implements TeamService {
     User creator = entityManager.getReference(User.class, userId);
 
     while (true) {
-      String randomCode = codeService.generateTeamCode();
+      String randomCode = generateTeamCode();
 
       try {
         Team team =
@@ -99,6 +101,7 @@ public class TeamServiceImpl implements TeamService {
         teamRepository.save(team);
         teamMembershipService.createMembership(team.getId(), userId, TeamRole.OWNER);
         teamNotificationSettingService.createSettings(userId, team.getId());
+        taskCounterService.createTeamTaskCounter(team.getId());
 
         return modelMapper.map(team, TeamResponseDto.class);
       } catch (DataIntegrityViolationException e) {
@@ -162,62 +165,34 @@ public class TeamServiceImpl implements TeamService {
       value = CacheNames.USER_TEAMS,
       key = "@keys.of(#userId)",
       condition =
-          "#cursor == null && #size == 10 && #filter == T(com.study.studypal.team.enums.TeamFilter).JOINED")
-  public ListTeamResponseDto getTeams(
-      UUID userId, TeamFilter filter, LocalDateTime cursor, int size) {
-    Pageable pageable = PageRequest.of(0, size);
-
-    List<TeamSummaryResponseDto> teams =
-        switch (filter) {
-          case JOINED -> getUserJoinedTeams(userId, cursor, pageable);
-          case OWNED -> getUserOwnedTeams(userId, cursor, pageable);
-        };
-
-    long total =
-        switch (filter) {
-          case JOINED -> teamRepository.countUserJoinedTeam(userId);
-          case OWNED -> teamRepository.countUserOwnedTeams(userId);
-        };
-
-    LocalDateTime nextCursor = null;
-    if (!teams.isEmpty()) {
-      UUID lastTeamId = teams.get(teams.size() - 1).getId();
-      nextCursor = teamMembershipService.getTeamListCursor(userId, lastTeamId, teams.size(), size);
-    }
-
-    return ListTeamResponseDto.builder().teams(teams).total(total).nextCursor(nextCursor).build();
-  }
-
-  private List<TeamSummaryResponseDto> getUserJoinedTeams(
-      UUID userId, LocalDateTime cursor, Pageable pageable) {
-    return cursor == null
-        ? teamRepository.findUserJoinedTeams(userId, pageable)
-        : teamRepository.findUserJoinedTeamsWithCursor(userId, cursor, pageable);
-  }
-
-  private List<TeamSummaryResponseDto> getUserOwnedTeams(
-      UUID userId, LocalDateTime cursor, Pageable pageable) {
-    return cursor == null
-        ? teamRepository.findUserOwnedTeams(userId, pageable)
-        : teamRepository.findUserOwnedTeamsWithCursor(userId, cursor, pageable);
-  }
-
-  @Override
+          "#keyword == null && #cursor == null && #size == 10 && #filter == T(com.study.studypal.team.enums.TeamFilter).JOINED")
   public ListTeamResponseDto searchTeamsByName(
       UUID userId, TeamFilter filter, String keyword, LocalDateTime cursor, int size) {
-    String handledKeyword = keyword.toLowerCase().trim();
+    String handledKeyword = keyword != null ? keyword.toLowerCase().trim() : null;
     Pageable pageable = PageRequest.of(0, size);
 
     List<TeamSummaryResponseDto> teams =
         switch (filter) {
-          case JOINED -> searchUserJoinedTeamsByName(userId, handledKeyword, cursor, pageable);
-          case OWNED -> searchUserOwnedTeamsByName(userId, handledKeyword, cursor, pageable);
+          case JOINED ->
+              handledKeyword != null
+                  ? searchUserJoinedTeamsByName(userId, handledKeyword, cursor, pageable)
+                  : getUserJoinedTeams(userId, cursor, pageable);
+          case OWNED ->
+              handledKeyword != null
+                  ? searchUserOwnedTeamsByName(userId, handledKeyword, cursor, pageable)
+                  : getUserOwnedTeams(userId, cursor, pageable);
         };
 
     long total =
         switch (filter) {
-          case JOINED -> teamRepository.countUserJoinedTeamByName(userId, handledKeyword);
-          case OWNED -> teamRepository.countUserOwnedTeamByName(userId, handledKeyword);
+          case JOINED ->
+              handledKeyword != null
+                  ? teamRepository.countUserJoinedTeamsByName(userId, handledKeyword)
+                  : teamRepository.countUserJoinedTeams(userId);
+          case OWNED ->
+              handledKeyword != null
+                  ? teamRepository.countUserOwnedTeamsByName(userId, handledKeyword)
+                  : teamRepository.countUserOwnedTeams(userId);
         };
 
     LocalDateTime nextCursor = null;
@@ -243,6 +218,20 @@ public class TeamServiceImpl implements TeamService {
         ? teamRepository.searchUserOwnedTeamsByName(userId, handledKeyword, pageable)
         : teamRepository.searchUserOwnedTeamsByNameWithCursor(
             userId, handledKeyword, cursor, pageable);
+  }
+
+  private List<TeamSummaryResponseDto> getUserJoinedTeams(
+      UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.findUserJoinedTeams(userId, pageable)
+        : teamRepository.findUserJoinedTeamsWithCursor(userId, cursor, pageable);
+  }
+
+  private List<TeamSummaryResponseDto> getUserOwnedTeams(
+      UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? teamRepository.findUserOwnedTeams(userId, pageable)
+        : teamRepository.findUserOwnedTeamsWithCursor(userId, cursor, pageable);
   }
 
   @Override
@@ -289,9 +278,9 @@ public class TeamServiceImpl implements TeamService {
 
     teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
-    String teamCode = codeService.generateTeamCode();
+    String teamCode = generateTeamCode();
     while (teamRepository.existsByTeamCode(teamCode)) {
-      teamCode = codeService.generateTeamCode();
+      teamCode = generateTeamCode();
     }
 
     team.setTeamCode(teamCode);
@@ -337,7 +326,7 @@ public class TeamServiceImpl implements TeamService {
 
     try {
       String avatarUrl =
-          fileService.uploadFile(AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
+          fileService.uploadFile(TEAM_AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
       Team team =
           teamRepository
               .findById(teamId)
@@ -365,5 +354,9 @@ public class TeamServiceImpl implements TeamService {
     } catch (IOException e) {
       throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
     }
+  }
+
+  private String generateTeamCode() {
+    return codeService.generateRandomCode(TEAM_CODE_LENGTH);
   }
 }

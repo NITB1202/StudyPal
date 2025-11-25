@@ -1,5 +1,7 @@
 package com.study.studypal.user.service.api.impl;
 
+import static com.study.studypal.user.constant.UserConstant.USER_AVATAR_FOLDER;
+
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -35,7 +37,6 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final ModelMapper modelMapper;
   private final FileService fileService;
-  private static final String AVATAR_FOLDER = "users";
 
   @Override
   @Cacheable(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
@@ -95,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
     try {
       String avatarUrl =
-          fileService.uploadFile(AVATAR_FOLDER, userId.toString(), file.getBytes()).getUrl();
+          fileService.uploadFile(USER_AVATAR_FOLDER, userId.toString(), file.getBytes()).getUrl();
       User user =
           userRepository
               .findById(userId)

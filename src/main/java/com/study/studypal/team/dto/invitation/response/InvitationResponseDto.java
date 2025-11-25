@@ -27,6 +27,6 @@ public class InvitationResponseDto {
 
   private String teamName;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime invitedAt;
 }
