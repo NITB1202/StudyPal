@@ -2,6 +2,7 @@ package com.study.studypal.plan.dto.task.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.plan.enums.Priority;
+import com.study.studypal.plan.enums.TaskType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -29,9 +30,9 @@ public class TaskSummaryResponseDto {
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dueDate;
 
-  private Boolean isCopy;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private TaskType taskType;
 
-  private Boolean isTeamTask;
-
-  private Boolean isCompleted;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime completeDate;
 }

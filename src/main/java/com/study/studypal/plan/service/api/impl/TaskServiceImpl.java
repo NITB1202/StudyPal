@@ -11,6 +11,7 @@ import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
+import com.study.studypal.plan.enums.TaskType;
 import com.study.studypal.plan.exception.TaskErrorCode;
 import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.api.TaskService;
@@ -106,12 +107,16 @@ public class TaskServiceImpl implements TaskService {
         .map(
             t -> {
               TaskSummaryResponseDto summary = modelMapper.map(t, TaskSummaryResponseDto.class);
-              summary.setIsCompleted(t.getCompleteDate() != null);
-              summary.setIsCopy(t.getParentTask() != null);
-              summary.setIsTeamTask(t.getPlan() != null);
+              summary.setTaskType(getTaskType(t));
               return summary;
             })
         .toList();
+  }
+
+  private TaskType getTaskType(Task task) {
+    if (task.getPlan() != null) return TaskType.TEAM;
+    if (task.getParentTask() != null) return TaskType.CLONED;
+    return TaskType.PERSONAL;
   }
 
   @Override
