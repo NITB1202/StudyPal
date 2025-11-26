@@ -39,6 +39,12 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
   @Override
   public ActionResponseDto createRecurrenceRule(
       UUID userId, UUID taskId, CreateTaskRecurrenceRuleRequestDto request) {
+    if (request.getType().equals(RecurrenceType.NONE))
+      return ActionResponseDto.builder()
+          .success(false)
+          .message("Recurrence rule can not be created.")
+          .build();
+
     Task task = taskService.getById(taskId);
 
     taskService.validatePersonalTask(task);
