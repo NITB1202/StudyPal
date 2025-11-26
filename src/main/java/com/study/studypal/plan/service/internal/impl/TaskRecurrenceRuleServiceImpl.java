@@ -39,6 +39,12 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
   @Override
   public ActionResponseDto createRecurrenceRule(
       UUID userId, UUID taskId, CreateTaskRecurrenceRuleRequestDto request) {
+    if (request.getType().equals(RecurrenceType.NONE))
+      return ActionResponseDto.builder()
+          .success(false)
+          .message("Recurrence was not created because the type is NONE.")
+          .build();
+
     Task task = taskService.getById(taskId);
 
     taskService.validatePersonalTask(task);
@@ -93,7 +99,10 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
     taskService.validatePersonalTask(task);
     taskService.validateViewTaskPermission(userId, task);
 
-    Optional<TaskRecurrenceRule> rule = ruleRepository.findByTaskId(taskId);
+    Task rootTask = task.getParentTask();
+    UUID rootTaskId = rootTask != null ? rootTask.getId() : taskId;
+
+    Optional<TaskRecurrenceRule> rule = ruleRepository.findByTaskId(rootTaskId);
 
     if (rule.isEmpty())
       return TaskRecurrenceRuleResponseDto.builder().type(RecurrenceType.NONE).build();
