@@ -13,6 +13,7 @@ public enum TaskErrorCode implements ErrorCode {
       HttpStatus.FORBIDDEN, "TASK_003", "You are not the owner of this task."),
   PERSONAL_TASK_REQUIRED(
       HttpStatus.BAD_REQUEST, "TASK_004", "This operation is only allowed for personal tasks."),
+  BLANK_TASK(HttpStatus.BAD_REQUEST, "TASK_005", "The task content can't be left blank."),
   ;
 
   private final HttpStatus httpStatus;

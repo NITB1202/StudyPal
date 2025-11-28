@@ -1,12 +1,15 @@
 package com.study.studypal.plan.controller;
 
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
+import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
 import com.study.studypal.plan.service.api.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,7 +20,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,5 +72,27 @@ public class TaskController {
       @RequestParam(required = false) Integer month,
       @RequestParam(required = false) Integer year) {
     return ResponseEntity.ok(taskService.getDatesWithTaskDueDateInMonth(userId, month, year));
+  }
+
+  @PatchMapping("/{taskId}")
+  @Operation(summary = "Update a personal task.")
+  @ApiResponse(responseCode = "200", description = "Update successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<UpdateTaskResponseDto> updateTask(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID taskId,
+      @Valid @RequestBody UpdateTaskRequestDto request) {
+    return ResponseEntity.ok(taskService.updateTask(userId, taskId, request));
+  }
+
+  @DeleteMapping("/{taskId}")
+  @Operation(summary = "Delete a personal task")
+  @ApiResponse(responseCode = "200", description = "Delete successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> deleteTask(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
+    return ResponseEntity.ok(taskService.deleteTask(userId, taskId));
   }
 }

@@ -3,6 +3,7 @@ package com.study.studypal.plan.job;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -15,11 +16,13 @@ import org.springframework.stereotype.Component;
 public class TaskReminderJob implements Job {
   private final TaskInternalService taskService;
   private final TaskNotificationService notificationService;
+  private final TaskReminderInternalService reminderService;
 
   @Override
   public void execute(JobExecutionContext context) {
     JobDataMap dataMap = context.getMergedJobDataMap();
 
+    UUID reminderId = UUID.fromString(dataMap.getString("reminderId"));
     UUID taskId = UUID.fromString(dataMap.getString("taskId"));
     Task task = taskService.getById(taskId);
 
@@ -27,5 +30,6 @@ public class TaskReminderJob implements Job {
     if (task.getCompleteDate() != null) return;
 
     notificationService.publishTaskRemindedNotification(task);
+    reminderService.deleteUsedReminder(reminderId);
   }
 }

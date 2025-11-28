@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateTaskResponseDto {
+public class UpdateTaskResponseDto {
   private UUID id;
 
   private String content;
