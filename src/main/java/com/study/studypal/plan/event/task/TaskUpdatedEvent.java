@@ -1,4 +1,4 @@
-package com.study.studypal.plan.event;
+package com.study.studypal.plan.event.task;
 
 import java.util.UUID;
 import lombok.Builder;

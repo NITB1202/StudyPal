@@ -32,6 +32,8 @@ public interface TaskService {
   UpdateTaskResponseDto updateTaskForPlan(
       UUID userId, UUID taskId, UpdateTaskForPlanRequestDto request);
 
+  ActionResponseDto markTaskAsCompleted(UUID userId, UUID taskId);
+
   ActionResponseDto deleteTask(UUID userId, UUID taskId);
 
   ActionResponseDto deleteTaskForPlan(UUID userId, UUID taskId);

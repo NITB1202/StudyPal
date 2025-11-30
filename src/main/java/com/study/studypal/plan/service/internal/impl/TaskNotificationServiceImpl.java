@@ -2,9 +2,10 @@ package com.study.studypal.plan.service.internal.impl;
 
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
-import com.study.studypal.plan.event.TaskAssignedEvent;
-import com.study.studypal.plan.event.TaskRemindedEvent;
-import com.study.studypal.plan.event.TaskUpdatedEvent;
+import com.study.studypal.plan.event.plan.PlanCompletedEvent;
+import com.study.studypal.plan.event.task.TaskAssignedEvent;
+import com.study.studypal.plan.event.task.TaskRemindedEvent;
+import com.study.studypal.plan.event.task.TaskUpdatedEvent;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.team.entity.Team;
 import jakarta.transaction.Transactional;
@@ -65,4 +66,17 @@ public class TaskNotificationServiceImpl implements TaskNotificationService {
 
   @Override
   public void publishTaskDeletedNotification(UUID userId, Task task) {}
+
+  @Override
+  public void publishPlanCompletedNotification(Plan plan) {
+    PlanCompletedEvent event =
+        PlanCompletedEvent.builder()
+            .creatorId(plan.getCreator().getId())
+            .planId(plan.getId())
+            .planCode(plan.getPlanCode())
+            .teamAvatarUrl(plan.getTeam().getAvatarUrl())
+            .build();
+
+    eventPublisher.publishEvent(event);
+  }
 }

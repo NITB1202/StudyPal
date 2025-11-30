@@ -206,6 +206,35 @@ public class TaskServiceImpl implements TaskService {
   }
 
   @Override
+  public ActionResponseDto markTaskAsCompleted(UUID userId, UUID taskId) {
+    Task task =
+        taskRepository
+            .findByIdForUpdate(taskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    LocalDateTime now = LocalDateTime.now();
+
+    if (task.getCompleteDate() != null)
+      throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
+
+    if (task.getDueDate().isBefore(now)) throw new BaseException(TaskErrorCode.TASK_OVERDUE);
+
+    if (!task.getAssignee().getId().equals(userId))
+      throw new BaseException(TaskErrorCode.TASK_ASSIGNEE_ONLY);
+
+    task.setCompleteDate(now);
+    taskRepository.save(task);
+
+    if (task.getPlan() != null) {
+      UUID planId = task.getPlan().getId();
+      planService.updatePlanProgress(planId);
+      historyService.logCompleteTask(userId, planId, task.getTaskCode());
+    }
+
+    return ActionResponseDto.builder().success(true).message("Mark successfully.").build();
+  }
+
+  @Override
   public ActionResponseDto deleteTask(UUID userId, UUID taskId) {
     Task task =
         taskRepository

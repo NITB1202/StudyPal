@@ -15,7 +15,13 @@ public enum TaskErrorCode implements ErrorCode {
       HttpStatus.BAD_REQUEST, "TASK_004", "This operation is only allowed for personal tasks."),
   BLANK_TASK(HttpStatus.BAD_REQUEST, "TASK_005", "The task content can't be left blank."),
   TEAM_TASK_REQUIRED(
-      HttpStatus.FORBIDDEN, "TASK_006", "This operation is only allowed for team tasks.");
+      HttpStatus.FORBIDDEN, "TASK_006", "This operation is only allowed for team tasks."),
+  TASK_ALREADY_COMPLETED(HttpStatus.CONFLICT, "TASK_007", "Task is already completed."),
+  TASK_OVERDUE(HttpStatus.BAD_REQUEST, "TASK_008", "Task is overdue."),
+  TASK_ASSIGNEE_ONLY(
+      HttpStatus.FORBIDDEN,
+      "TASK_009",
+      "Only the task assignee is allowed to perform this action.");
 
   private final HttpStatus httpStatus;
   private final String code;

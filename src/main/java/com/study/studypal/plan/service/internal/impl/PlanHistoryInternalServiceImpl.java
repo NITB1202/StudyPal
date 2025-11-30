@@ -79,4 +79,22 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
 
     planHistoryRepository.save(planHistory);
   }
+
+  @Override
+  public void logCompleteTask(UUID userId, UUID planId, String taskCode) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
+    Plan plan = entityManager.getReference(Plan.class, planId);
+
+    String message = String.format("%s completed task [%s].", user.getName(), taskCode);
+
+    PlanHistory planHistory =
+        PlanHistory.builder()
+            .plan(plan)
+            .imageUrl(user.getAvatarUrl())
+            .message(message)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    planHistoryRepository.save(planHistory);
+  }
 }

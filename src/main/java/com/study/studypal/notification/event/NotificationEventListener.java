@@ -5,9 +5,10 @@ import com.study.studypal.notification.enums.LinkedSubject;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
-import com.study.studypal.plan.event.TaskAssignedEvent;
-import com.study.studypal.plan.event.TaskRemindedEvent;
-import com.study.studypal.plan.event.TaskUpdatedEvent;
+import com.study.studypal.plan.event.plan.PlanCompletedEvent;
+import com.study.studypal.plan.event.task.TaskAssignedEvent;
+import com.study.studypal.plan.event.task.TaskRemindedEvent;
+import com.study.studypal.plan.event.task.TaskUpdatedEvent;
 import com.study.studypal.team.event.invitation.InvitationCreatedEvent;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
@@ -240,6 +241,25 @@ public class NotificationEventListener {
             .content(content)
             .subject(LinkedSubject.TASK)
             .subjectId(event.getTaskId())
+            .build();
+
+    processNotification(dto);
+  }
+
+  @Async
+  @EventListener
+  public void handlePlanCompletedEvent(PlanCompletedEvent event) {
+    String title = "Plan completed";
+    String content = String.format("Plan [%s] is completed.", event.getPlanCode());
+
+    CreateNotificationRequest dto =
+        CreateNotificationRequest.builder()
+            .userId(event.getCreatorId())
+            .imageUrl(event.getTeamAvatarUrl())
+            .title(title)
+            .content(content)
+            .subject(LinkedSubject.PLAN)
+            .subjectId(event.getPlanId())
             .build();
 
     processNotification(dto);

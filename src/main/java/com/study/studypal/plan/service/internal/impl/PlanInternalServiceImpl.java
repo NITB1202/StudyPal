@@ -6,6 +6,7 @@ import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
+import com.study.studypal.plan.service.internal.TaskNotificationService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class PlanInternalServiceImpl implements PlanInternalService {
   private final PlanRepository planRepository;
   private final TaskInternalService taskService;
+  private final TaskNotificationService notificationService;
 
   @Override
   public UUID getTeamIdById(UUID id) {
@@ -41,5 +43,7 @@ public class PlanInternalServiceImpl implements PlanInternalService {
 
     plan.setProgress(roundedProgress);
     planRepository.save(plan);
+
+    if (progress == 1) notificationService.publishPlanCompletedNotification(plan);
   }
 }

@@ -97,4 +97,14 @@ public class TaskController {
       @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
     return ResponseEntity.ok(taskService.deleteTask(userId, taskId));
   }
+
+  @PatchMapping("/{taskId}/complete")
+  @Operation(summary = "Mark a task as completed.")
+  @ApiResponse(responseCode = "200", description = "Mark successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> markTaskAsCompleted(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
+    return ResponseEntity.ok(taskService.markTaskAsCompleted(userId, taskId));
+  }
 }

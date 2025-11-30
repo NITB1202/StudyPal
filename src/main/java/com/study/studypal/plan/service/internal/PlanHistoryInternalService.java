@@ -8,4 +8,6 @@ public interface PlanHistoryInternalService {
   void logAssignTask(UUID assignerId, UUID assigneeId, UUID planId, String taskCode);
 
   void logUpdateTask(UUID userId, UUID planId, String taskCode);
+
+  void logCompleteTask(UUID userId, UUID planId, String taskCode);
 }
