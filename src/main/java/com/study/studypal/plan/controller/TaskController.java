@@ -94,8 +94,10 @@ public class TaskController {
   @UnauthorizedApiResponse
   @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> deleteTask(
-      @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
-    return ResponseEntity.ok(taskService.deleteTask(userId, taskId));
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID taskId,
+      @RequestParam(required = false) ApplyScope applyScope) {
+    return ResponseEntity.ok(taskService.deleteTask(userId, taskId, applyScope));
   }
 
   @PatchMapping("/{taskId}/complete")

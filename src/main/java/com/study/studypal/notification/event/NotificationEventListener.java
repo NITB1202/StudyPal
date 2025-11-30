@@ -7,6 +7,7 @@ import com.study.studypal.notification.service.internal.NotificationInternalServ
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
+import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
 import com.study.studypal.plan.event.task.TaskUpdatedEvent;
 import com.study.studypal.team.event.invitation.InvitationCreatedEvent;
@@ -260,6 +261,29 @@ public class NotificationEventListener {
             .content(content)
             .subject(LinkedSubject.PLAN)
             .subjectId(event.getPlanId())
+            .build();
+
+    processNotification(dto);
+  }
+
+  @Async
+  @EventListener
+  public void handleTaskDeletedEvent(TaskDeletedEvent event) {
+    if (event.getUserId().equals(event.getAssigneeId())) return;
+
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+
+    String title = "Task deleted";
+    String content = String.format("%s deleted task [%s].", user.getName(), event.getTaskCode());
+
+    CreateNotificationRequest dto =
+        CreateNotificationRequest.builder()
+            .userId(event.getUserId())
+            .imageUrl(user.getAvatarUrl())
+            .title(title)
+            .content(content)
+            .subject(LinkedSubject.TASK)
+            .subjectId(event.getTaskId())
             .build();
 
     processNotification(dto);

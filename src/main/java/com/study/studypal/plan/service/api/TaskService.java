@@ -34,7 +34,7 @@ public interface TaskService {
 
   ActionResponseDto markTaskAsCompleted(UUID userId, UUID taskId);
 
-  ActionResponseDto deleteTask(UUID userId, UUID taskId);
+  ActionResponseDto deleteTask(UUID userId, UUID taskId, ApplyScope applyScope);
 
   ActionResponseDto deleteTaskForPlan(UUID userId, UUID taskId);
 }

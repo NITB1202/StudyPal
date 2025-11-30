@@ -10,4 +10,6 @@ public interface PlanHistoryInternalService {
   void logUpdateTask(UUID userId, UUID planId, String taskCode);
 
   void logCompleteTask(UUID userId, UUID planId, String taskCode);
+
+  void logDeleteTask(UUID userId, UUID planId, String taskCode);
 }

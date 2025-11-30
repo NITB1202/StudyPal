@@ -26,71 +26,48 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
   @Override
   public void logCreatePlan(UUID userId, UUID planId) {
     UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    Plan plan = entityManager.getReference(Plan.class, planId);
-
     String message = String.format("%s created the plan.", user.getName());
-
-    PlanHistory planHistory =
-        PlanHistory.builder()
-            .plan(plan)
-            .imageUrl(user.getAvatarUrl())
-            .message(message)
-            .timestamp(LocalDateTime.now())
-            .build();
-
-    planHistoryRepository.save(planHistory);
+    logMessage(planId, message, user.getAvatarUrl());
   }
 
   @Override
   public void logAssignTask(UUID assignerId, UUID assigneeId, UUID planId, String taskCode) {
     UserSummaryProfile assigner = userService.getUserSummaryProfile(assignerId);
     UserSummaryProfile assignee = userService.getUserSummaryProfile(assigneeId);
-    Plan plan = entityManager.getReference(Plan.class, planId);
-
     String message =
         String.format(
             "%s assigned task [%s] to %s.", assigner.getName(), taskCode, assignee.getName());
-
-    PlanHistory planHistory =
-        PlanHistory.builder()
-            .plan(plan)
-            .imageUrl(assigner.getAvatarUrl())
-            .message(message)
-            .timestamp(LocalDateTime.now())
-            .build();
-
-    planHistoryRepository.save(planHistory);
+    logMessage(planId, message, assigner.getAvatarUrl());
   }
 
   @Override
   public void logUpdateTask(UUID userId, UUID planId, String taskCode) {
     UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    Plan plan = entityManager.getReference(Plan.class, planId);
-
     String message = String.format("%s updated task [%s].", user.getName(), taskCode);
-
-    PlanHistory planHistory =
-        PlanHistory.builder()
-            .plan(plan)
-            .imageUrl(user.getAvatarUrl())
-            .message(message)
-            .timestamp(LocalDateTime.now())
-            .build();
-
-    planHistoryRepository.save(planHistory);
+    logMessage(planId, message, user.getAvatarUrl());
   }
 
   @Override
   public void logCompleteTask(UUID userId, UUID planId, String taskCode) {
     UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    Plan plan = entityManager.getReference(Plan.class, planId);
-
     String message = String.format("%s completed task [%s].", user.getName(), taskCode);
+    logMessage(planId, message, user.getAvatarUrl());
+  }
+
+  @Override
+  public void logDeleteTask(UUID userId, UUID planId, String taskCode) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
+    String message = String.format("%s deleted task [%s].", user.getName(), taskCode);
+    logMessage(planId, message, user.getAvatarUrl());
+  }
+
+  private void logMessage(UUID planId, String message, String imageUrl) {
+    Plan plan = entityManager.getReference(Plan.class, planId);
 
     PlanHistory planHistory =
         PlanHistory.builder()
             .plan(plan)
-            .imageUrl(user.getAvatarUrl())
+            .imageUrl(imageUrl)
             .message(message)
             .timestamp(LocalDateTime.now())
             .build();

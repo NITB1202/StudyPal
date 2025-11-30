@@ -1,0 +1,16 @@
+package com.study.studypal.plan.event.task;
+
+import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class TaskDeletedEvent {
+  private UUID userId;
+  private UUID assigneeId;
+  private UUID taskId;
+  private String taskCode;
+}
+
+// Message: User01 deleted task [TSK-00001]. -> Linked: taskId

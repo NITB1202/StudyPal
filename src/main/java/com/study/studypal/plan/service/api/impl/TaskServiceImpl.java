@@ -19,13 +19,13 @@ import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.enums.ApplyScope;
 import com.study.studypal.plan.enums.TaskType;
 import com.study.studypal.plan.exception.TaskErrorCode;
-import com.study.studypal.plan.exception.TaskRecurrenceRuleErrorCode;
 import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.api.TaskService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
 import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskRecurrenceRuleInternalService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -55,6 +55,7 @@ public class TaskServiceImpl implements TaskService {
   private final TaskInternalService internalService;
   private final PlanHistoryInternalService historyService;
   private final TaskReminderInternalService reminderService;
+  private final TaskRecurrenceRuleInternalService ruleService;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
@@ -156,8 +157,8 @@ public class TaskServiceImpl implements TaskService {
     UpdateTaskInfo updateTaskInfo = modelMapper.map(request, UpdateTaskInfo.class);
     validateUpdateTaskRequest(task, updateTaskInfo);
 
-    if (task.getParentTask() == null) updatePersonalTask(task, request);
-    else updateClonedTask(applyScope, task, request);
+    if (ruleService.isRootOrClonedTask(task)) updateClonedTask(applyScope, task, request);
+    else updatePersonalTask(task, request);
 
     return modelMapper.map(task, UpdateTaskResponseDto.class);
   }
@@ -234,16 +235,18 @@ public class TaskServiceImpl implements TaskService {
   }
 
   @Override
-  public ActionResponseDto deleteTask(UUID userId, UUID taskId) {
+  public ActionResponseDto deleteTask(UUID userId, UUID taskId, ApplyScope applyScope) {
     Task task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
+    internalService.validatePersonalTask(task);
     internalService.validateTaskOwnership(userId, task);
-    reminderService.deleteAllRemindersForTask(taskId);
 
-    taskRepository.delete(task);
+    if (ruleService.isRootOrClonedTask(task)) deleteClonedTask(task, applyScope);
+    else deletePersonalTask(task);
+
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
@@ -251,7 +254,7 @@ public class TaskServiceImpl implements TaskService {
   public ActionResponseDto deleteTaskForPlan(UUID userId, UUID taskId) {
     Task task =
         taskRepository
-            .findById(taskId)
+            .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
     internalService.validateTeamTask(task);
@@ -261,8 +264,11 @@ public class TaskServiceImpl implements TaskService {
 
     reminderService.deleteAllRemindersForTask(taskId);
     notificationService.publishTaskDeletedNotification(userId, task);
+    historyService.logDeleteTask(userId, taskId, task.getTaskCode());
 
-    taskRepository.delete(task);
+    task.setIsDeleted(true);
+    taskRepository.save(task);
+
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
@@ -278,7 +284,7 @@ public class TaskServiceImpl implements TaskService {
 
   private TaskType getTaskType(Task task) {
     if (task.getPlan() != null) return TaskType.TEAM;
-    if (task.getParentTask() != null) return TaskType.CLONED;
+    if (ruleService.isRootOrClonedTask(task)) return TaskType.CLONED;
     return TaskType.PERSONAL;
   }
 
@@ -320,8 +326,7 @@ public class TaskServiceImpl implements TaskService {
     LocalDateTime newDueDate =
         request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
 
-    if (!newStartDate.toLocalDate().equals(newDueDate.toLocalDate()))
-      throw new BaseException(TaskRecurrenceRuleErrorCode.RECURRING_TASK_DURATION_INVALID);
+    ruleService.validateClonedTaskDuration(newStartDate, newDueDate);
 
     List<Task> tasksToUpdate =
         applyScope.equals(ApplyScope.CURRENT_ONLY)
@@ -343,6 +348,26 @@ public class TaskServiceImpl implements TaskService {
 
       taskToUpdate.setStartDate(updatedStartDate);
       taskToUpdate.setDueDate(updatedDueDate);
+    }
+
+    taskRepository.saveAll(tasksToUpdate);
+  }
+
+  private void deletePersonalTask(Task task) {
+    reminderService.deleteAllRemindersForTask(task.getId());
+    task.setIsDeleted(true);
+    taskRepository.save(task);
+  }
+
+  private void deleteClonedTask(Task task, ApplyScope applyScope) {
+    List<Task> tasksToUpdate =
+        applyScope.equals(ApplyScope.CURRENT_ONLY)
+            ? List.of(task)
+            : findAllActiveTasksIncludingOriginal(task);
+
+    for (Task taskToUpdate : tasksToUpdate) {
+      reminderService.deleteAllRemindersForTask(taskToUpdate.getId());
+      taskToUpdate.setIsDeleted(true);
     }
 
     taskRepository.saveAll(tasksToUpdate);
