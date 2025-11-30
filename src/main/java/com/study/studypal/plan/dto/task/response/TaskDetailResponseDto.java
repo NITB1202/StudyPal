@@ -12,6 +12,8 @@ import lombok.Setter;
 public class TaskDetailResponseDto {
   private UUID id;
 
+  private Boolean isDeleted;
+
   private String taskCode;
 
   private String content;

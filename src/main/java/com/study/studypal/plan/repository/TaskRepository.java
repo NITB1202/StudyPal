@@ -29,6 +29,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     WHERE t.assignee.id = :userId
       AND t.startDate <= :endOfDay
       AND t.dueDate >= :startOfDay
+      AND t.isDeleted = false
     ORDER BY t.dueDate ASC,
              CASE t.priority
                  WHEN 'HIGH' THEN 1
@@ -48,6 +49,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         WHERE t.assignee.id = :userId
           AND MONTH(t.dueDate) = :month
           AND YEAR(t.dueDate) = :year
+          AND t.isDeleted = false
     """)
   List<LocalDateTime> findTaskDueDatesByUserIdInMonth(
       @Param("userId") UUID userId, @Param("month") Integer month, @Param("year") Integer year);

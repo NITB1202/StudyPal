@@ -17,11 +17,12 @@ public enum TaskErrorCode implements ErrorCode {
   TEAM_TASK_REQUIRED(
       HttpStatus.FORBIDDEN, "TASK_006", "This operation is only allowed for team tasks."),
   TASK_ALREADY_COMPLETED(HttpStatus.CONFLICT, "TASK_007", "Task is already completed."),
-  TASK_OVERDUE(HttpStatus.BAD_REQUEST, "TASK_008", "Task is overdue."),
   TASK_ASSIGNEE_ONLY(
       HttpStatus.FORBIDDEN,
-      "TASK_009",
-      "Only the task assignee is allowed to perform this action.");
+      "TASK_008",
+      "Only the task assignee is allowed to perform this action."),
+  TASK_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "TASK_009", "Task is already deleted."),
+  ;
 
   private final HttpStatus httpStatus;
   private final String code;

@@ -44,6 +44,6 @@ public class PlanInternalServiceImpl implements PlanInternalService {
     plan.setProgress(roundedProgress);
     planRepository.save(plan);
 
-    if (progress == 1) notificationService.publishPlanCompletedNotification(plan);
+    if (roundedProgress >= 1.0f) notificationService.publishPlanCompletedNotification(plan);
   }
 }

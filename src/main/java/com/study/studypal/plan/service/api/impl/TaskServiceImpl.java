@@ -212,17 +212,16 @@ public class TaskServiceImpl implements TaskService {
             .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-    LocalDateTime now = LocalDateTime.now();
+    if (Boolean.TRUE.equals(task.getIsDeleted()))
+      throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
 
     if (task.getCompleteDate() != null)
       throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
 
-    if (task.getDueDate().isBefore(now)) throw new BaseException(TaskErrorCode.TASK_OVERDUE);
-
     if (!task.getAssignee().getId().equals(userId))
       throw new BaseException(TaskErrorCode.TASK_ASSIGNEE_ONLY);
 
-    task.setCompleteDate(now);
+    task.setCompleteDate(LocalDateTime.now());
     taskRepository.save(task);
 
     if (task.getPlan() != null) {
