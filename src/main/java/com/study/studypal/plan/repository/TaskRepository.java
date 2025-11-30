@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-  List<Task> findAllByPlanIdOrderByDueDateAsc(UUID planId);
+  List<Task> findAllByPlanIdAndIsDeletedOrderByDueDateAsc(UUID planId, boolean isDeleted);
 
   List<Task> findAllByPlanId(UUID planId);
 

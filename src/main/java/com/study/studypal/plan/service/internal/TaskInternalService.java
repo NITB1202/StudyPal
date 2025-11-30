@@ -20,7 +20,7 @@ public interface TaskInternalService {
 
   Task getById(UUID id);
 
-  List<TaskResponseDto> getAll(UUID planId);
+  List<TaskResponseDto> getAll(UUID planId, boolean isDeleted);
 
   int getTotalTasksCount(UUID planId);
 

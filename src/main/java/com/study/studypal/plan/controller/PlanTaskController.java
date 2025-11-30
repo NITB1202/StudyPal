@@ -8,7 +8,6 @@ import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
-import com.study.studypal.plan.enums.ApplyScope;
 import com.study.studypal.plan.service.api.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -62,9 +60,7 @@ public class PlanTaskController {
   @UnauthorizedApiResponse
   @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> deleteTaskForPlan(
-      @AuthenticationPrincipal UUID userId,
-      @PathVariable UUID taskId,
-      @RequestParam(required = false) ApplyScope applyScope) {
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
     return ResponseEntity.ok(taskService.deleteTaskForPlan(userId, taskId));
   }
 }

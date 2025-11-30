@@ -146,8 +146,9 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
-  public List<TaskResponseDto> getAll(UUID planId) {
-    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDueDateAsc(planId);
+  public List<TaskResponseDto> getAll(UUID planId, boolean isDeleted) {
+    List<Task> tasks =
+        taskRepository.findAllByPlanIdAndIsDeletedOrderByDueDateAsc(planId, isDeleted);
     List<TaskResponseDto> responseDtoList = new ArrayList<>();
 
     for (Task task : tasks) {

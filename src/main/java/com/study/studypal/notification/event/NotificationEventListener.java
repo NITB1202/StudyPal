@@ -278,7 +278,7 @@ public class NotificationEventListener {
 
     CreateNotificationRequest dto =
         CreateNotificationRequest.builder()
-            .userId(event.getUserId())
+            .userId(event.getAssigneeId())
             .imageUrl(user.getAvatarUrl())
             .title(title)
             .content(content)

@@ -264,7 +264,7 @@ public class TaskServiceImpl implements TaskService {
 
     reminderService.deleteAllRemindersForTask(taskId);
     notificationService.publishTaskDeletedNotification(userId, task);
-    historyService.logDeleteTask(userId, taskId, task.getTaskCode());
+    historyService.logDeleteTask(userId, task.getPlan().getId(), task.getTaskCode());
 
     task.setIsDeleted(true);
     taskRepository.save(task);
