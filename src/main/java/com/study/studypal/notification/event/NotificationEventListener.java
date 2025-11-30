@@ -7,6 +7,7 @@ import com.study.studypal.notification.service.internal.NotificationInternalServ
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.plan.event.TaskAssignedEvent;
 import com.study.studypal.plan.event.TaskRemindedEvent;
+import com.study.studypal.plan.event.TaskUpdatedEvent;
 import com.study.studypal.team.event.invitation.InvitationCreatedEvent;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
@@ -17,7 +18,6 @@ import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.service.internal.UserInternalService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -198,7 +198,7 @@ public class NotificationEventListener {
     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-    String imageUrl = Optional.ofNullable(teamId).map(teamService::getTeamAvatarUrl).orElse(null);
+    String imageUrl = teamId != null ? teamService.getTeamAvatarUrl(teamId) : null;
     String title = isOverDueTask ? "Expired task" : "Task reminded";
     String content =
         isOverDueTask
@@ -213,6 +213,29 @@ public class NotificationEventListener {
         CreateNotificationRequest.builder()
             .userId(userId)
             .imageUrl(imageUrl)
+            .title(title)
+            .content(content)
+            .subject(LinkedSubject.TASK)
+            .subjectId(event.getTaskId())
+            .build();
+
+    processNotification(dto);
+  }
+
+  @Async
+  @EventListener
+  public void handleTaskUpdatedEvent(TaskUpdatedEvent event) {
+    if (event.getUserId().equals(event.getAssigneeId())) return;
+
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+
+    String title = "Task updated";
+    String content = String.format("%s updated task [%s].", user.getName(), event.getTaskCode());
+
+    CreateNotificationRequest dto =
+        CreateNotificationRequest.builder()
+            .userId(event.getAssigneeId())
+            .imageUrl(user.getAvatarUrl())
             .title(title)
             .content(content)
             .subject(LinkedSubject.TASK)

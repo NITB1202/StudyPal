@@ -4,8 +4,10 @@ import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.event.TaskAssignedEvent;
 import com.study.studypal.plan.event.TaskRemindedEvent;
+import com.study.studypal.plan.event.TaskUpdatedEvent;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.team.entity.Team;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TaskNotificationServiceImpl implements TaskNotificationService {
   private final ApplicationEventPublisher eventPublisher;
@@ -46,4 +49,20 @@ public class TaskNotificationServiceImpl implements TaskNotificationService {
 
     eventPublisher.publishEvent(event);
   }
+
+  @Override
+  public void publishTaskUpdatedNotification(UUID userId, Task task) {
+    TaskUpdatedEvent event =
+        TaskUpdatedEvent.builder()
+            .userId(userId)
+            .assigneeId(task.getAssignee().getId())
+            .taskId(task.getId())
+            .taskCode(task.getTaskCode())
+            .build();
+
+    eventPublisher.publishEvent(event);
+  }
+
+  @Override
+  public void publishTaskDeletedNotification(UUID userId, Task task) {}
 }

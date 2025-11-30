@@ -15,6 +15,7 @@ import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -39,6 +40,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   private final TeamMembershipInternalService memberService;
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
+  private final TaskReminderInternalService reminderService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -53,6 +55,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
       Task task = createTask(assigneeId, createPlanInfo, createTaskInfo);
 
+      reminderService.scheduleReminder(task.getDueDate(), task);
       notificationService.publishTaskAssignedNotification(planInfo.getAssignerId(), task);
     }
   }
@@ -113,6 +116,10 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
     taskRepository.saveAll(clonedTasks);
     taskCounterService.updateUserTaskCounter(userId, counter);
+
+    for (Task cloneTask : clonedTasks) {
+      reminderService.scheduleReminder(cloneTask.getDueDate(), cloneTask);
+    }
   }
 
   private String generateUserTaskCode(UUID userId) {
@@ -198,6 +205,11 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @Override
   public void validatePersonalTask(Task task) {
     if (task.getPlan() != null) throw new BaseException(TaskErrorCode.PERSONAL_TASK_REQUIRED);
+  }
+
+  @Override
+  public void validateTeamTask(Task task) {
+    if (task.getPlan() == null) throw new BaseException(TaskErrorCode.TEAM_TASK_REQUIRED);
   }
 
   @Override

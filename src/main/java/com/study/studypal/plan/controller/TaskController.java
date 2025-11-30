@@ -10,6 +10,7 @@ import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
+import com.study.studypal.plan.enums.ApplyScope;
 import com.study.studypal.plan.service.api.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -82,8 +83,9 @@ public class TaskController {
   public ResponseEntity<UpdateTaskResponseDto> updateTask(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID taskId,
+      @RequestParam(required = false) ApplyScope applyScope,
       @Valid @RequestBody UpdateTaskRequestDto request) {
-    return ResponseEntity.ok(taskService.updateTask(userId, taskId, request));
+    return ResponseEntity.ok(taskService.updateTask(userId, taskId, applyScope, request));
   }
 
   @DeleteMapping("/{taskId}")

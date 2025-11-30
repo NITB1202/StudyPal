@@ -5,7 +5,7 @@ import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.recurrence.request.CreateTaskRecurrenceRuleRequestDto;
 import com.study.studypal.plan.dto.recurrence.response.TaskRecurrenceRuleResponseDto;
-import com.study.studypal.plan.service.internal.TaskRecurrenceRuleService;
+import com.study.studypal.plan.service.api.TaskRecurrenceRuleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;

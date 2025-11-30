@@ -30,9 +30,11 @@ public interface TaskInternalService {
 
   void validateViewTaskPermission(UUID userId, Task task);
 
+  void validateUpdateTaskPermission(UUID userId, Task task);
+
   void validateTaskOwnership(UUID userId, Task task);
 
   void validatePersonalTask(Task task);
 
-  void validateUpdateTaskPermission(UUID userId, Task task);
+  void validateTeamTask(Task task);
 }

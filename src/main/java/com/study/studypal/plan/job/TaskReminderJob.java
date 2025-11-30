@@ -4,6 +4,7 @@ import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
+import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -12,6 +13,7 @@ import org.quartz.JobExecutionContext;
 import org.springframework.stereotype.Component;
 
 @Component
+@Transactional
 @RequiredArgsConstructor
 public class TaskReminderJob implements Job {
   private final TaskInternalService taskService;

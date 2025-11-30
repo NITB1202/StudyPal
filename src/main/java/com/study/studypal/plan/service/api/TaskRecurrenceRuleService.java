@@ -1,4 +1,4 @@
-package com.study.studypal.plan.service.internal;
+package com.study.studypal.plan.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.plan.dto.recurrence.request.CreateTaskRecurrenceRuleRequestDto;

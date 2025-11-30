@@ -7,4 +7,8 @@ public interface TaskNotificationService {
   void publishTaskAssignedNotification(UUID assignerId, Task task);
 
   void publishTaskRemindedNotification(Task task);
+
+  void publishTaskUpdatedNotification(UUID userId, Task task);
+
+  void publishTaskDeletedNotification(UUID userId, Task task);
 }

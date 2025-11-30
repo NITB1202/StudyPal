@@ -1,4 +1,4 @@
-package com.study.studypal.plan.service.internal.impl;
+package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -9,8 +9,8 @@ import com.study.studypal.plan.entity.TaskRecurrenceRule;
 import com.study.studypal.plan.enums.RecurrenceType;
 import com.study.studypal.plan.exception.TaskRecurrenceRuleErrorCode;
 import com.study.studypal.plan.repository.TaskRecurrenceRuleRepository;
+import com.study.studypal.plan.service.api.TaskRecurrenceRuleService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
-import com.study.studypal.plan.service.internal.TaskRecurrenceRuleService;
 import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;

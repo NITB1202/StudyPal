@@ -4,8 +4,10 @@ import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.DateErrorCode;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
+import com.study.studypal.plan.dto.task.internal.UpdateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskAdditionalDataResponseDto;
@@ -14,8 +16,10 @@ import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
+import com.study.studypal.plan.enums.ApplyScope;
 import com.study.studypal.plan.enums.TaskType;
 import com.study.studypal.plan.exception.TaskErrorCode;
+import com.study.studypal.plan.exception.TaskRecurrenceRuleErrorCode;
 import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.api.TaskService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
@@ -25,7 +29,10 @@ import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -37,6 +44,7 @@ import org.modelmapper.internal.Pair;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
   private final TaskRepository taskRepository;
@@ -47,9 +55,9 @@ public class TaskServiceImpl implements TaskService {
   private final TaskInternalService internalService;
   private final PlanHistoryInternalService historyService;
   private final TaskReminderInternalService reminderService;
+  @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  @Transactional
   public CreateTaskResponseDto createTask(UUID userId, CreateTaskRequestDto request) {
     CreateTaskInfo createTaskInfo = modelMapper.map(request, CreateTaskInfo.class);
     Task task = internalService.createTask(userId, Pair.of(null, null), createTaskInfo);
@@ -58,7 +66,6 @@ public class TaskServiceImpl implements TaskService {
   }
 
   @Override
-  @Transactional
   public CreateTaskResponseDto createTaskForPlan(
       UUID userId, UUID planId, CreateTaskForPlanRequestDto request) {
     UUID assigneeId = request.getAssigneeId();
@@ -116,12 +123,6 @@ public class TaskServiceImpl implements TaskService {
         .toList();
   }
 
-  private TaskType getTaskType(Task task) {
-    if (task.getPlan() != null) return TaskType.TEAM;
-    if (task.getParentTask() != null) return TaskType.CLONED;
-    return TaskType.PERSONAL;
-  }
-
   @Override
   public List<String> getDatesWithTaskDueDateInMonth(UUID userId, Integer month, Integer year) {
     LocalDate now = LocalDate.now();
@@ -142,7 +143,8 @@ public class TaskServiceImpl implements TaskService {
   }
 
   @Override
-  public UpdateTaskResponseDto updateTask(UUID userId, UUID taskId, UpdateTaskRequestDto request) {
+  public UpdateTaskResponseDto updateTask(
+      UUID userId, UUID taskId, ApplyScope applyScope, UpdateTaskRequestDto request) {
     Task task =
         taskRepository
             .findById(taskId)
@@ -151,22 +153,55 @@ public class TaskServiceImpl implements TaskService {
     internalService.validatePersonalTask(task);
     internalService.validateTaskOwnership(userId, task);
 
-    if (request.getContent() != null && request.getContent().isBlank())
-      throw new BaseException(TaskErrorCode.BLANK_TASK);
+    UpdateTaskInfo updateTaskInfo = modelMapper.map(request, UpdateTaskInfo.class);
+    validateUpdateTaskRequest(task, updateTaskInfo);
 
-    LocalDateTime startDate =
+    if (task.getParentTask() == null) updatePersonalTask(task, request);
+    else updateClonedTask(applyScope, task, request);
+
+    return modelMapper.map(task, UpdateTaskResponseDto.class);
+  }
+
+  @Override
+  public UpdateTaskResponseDto updateTaskForPlan(
+      UUID userId, UUID taskId, UpdateTaskForPlanRequestDto request) {
+    Task task =
+        taskRepository
+            .findByIdForUpdate(taskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    internalService.validateTeamTask(task);
+    internalService.validateUpdateTaskPermission(userId, task);
+
+    UpdateTaskInfo updateTaskInfo = modelMapper.map(request, UpdateTaskInfo.class);
+    validateUpdateTaskRequest(task, updateTaskInfo);
+
+    LocalDateTime newStartDate =
         request.getStartDate() != null ? request.getStartDate() : task.getStartDate();
-    LocalDateTime dueDate = request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
+    LocalDateTime newDueDate =
+        request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
 
-    if (dueDate.isBefore(startDate))
-      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, task.getContent());
-
-    reminderService.rescheduleDueDateReminder(dueDate, task);
-    reminderService.deleteInvalidReminders(taskId, startDate, dueDate);
+    reminderService.rescheduleDueDateReminder(newDueDate, task);
+    reminderService.deleteInvalidReminders(taskId, newStartDate, newDueDate);
 
     modelMapper.map(request, task);
-    taskRepository.save(task);
 
+    notificationService.publishTaskUpdatedNotification(userId, task);
+    historyService.logUpdateTask(userId, task.getPlan().getId(), task.getTaskCode());
+
+    UUID assigneeId = request.getAssigneeId();
+    if (assigneeId != null && assigneeId != task.getAssignee().getId()) {
+      UUID teamId = task.getPlan().getTeam().getId();
+      memberService.validateUserBelongsToTeam(assigneeId, teamId);
+
+      User newAssignee = entityManager.getReference(User.class, assigneeId);
+      task.setAssignee(newAssignee);
+
+      notificationService.publishTaskAssignedNotification(userId, task);
+      historyService.logAssignTask(userId, assigneeId, task.getPlan().getId(), task.getTaskCode());
+    }
+
+    taskRepository.save(task);
     return modelMapper.map(task, UpdateTaskResponseDto.class);
   }
 
@@ -184,6 +219,25 @@ public class TaskServiceImpl implements TaskService {
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
+  @Override
+  public ActionResponseDto deleteTaskForPlan(UUID userId, UUID taskId) {
+    Task task =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    internalService.validateTeamTask(task);
+
+    UUID teamId = task.getPlan().getTeam().getId();
+    memberService.validateUpdatePlanPermission(userId, teamId);
+
+    reminderService.deleteAllRemindersForTask(taskId);
+    notificationService.publishTaskDeletedNotification(userId, task);
+
+    taskRepository.delete(task);
+    return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
+  }
+
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
     return TaskAdditionalDataResponseDto.builder()
         .planId(plan.getId())
@@ -192,5 +246,77 @@ public class TaskServiceImpl implements TaskService {
         .assigneeName(assignee.getName())
         .assigneeAvatarUrl(assignee.getAvatarUrl())
         .build();
+  }
+
+  private TaskType getTaskType(Task task) {
+    if (task.getPlan() != null) return TaskType.TEAM;
+    if (task.getParentTask() != null) return TaskType.CLONED;
+    return TaskType.PERSONAL;
+  }
+
+  private void validateUpdateTaskRequest(Task task, UpdateTaskInfo info) {
+    if (info.getContent() != null && info.getContent().isBlank())
+      throw new BaseException(TaskErrorCode.BLANK_TASK);
+
+    LocalDateTime startDate =
+        info.getStartDate() != null ? info.getStartDate() : task.getStartDate();
+    LocalDateTime dueDate = info.getDueDate() != null ? info.getDueDate() : task.getDueDate();
+
+    if (dueDate.isBefore(startDate))
+      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, task.getContent());
+  }
+
+  private List<Task> findAllActiveTasksIncludingOriginal(Task task) {
+    Task rootTask = task.getParentTask();
+    List<Task> tasks = taskRepository.findAllByParentTaskIdOrderByDueDateAsc(rootTask.getId());
+    tasks.add(0, rootTask);
+    return tasks;
+  }
+
+  private void updatePersonalTask(Task task, UpdateTaskRequestDto request) {
+    LocalDateTime newStartDate =
+        request.getStartDate() != null ? request.getStartDate() : task.getStartDate();
+    LocalDateTime newDueDate =
+        request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
+
+    reminderService.rescheduleDueDateReminder(newDueDate, task);
+    reminderService.deleteInvalidReminders(task.getId(), newStartDate, newDueDate);
+
+    modelMapper.map(request, task);
+    taskRepository.save(task);
+  }
+
+  private void updateClonedTask(ApplyScope applyScope, Task task, UpdateTaskRequestDto request) {
+    LocalDateTime newStartDate =
+        request.getStartDate() != null ? request.getStartDate() : task.getStartDate();
+    LocalDateTime newDueDate =
+        request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
+
+    if (!newStartDate.toLocalDate().equals(newDueDate.toLocalDate()))
+      throw new BaseException(TaskRecurrenceRuleErrorCode.RECURRING_TASK_DURATION_INVALID);
+
+    List<Task> tasksToUpdate =
+        applyScope.equals(ApplyScope.CURRENT_ONLY)
+            ? List.of(task)
+            : findAllActiveTasksIncludingOriginal(task);
+
+    Duration startDateDelta = Duration.between(task.getStartDate(), newStartDate);
+    Duration dueDateDelta = Duration.between(task.getDueDate(), newDueDate);
+
+    for (Task taskToUpdate : tasksToUpdate) {
+      LocalDateTime updatedStartDate = taskToUpdate.getStartDate().plus(startDateDelta);
+      LocalDateTime updatedDueDate = taskToUpdate.getDueDate().plus(dueDateDelta);
+
+      reminderService.rescheduleDueDateReminder(updatedDueDate, taskToUpdate);
+      reminderService.deleteInvalidReminders(
+          taskToUpdate.getId(), updatedStartDate, updatedDueDate);
+
+      modelMapper.map(request, taskToUpdate);
+
+      taskToUpdate.setStartDate(updatedStartDate);
+      taskToUpdate.setDueDate(updatedDueDate);
+    }
+
+    taskRepository.saveAll(tasksToUpdate);
   }
 }

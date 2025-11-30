@@ -3,11 +3,13 @@ package com.study.studypal.plan.service.api;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
+import com.study.studypal.plan.enums.ApplyScope;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +26,13 @@ public interface TaskService {
 
   List<String> getDatesWithTaskDueDateInMonth(UUID userId, Integer month, Integer year);
 
-  UpdateTaskResponseDto updateTask(UUID userId, UUID taskId, UpdateTaskRequestDto request);
+  UpdateTaskResponseDto updateTask(
+      UUID userId, UUID taskId, ApplyScope applyScope, UpdateTaskRequestDto request);
+
+  UpdateTaskResponseDto updateTaskForPlan(
+      UUID userId, UUID taskId, UpdateTaskForPlanRequestDto request);
 
   ActionResponseDto deleteTask(UUID userId, UUID taskId);
+
+  ActionResponseDto deleteTaskForPlan(UUID userId, UUID taskId);
 }

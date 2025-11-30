@@ -28,11 +28,13 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
     UserSummaryProfile user = userService.getUserSummaryProfile(userId);
     Plan plan = entityManager.getReference(Plan.class, planId);
 
+    String message = String.format("%s created the plan.", user.getName());
+
     PlanHistory planHistory =
         PlanHistory.builder()
             .plan(plan)
             .imageUrl(user.getAvatarUrl())
-            .message(user.getName() + " created the plan.")
+            .message(message)
             .timestamp(LocalDateTime.now())
             .build();
 
@@ -53,6 +55,24 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
         PlanHistory.builder()
             .plan(plan)
             .imageUrl(assigner.getAvatarUrl())
+            .message(message)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    planHistoryRepository.save(planHistory);
+  }
+
+  @Override
+  public void logUpdateTask(UUID userId, UUID planId, String taskCode) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
+    Plan plan = entityManager.getReference(Plan.class, planId);
+
+    String message = String.format("%s updated task [%s].", user.getName(), taskCode);
+
+    PlanHistory planHistory =
+        PlanHistory.builder()
+            .plan(plan)
+            .imageUrl(user.getAvatarUrl())
             .message(message)
             .timestamp(LocalDateTime.now())
             .build();
