@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -178,6 +179,11 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     LocalDateTime startDate = tasks.get(0).getStartDate();
     LocalDateTime dueDate = tasks.get(tasks.size() - 1).getDueDate();
     return Pair.of(startDate, dueDate);
+  }
+
+  @Override
+  public Set<UUID> getDistinctAssigneeIdsByPlanId(UUID planId) {
+    return taskRepository.findDistinctAssigneeIdsByPlan(planId);
   }
 
   @Override

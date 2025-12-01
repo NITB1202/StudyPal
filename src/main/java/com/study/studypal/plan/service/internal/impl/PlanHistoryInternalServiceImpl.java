@@ -61,6 +61,13 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
     logMessage(planId, message, user.getAvatarUrl());
   }
 
+  @Override
+  public void logDeletePlan(UUID userId, UUID planId) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
+    String message = String.format("%s deleted the plan.", user.getName());
+    logMessage(planId, message, user.getAvatarUrl());
+  }
+
   private void logMessage(UUID planId, String message, String imageUrl) {
     Plan plan = entityManager.getReference(Plan.class, planId);
 

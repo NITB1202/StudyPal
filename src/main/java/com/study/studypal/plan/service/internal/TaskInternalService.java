@@ -8,6 +8,7 @@ import com.study.studypal.plan.entity.Task;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.modelmapper.internal.Pair;
 
@@ -27,6 +28,8 @@ public interface TaskInternalService {
   int getCompletedTasksCount(UUID planId);
 
   Pair<LocalDateTime, LocalDateTime> getPlanPeriod(UUID planId);
+
+  Set<UUID> getDistinctAssigneeIdsByPlanId(UUID planId);
 
   void validateViewTaskPermission(UUID userId, Task task);
 

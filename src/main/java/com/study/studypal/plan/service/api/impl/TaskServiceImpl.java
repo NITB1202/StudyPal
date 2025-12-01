@@ -205,6 +205,9 @@ public class TaskServiceImpl implements TaskService {
       User newAssignee = entityManager.getReference(User.class, assigneeId);
       task.setAssignee(newAssignee);
 
+      task.setCompleteDate(null);
+      planService.updatePlanProgress(task.getPlan().getId());
+
       notificationService.publishTaskAssignedNotification(userId, task);
       historyService.logAssignTask(userId, assigneeId, task.getPlan().getId(), task.getTaskCode());
     }
@@ -265,19 +268,22 @@ public class TaskServiceImpl implements TaskService {
             .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-    internalService.validateTeamTask(task);
-
-    UUID teamId = task.getPlan().getTeam().getId();
-    memberService.validateUpdatePlanPermission(userId, teamId);
-
     if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+
+    UUID planId = task.getPlan().getId();
+    UUID teamId = task.getPlan().getTeam().getId();
+
+    internalService.validateTeamTask(task);
+    memberService.validateUpdatePlanPermission(userId, teamId);
 
     reminderService.deleteAllRemindersForTask(taskId);
     notificationService.publishTaskDeletedNotification(userId, task);
-    historyService.logDeleteTask(userId, task.getPlan().getId(), task.getTaskCode());
+    historyService.logDeleteTask(userId, planId, task.getTaskCode());
 
     task.setDeletedAt(LocalDateTime.now());
     taskRepository.save(task);
+
+    planService.updatePlanProgress(planId);
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }

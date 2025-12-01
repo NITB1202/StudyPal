@@ -6,10 +6,12 @@ import com.study.studypal.notification.service.internal.DeviceTokenInternalServi
 import com.study.studypal.notification.service.internal.NotificationInternalService;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.plan.event.plan.PlanCompletedEvent;
+import com.study.studypal.plan.event.plan.PlanDeletedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
 import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
 import com.study.studypal.plan.event.task.TaskUpdatedEvent;
+import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.team.event.invitation.InvitationCreatedEvent;
 import com.study.studypal.team.event.team.TeamDeletedEvent;
 import com.study.studypal.team.event.team.TeamUpdatedEvent;
@@ -20,6 +22,7 @@ import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.service.internal.UserInternalService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -34,6 +37,7 @@ public class NotificationEventListener {
   private final TeamInternalService teamService;
   private final NotificationInternalService notificationService;
   private final TeamNotificationSettingInternalService settingService;
+  private final PlanInternalService planService;
 
   @Async
   @EventListener
@@ -253,17 +257,21 @@ public class NotificationEventListener {
     String title = "Plan completed";
     String content = String.format("Plan [%s] is completed.", event.getPlanCode());
 
-    CreateNotificationRequest dto =
-        CreateNotificationRequest.builder()
-            .userId(event.getCreatorId())
-            .imageUrl(event.getTeamAvatarUrl())
-            .title(title)
-            .content(content)
-            .subject(LinkedSubject.PLAN)
-            .subjectId(event.getPlanId())
-            .build();
+    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
 
-    processNotification(dto);
+    for (UUID memberId : relatedMemberIds) {
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
+              .userId(memberId)
+              .imageUrl(event.getTeamAvatarUrl())
+              .title(title)
+              .content(content)
+              .subject(LinkedSubject.PLAN)
+              .subjectId(event.getPlanId())
+              .build();
+
+      processNotification(dto);
+    }
   }
 
   @Async
@@ -287,6 +295,31 @@ public class NotificationEventListener {
             .build();
 
     processNotification(dto);
+  }
+
+  @Async
+  @EventListener
+  public void handlePlanDeletedEvent(PlanDeletedEvent event) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+
+    String title = "Plan deleted";
+    String content = String.format("%s deleted plan [%s].", user.getName(), event.getPlanCode());
+
+    for (UUID memberId : event.getRelatedMemberIds()) {
+      if (event.getUserId().equals(memberId)) continue;
+
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
+              .userId(memberId)
+              .imageUrl(user.getAvatarUrl())
+              .title(title)
+              .content(content)
+              .subject(LinkedSubject.PLAN)
+              .subjectId(event.getPlanId())
+              .build();
+
+      processNotification(dto);
+    }
   }
 
   private void processNotification(CreateNotificationRequest request) {

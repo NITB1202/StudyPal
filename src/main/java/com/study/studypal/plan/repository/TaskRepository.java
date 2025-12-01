@@ -5,6 +5,7 @@ import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -89,4 +90,14 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT t FROM Task t WHERE t.id = :taskId")
   Optional<Task> findByIdForUpdate(@Param("taskId") UUID taskId);
+
+  @Query(
+      """
+    SELECT DISTINCT a.id
+    FROM Task t
+    JOIN t.assignee a
+    WHERE t.plan.id = :planId
+      AND t.deletedAt IS NULL
+    """)
+  Set<UUID> findDistinctAssigneeIdsByPlan(@Param("planId") UUID planId);
 }

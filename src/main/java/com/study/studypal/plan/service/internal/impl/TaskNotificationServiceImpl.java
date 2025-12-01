@@ -3,6 +3,7 @@ package com.study.studypal.plan.service.internal.impl;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.event.plan.PlanCompletedEvent;
+import com.study.studypal.plan.event.plan.PlanDeletedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
 import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
@@ -11,6 +12,7 @@ import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.team.entity.Team;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -82,10 +84,22 @@ public class TaskNotificationServiceImpl implements TaskNotificationService {
   public void publishPlanCompletedNotification(Plan plan) {
     PlanCompletedEvent event =
         PlanCompletedEvent.builder()
-            .creatorId(plan.getCreator().getId())
             .planId(plan.getId())
             .planCode(plan.getPlanCode())
             .teamAvatarUrl(plan.getTeam().getAvatarUrl())
+            .build();
+
+    eventPublisher.publishEvent(event);
+  }
+
+  @Override
+  public void publishPlanDeletedNotification(UUID userId, Plan plan, Set<UUID> relatedMemberIds) {
+    PlanDeletedEvent event =
+        PlanDeletedEvent.builder()
+            .userId(userId)
+            .planId(plan.getId())
+            .planCode(plan.getPlanCode())
+            .relatedMemberIds(relatedMemberIds)
             .build();
 
     eventPublisher.publishEvent(event);
