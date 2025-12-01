@@ -10,6 +10,7 @@ import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskAdditionalDataResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
@@ -144,6 +145,12 @@ public class TaskServiceImpl implements TaskService {
   }
 
   @Override
+  public ListDeletedTaskResponseDto getDeletedTasks(
+      UUID userId, UUID teamId, LocalDateTime cursor, int size) {
+    return null;
+  }
+
+  @Override
   public UpdateTaskResponseDto updateTask(
       UUID userId, UUID taskId, ApplyScope applyScope, UpdateTaskRequestDto request) {
     Task task =
@@ -213,8 +220,7 @@ public class TaskServiceImpl implements TaskService {
             .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-    if (Boolean.TRUE.equals(task.getIsDeleted()))
-      throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+    if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
 
     if (task.getCompleteDate() != null)
       throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
@@ -244,8 +250,7 @@ public class TaskServiceImpl implements TaskService {
     internalService.validatePersonalTask(task);
     internalService.validateTaskOwnership(userId, task);
 
-    if (Boolean.TRUE.equals(task.getIsDeleted()))
-      throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+    if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
 
     if (ruleService.isRootOrClonedTask(task)) deleteClonedTask(task, applyScope);
     else deletePersonalTask(task);
@@ -265,14 +270,13 @@ public class TaskServiceImpl implements TaskService {
     UUID teamId = task.getPlan().getTeam().getId();
     memberService.validateUpdatePlanPermission(userId, teamId);
 
-    if (Boolean.TRUE.equals(task.getIsDeleted()))
-      throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+    if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
 
     reminderService.deleteAllRemindersForTask(taskId);
     notificationService.publishTaskDeletedNotification(userId, task);
     historyService.logDeleteTask(userId, task.getPlan().getId(), task.getTaskCode());
 
-    task.setIsDeleted(true);
+    task.setDeletedAt(LocalDateTime.now());
     taskRepository.save(task);
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
@@ -308,7 +312,7 @@ public class TaskServiceImpl implements TaskService {
 
   private List<Task> findAllActiveTasksIncludingOriginal(Task task) {
     Task rootTask = task.getParentTask();
-    List<Task> tasks = taskRepository.findAllByParentTaskIdOrderByDueDateAsc(rootTask.getId());
+    List<Task> tasks = taskRepository.findAllActiveChildTasks(rootTask.getId());
     tasks.add(0, rootTask);
     return tasks;
   }
@@ -361,7 +365,7 @@ public class TaskServiceImpl implements TaskService {
 
   private void deletePersonalTask(Task task) {
     reminderService.deleteAllRemindersForTask(task.getId());
-    task.setIsDeleted(true);
+    task.setDeletedAt(LocalDateTime.now());
     taskRepository.save(task);
   }
 
@@ -373,7 +377,7 @@ public class TaskServiceImpl implements TaskService {
 
     for (Task taskToUpdate : tasksToUpdate) {
       reminderService.deleteAllRemindersForTask(taskToUpdate.getId());
-      taskToUpdate.setIsDeleted(true);
+      taskToUpdate.setDeletedAt(LocalDateTime.now());
     }
 
     taskRepository.saveAll(tasksToUpdate);

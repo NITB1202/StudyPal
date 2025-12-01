@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     note VARCHAR(255),
     complete_date TIMESTAMP,
     parent_task_id UUID,
-    is_deleted BOOLEAN NOT NULL,
+    deleted_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_tasks_plans_plan FOREIGN KEY (plan_id)
         REFERENCES plans(id) ON DELETE CASCADE,
     CONSTRAINT fk_tasks_users_assignee FOREIGN KEY (assignee_id)

@@ -6,11 +6,13 @@ import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
 import com.study.studypal.plan.enums.ApplyScope;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +27,9 @@ public interface TaskService {
   List<TaskSummaryResponseDto> getAssignedTasksOnDate(UUID userId, LocalDate date);
 
   List<String> getDatesWithTaskDueDateInMonth(UUID userId, Integer month, Integer year);
+
+  ListDeletedTaskResponseDto getDeletedTasks(
+      UUID userId, UUID teamId, LocalDateTime cursor, int size);
 
   UpdateTaskResponseDto updateTask(
       UUID userId, UUID taskId, ApplyScope applyScope, UpdateTaskRequestDto request);

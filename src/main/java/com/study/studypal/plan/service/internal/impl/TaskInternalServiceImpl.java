@@ -78,7 +78,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     task.setAssignee(assignee);
     task.setPlan(plan);
     task.setTaskCode(taskCode);
-    task.setIsDeleted(false);
 
     return taskRepository.save(task);
   }
@@ -110,7 +109,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
               .startDate(startDate)
               .dueDate(dueDate)
               .parentTask(rootTask)
-              .isDeleted(false)
               .build();
 
       clonedTasks.add(clonedTask);

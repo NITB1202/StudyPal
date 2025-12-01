@@ -19,7 +19,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
    SELECT t
    FROM Task t
    WHERE t.plan.id = :planId
-   AND t.isDeleted = false
+   AND t.deletedAt IS NULL
    ORDER BY t.dueDate ASC, t.startDate ASC
    """)
   List<Task> findAllByPlanIdOrderByDates(@Param("planId") UUID planId);
@@ -29,7 +29,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     SELECT COUNT(t)
     FROM Task t
     WHERE t.plan.id = :planId
-    AND t.isDeleted = false
+    AND t.deletedAt IS NULL
     """)
   int countTasks(UUID planId);
 
@@ -38,7 +38,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     SELECT COUNT(t)
     FROM Task t
     WHERE t.plan.id = :planId
-    AND t.isDeleted = false
+    AND t.deletedAt IS NULL
     AND t.completeDate IS NOT NULL
     """)
   int countCompletedTasks(UUID planId);
@@ -50,7 +50,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     WHERE t.assignee.id = :userId
     AND t.startDate <= :endOfDay
     AND t.dueDate >= :startOfDay
-    AND t.isDeleted = false
+    AND t.deletedAt IS NULL
     ORDER BY t.dueDate ASC,
              CASE t.priority
                  WHEN 'HIGH' THEN 1
@@ -70,12 +70,21 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     WHERE t.assignee.id = :userId
     AND MONTH(t.dueDate) = :month
     AND YEAR(t.dueDate) = :year
-    AND t.isDeleted = false
+    AND t.deletedAt IS NULL
     """)
   List<LocalDateTime> findTaskDueDatesByUserIdInMonth(
       @Param("userId") UUID userId, @Param("month") Integer month, @Param("year") Integer year);
 
-  List<Task> findAllByParentTaskIdOrderByDueDateAsc(UUID taskId);
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    WHERE t.parentTask.id = :taskId
+    AND t.deletedAt IS NULL
+    AND t.dueDate >= CURRENT_TIMESTAMP
+    ORDER BY t.dueDate ASC
+    """)
+  List<Task> findAllActiveChildTasks(UUID taskId);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT t FROM Task t WHERE t.id = :taskId")
