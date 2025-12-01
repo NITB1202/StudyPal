@@ -96,7 +96,7 @@ public class PlanServiceImpl implements PlanService {
 
     PlanDetailResponseDto dto = modelMapper.map(plan, PlanDetailResponseDto.class);
 
-    List<TaskResponseDto> tasks = taskService.getAll(planId, plan.getIsDeleted());
+    List<TaskResponseDto> tasks = taskService.getAll(planId);
     int totalTasksCount = taskService.getTotalTasksCount(planId);
     int completedTasksCount = taskService.getCompletedTasksCount(planId);
     Pair<LocalDateTime, LocalDateTime> planPeriod = taskService.getPlanPeriod(planId);

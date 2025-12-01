@@ -14,22 +14,43 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-  List<Task> findAllByPlanIdAndIsDeletedOrderByDueDateAsc(UUID planId, boolean isDeleted);
+  @Query(
+      """
+   SELECT t
+   FROM Task t
+   WHERE t.plan.id = :planId
+   AND t.isDeleted = false
+   ORDER BY t.dueDate ASC, t.startDate ASC
+   """)
+  List<Task> findAllByPlanIdOrderByDates(@Param("planId") UUID planId);
 
-  List<Task> findAllByPlanId(UUID planId);
+  @Query(
+      """
+    SELECT COUNT(t)
+    FROM Task t
+    WHERE t.plan.id = :planId
+    AND t.isDeleted = false
+    """)
+  int countTasks(UUID planId);
 
-  int countByPlanId(UUID planId);
-
-  int countByPlanIdAndCompleteDateIsNotNull(UUID planId);
+  @Query(
+      """
+    SELECT COUNT(t)
+    FROM Task t
+    WHERE t.plan.id = :planId
+    AND t.isDeleted = false
+    AND t.completeDate IS NOT NULL
+    """)
+  int countCompletedTasks(UUID planId);
 
   @Query(
       """
     SELECT t
     FROM Task t
     WHERE t.assignee.id = :userId
-      AND t.startDate <= :endOfDay
-      AND t.dueDate >= :startOfDay
-      AND t.isDeleted = false
+    AND t.startDate <= :endOfDay
+    AND t.dueDate >= :startOfDay
+    AND t.isDeleted = false
     ORDER BY t.dueDate ASC,
              CASE t.priority
                  WHEN 'HIGH' THEN 1
@@ -44,12 +65,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   @Query(
       """
-        SELECT t.dueDate
-        FROM Task t
-        WHERE t.assignee.id = :userId
-          AND MONTH(t.dueDate) = :month
-          AND YEAR(t.dueDate) = :year
-          AND t.isDeleted = false
+    SELECT t.dueDate
+    FROM Task t
+    WHERE t.assignee.id = :userId
+    AND MONTH(t.dueDate) = :month
+    AND YEAR(t.dueDate) = :year
+    AND t.isDeleted = false
     """)
   List<LocalDateTime> findTaskDueDatesByUserIdInMonth(
       @Param("userId") UUID userId, @Param("month") Integer month, @Param("year") Integer year);

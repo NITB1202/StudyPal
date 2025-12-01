@@ -244,6 +244,9 @@ public class TaskServiceImpl implements TaskService {
     internalService.validatePersonalTask(task);
     internalService.validateTaskOwnership(userId, task);
 
+    if (Boolean.TRUE.equals(task.getIsDeleted()))
+      throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+
     if (ruleService.isRootOrClonedTask(task)) deleteClonedTask(task, applyScope);
     else deletePersonalTask(task);
 
@@ -261,6 +264,9 @@ public class TaskServiceImpl implements TaskService {
 
     UUID teamId = task.getPlan().getTeam().getId();
     memberService.validateUpdatePlanPermission(userId, teamId);
+
+    if (Boolean.TRUE.equals(task.getIsDeleted()))
+      throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
 
     reminderService.deleteAllRemindersForTask(taskId);
     notificationService.publishTaskDeletedNotification(userId, task);

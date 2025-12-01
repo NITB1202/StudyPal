@@ -146,9 +146,8 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
-  public List<TaskResponseDto> getAll(UUID planId, boolean isDeleted) {
-    List<Task> tasks =
-        taskRepository.findAllByPlanIdAndIsDeletedOrderByDueDateAsc(planId, isDeleted);
+  public List<TaskResponseDto> getAll(UUID planId) {
+    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDates(planId);
     List<TaskResponseDto> responseDtoList = new ArrayList<>();
 
     for (Task task : tasks) {
@@ -167,27 +166,19 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
   @Override
   public int getTotalTasksCount(UUID planId) {
-    return taskRepository.countByPlanId(planId);
+    return taskRepository.countTasks(planId);
   }
 
   @Override
   public int getCompletedTasksCount(UUID planId) {
-    return taskRepository.countByPlanIdAndCompleteDateIsNotNull(planId);
+    return taskRepository.countCompletedTasks(planId);
   }
 
   @Override
   public Pair<LocalDateTime, LocalDateTime> getPlanPeriod(UUID planId) {
-    List<Task> tasks = taskRepository.findAllByPlanId(planId);
-    LocalDateTime startDate = null;
-    LocalDateTime dueDate = null;
-
-    for (Task task : tasks) {
-      if (startDate == null || task.getStartDate().isBefore(startDate))
-        startDate = task.getStartDate();
-
-      if (dueDate == null || task.getDueDate().isAfter(dueDate)) dueDate = task.getDueDate();
-    }
-
+    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDates(planId);
+    LocalDateTime startDate = tasks.get(0).getStartDate();
+    LocalDateTime dueDate = tasks.get(tasks.size() - 1).getDueDate();
     return Pair.of(startDate, dueDate);
   }
 
