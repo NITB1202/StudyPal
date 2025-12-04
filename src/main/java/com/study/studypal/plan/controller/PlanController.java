@@ -1,5 +1,6 @@
 package com.study.studypal.plan.controller;
 
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -102,5 +104,15 @@ public class PlanController {
       @PathVariable UUID planId,
       @Valid @RequestBody UpdatePlanRequestDto request) {
     return ResponseEntity.ok(planService.updatePlan(userId, planId, request));
+  }
+
+  @DeleteMapping("/api/plans/{planId}")
+  @Operation(summary = "Delete a plan")
+  @ApiResponse(responseCode = "200", description = "Delete successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> deletePlan(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID planId) {
+    return ResponseEntity.ok(planService.deletePlan(userId, planId));
   }
 }

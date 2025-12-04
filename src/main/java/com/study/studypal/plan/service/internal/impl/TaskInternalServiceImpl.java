@@ -217,6 +217,18 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     else validateTaskOwnership(userId, task);
   }
 
+  @Override
+  public void deleteAllTasksByPlanId(UUID planId) {
+    List<Task> tasks = taskRepository.findAllByPlanId(planId);
+
+    for (Task task : tasks) {
+      reminderService.deleteAllRemindersForTask(task.getId());
+      task.setDeletedAt(LocalDateTime.now());
+    }
+
+    taskRepository.saveAll(tasks);
+  }
+
   private void validateUserBelongsToTeam(UUID userId, Plan plan) {
     UUID teamId = plan.getTeam().getId();
     memberService.validateUserBelongsToTeam(userId, teamId);

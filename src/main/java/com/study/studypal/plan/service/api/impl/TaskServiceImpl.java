@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -333,21 +334,21 @@ public class TaskServiceImpl implements TaskService {
     internalService.validateTeamTask(task);
     memberService.validateUpdatePlanPermission(userId, teamId);
 
-    reminderService.deleteAllRemindersForTask(taskId);
-    notificationService.publishTaskDeletedNotification(userId, task);
-    historyService.logDeleteTask(userId, planId, task.getTaskCode());
+    int remainingTasks = taskRepository.countTasks(planId) - 1;
+    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(planId);
 
+    reminderService.deleteAllRemindersForTask(taskId);
     task.setDeletedAt(LocalDateTime.now());
     taskRepository.save(task);
 
-    planService.updatePlanProgress(planId);
-
-    int remainingTasks = taskRepository.countTasks(planId);
-
     if (remainingTasks == 0) {
       planService.softDeletePlan(plan);
-      notificationService.publishPlanDeletedNotification(userId, plan);
+      notificationService.publishPlanDeletedNotification(userId, plan, relatedMemberIds);
       historyService.logDeletePlan(userId, planId);
+    } else {
+      planService.updatePlanProgress(planId);
+      notificationService.publishTaskDeletedNotification(userId, task);
+      historyService.logDeleteTask(userId, planId, task.getTaskCode());
     }
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();

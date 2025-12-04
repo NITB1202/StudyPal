@@ -1,5 +1,6 @@
 package com.study.studypal.plan.service.api;
 
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.UpdatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
@@ -21,4 +22,6 @@ public interface PlanService {
       UUID userId, UUID teamId, Integer month, Integer year);
 
   UpdatePlanResponseDto updatePlan(UUID userId, UUID planId, UpdatePlanRequestDto request);
+
+  ActionResponseDto deletePlan(UUID userId, UUID planId);
 }

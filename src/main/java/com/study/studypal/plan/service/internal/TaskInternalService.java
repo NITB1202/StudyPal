@@ -40,4 +40,6 @@ public interface TaskInternalService {
   void validatePersonalTask(Task task);
 
   void validateTeamTask(Task task);
+
+  void deleteAllTasksByPlanId(UUID planId);
 }

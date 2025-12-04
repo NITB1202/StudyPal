@@ -16,6 +16,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
+  List<Task> findAllByPlanId(UUID planId);
+
   @Query(
       """
    SELECT t

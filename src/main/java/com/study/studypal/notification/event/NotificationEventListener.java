@@ -23,6 +23,7 @@ import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.service.internal.UserInternalService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -70,9 +71,10 @@ public class NotificationEventListener {
     String title = "Team deleted";
     String content = String.format("%s deleted %s.", deletedBy.getName(), event.getTeamName());
 
-    for (UUID memberId : event.getMemberIds()) {
-      if (event.getDeletedBy().equals(memberId)) continue;
+    List<UUID> memberIds = event.getMemberIds();
+    memberIds.remove(event.getDeletedBy());
 
+    for (UUID memberId : memberIds) {
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
               .userId(memberId)
@@ -97,9 +99,11 @@ public class NotificationEventListener {
         String.format(
             "%s updated the general information of %s", updatedBy.getName(), event.getTeamName());
 
-    for (UUID memberId : event.getMemberIds()) {
-      if (event.getUpdatedBy().equals(memberId)
-          || !settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
+    List<UUID> memberIds = event.getMemberIds();
+    memberIds.remove(event.getUpdatedBy());
+
+    for (UUID memberId : memberIds) {
+      if (!settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
 
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
@@ -124,9 +128,11 @@ public class NotificationEventListener {
     String title = "New team member";
     String content = String.format("%s joined %s.", user.getName(), teamName);
 
-    for (UUID memberId : event.getMemberIds()) {
-      if (event.getUserId().equals(memberId)
-          || !settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
+    List<UUID> memberIds = event.getMemberIds();
+    memberIds.remove(event.getUserId());
+
+    for (UUID memberId : memberIds) {
+      if (!settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
 
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
@@ -151,9 +157,11 @@ public class NotificationEventListener {
     String title = "Member left";
     String content = String.format("%s left %s.", user.getName(), teamName);
 
-    for (UUID memberId : event.getMemberIds()) {
-      if (event.getUserId().equals(memberId)
-          || !settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
+    List<UUID> memberIds = event.getMemberIds();
+    memberIds.remove(event.getUserId());
+
+    for (UUID memberId : memberIds) {
+      if (!settingService.getTeamNotificationSetting(memberId, event.getTeamId())) continue;
 
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
@@ -258,9 +266,12 @@ public class NotificationEventListener {
     String title = "Plan completed";
     String content = String.format("Plan [%s] is completed.", event.getPlanCode());
 
+    UUID teamId = planService.getTeamIdById(event.getPlanId());
     Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
 
     for (UUID memberId : relatedMemberIds) {
+      if (!settingService.getTeamPlanReminderSetting(memberId, teamId)) continue;
+
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
               .userId(memberId)
@@ -301,14 +312,17 @@ public class NotificationEventListener {
   @Async
   @EventListener
   public void handlePlanDeletedEvent(PlanDeletedEvent event) {
+    UUID teamId = planService.getTeamIdById(event.getPlanId());
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
-    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
 
     String title = "Plan deleted";
     String content = String.format("%s deleted plan [%s].", user.getName(), event.getPlanCode());
 
-    for (UUID memberId : relatedMemberIds) {
-      if (event.getUserId().equals(memberId)) continue;
+    Set<UUID> memberIds = event.getRelatedMemberIds();
+    memberIds.remove(event.getUserId());
+
+    for (UUID memberId : memberIds) {
+      if (!settingService.getTeamPlanReminderSetting(memberId, teamId)) continue;
 
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()
@@ -327,14 +341,17 @@ public class NotificationEventListener {
   @Async
   @EventListener
   public void handlePlanUpdatedEvent(PlanUpdatedEvent event) {
+    UUID teamId = planService.getTeamIdById(event.getPlanId());
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
-    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
 
     String title = "Plan updated";
     String content = String.format("%s updated plan [%s].", user.getName(), event.getPlanCode());
 
+    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
+    relatedMemberIds.remove(event.getUserId());
+
     for (UUID memberId : relatedMemberIds) {
-      if (event.getUserId().equals(memberId)) continue;
+      if (!settingService.getTeamPlanReminderSetting(memberId, teamId)) continue;
 
       CreateNotificationRequest dto =
           CreateNotificationRequest.builder()

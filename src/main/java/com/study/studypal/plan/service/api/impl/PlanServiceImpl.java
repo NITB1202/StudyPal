@@ -3,6 +3,7 @@ package com.study.studypal.plan.service.api.impl;
 import static com.study.studypal.plan.constant.PlanConstant.CODE_NUMBER_FORMAT;
 import static com.study.studypal.plan.constant.PlanConstant.PLAN_CODE_PREFIX;
 
+import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.DateErrorCode;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
@@ -18,6 +19,7 @@ import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.api.PlanService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
+import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
@@ -31,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -48,6 +51,7 @@ public class PlanServiceImpl implements PlanService {
   private final PlanHistoryInternalService historyService;
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
+  private final PlanInternalService internalService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -94,6 +98,10 @@ public class PlanServiceImpl implements PlanService {
         planRepository
             .findById(planId)
             .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+
+    if (Boolean.TRUE.equals(plan.getIsDeleted())) {
+      throw new BaseException(PlanErrorCode.PLAN_ALREADY_DELETED);
+    }
 
     UUID teamId = plan.getTeam().getId();
     memberService.validateUserBelongsToTeam(userId, teamId);
@@ -152,6 +160,10 @@ public class PlanServiceImpl implements PlanService {
             .findByIdForUpdate(planId)
             .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
+    if (Boolean.TRUE.equals(plan.getIsDeleted())) {
+      throw new BaseException(PlanErrorCode.PLAN_ALREADY_DELETED);
+    }
+
     memberService.validateUpdatePlanPermission(userId, plan.getTeam().getId());
 
     if (request.getTitle() != null && request.getTitle().isBlank()) {
@@ -165,5 +177,28 @@ public class PlanServiceImpl implements PlanService {
     notificationService.publishPlanUpdatedNotification(userId, plan);
 
     return modelMapper.map(plan, UpdatePlanResponseDto.class);
+  }
+
+  @Override
+  public ActionResponseDto deletePlan(UUID userId, UUID planId) {
+    Plan plan =
+        planRepository
+            .findByIdForUpdate(planId)
+            .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+
+    if (Boolean.TRUE.equals(plan.getIsDeleted())) {
+      throw new BaseException(PlanErrorCode.PLAN_ALREADY_DELETED);
+    }
+
+    memberService.validateUpdatePlanPermission(userId, plan.getTeam().getId());
+    internalService.softDeletePlan(plan);
+
+    Set<UUID> relatedMemberIds = internalService.getPlanRelatedMemberIds(planId);
+
+    taskService.deleteAllTasksByPlanId(planId);
+    historyService.logDeletePlan(userId, planId);
+    notificationService.publishPlanDeletedNotification(userId, plan, relatedMemberIds);
+
+    return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 }
