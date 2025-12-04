@@ -15,6 +15,7 @@ import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -39,6 +41,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   private final TeamMembershipInternalService memberService;
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
+  private final TaskReminderInternalService reminderService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -53,6 +56,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
       Task task = createTask(assigneeId, createPlanInfo, createTaskInfo);
 
+      reminderService.scheduleReminder(task.getDueDate(), task);
       notificationService.publishTaskAssignedNotification(planInfo.getAssignerId(), task);
     }
   }
@@ -113,6 +117,10 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
     taskRepository.saveAll(clonedTasks);
     taskCounterService.updateUserTaskCounter(userId, counter);
+
+    for (Task cloneTask : clonedTasks) {
+      reminderService.scheduleReminder(cloneTask.getDueDate(), cloneTask);
+    }
   }
 
   private String generateUserTaskCode(UUID userId) {
@@ -138,7 +146,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
   @Override
   public List<TaskResponseDto> getAll(UUID planId) {
-    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDueDateAsc(planId);
+    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDates(planId);
     List<TaskResponseDto> responseDtoList = new ArrayList<>();
 
     for (Task task : tasks) {
@@ -157,28 +165,25 @@ public class TaskInternalServiceImpl implements TaskInternalService {
 
   @Override
   public int getTotalTasksCount(UUID planId) {
-    return taskRepository.countByPlanId(planId);
+    return taskRepository.countTasks(planId);
   }
 
   @Override
   public int getCompletedTasksCount(UUID planId) {
-    return taskRepository.countByPlanIdAndCompleteDateIsNotNull(planId);
+    return taskRepository.countCompletedTasks(planId);
   }
 
   @Override
   public Pair<LocalDateTime, LocalDateTime> getPlanPeriod(UUID planId) {
-    List<Task> tasks = taskRepository.findAllByPlanId(planId);
-    LocalDateTime startDate = null;
-    LocalDateTime dueDate = null;
-
-    for (Task task : tasks) {
-      if (startDate == null || task.getStartDate().isBefore(startDate))
-        startDate = task.getStartDate();
-
-      if (dueDate == null || task.getDueDate().isAfter(dueDate)) dueDate = task.getDueDate();
-    }
-
+    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDates(planId);
+    LocalDateTime startDate = tasks.get(0).getStartDate();
+    LocalDateTime dueDate = tasks.get(tasks.size() - 1).getDueDate();
     return Pair.of(startDate, dueDate);
+  }
+
+  @Override
+  public Set<UUID> getDistinctAssigneeIdsByPlanId(UUID planId) {
+    return taskRepository.findDistinctAssigneeIdsByPlan(planId);
   }
 
   @Override
@@ -201,10 +206,27 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
+  public void validateTeamTask(Task task) {
+    if (task.getPlan() == null) throw new BaseException(TaskErrorCode.TEAM_TASK_REQUIRED);
+  }
+
+  @Override
   public void validateUpdateTaskPermission(UUID userId, Task task) {
     Plan plan = task.getPlan();
     if (plan != null) validateUpdateTaskPermission(userId, plan);
     else validateTaskOwnership(userId, task);
+  }
+
+  @Override
+  public void deleteAllTasksByPlanId(UUID planId) {
+    List<Task> tasks = taskRepository.findAllByPlanId(planId);
+
+    for (Task task : tasks) {
+      reminderService.deleteAllRemindersForTask(task.getId());
+      task.setDeletedAt(LocalDateTime.now());
+    }
+
+    taskRepository.saveAll(tasks);
   }
 
   private void validateUserBelongsToTeam(UUID userId, Plan plan) {

@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TaskRecurrenceRuleRepository extends JpaRepository<TaskRecurrenceRule, UUID> {
   Optional<TaskRecurrenceRule> findByTaskId(UUID taskId);
+
+  boolean existsByTaskId(UUID taskId);
 }

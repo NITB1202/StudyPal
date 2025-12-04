@@ -67,4 +67,7 @@ public class Task {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "parent_task_id")
   private Task parentTask;
+
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
 }

@@ -12,4 +12,8 @@ public interface TaskReminderRepository extends JpaRepository<TaskReminder, UUID
   List<TaskReminder> findAllByTaskIdOrderByRemindAtAsc(UUID taskId);
 
   boolean existsByTaskIdAndRemindAt(UUID taskId, LocalDateTime remindAt);
+
+  TaskReminder findByTaskIdAndRemindAt(UUID id, LocalDateTime remindAt);
+
+  List<TaskReminder> findAllByTaskId(UUID taskId);
 }

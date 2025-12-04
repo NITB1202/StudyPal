@@ -12,10 +12,13 @@ import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import jakarta.transaction.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -45,10 +48,70 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
     scheduleReminder(reminder);
   }
 
+  @Override
+  public void rescheduleDueDateReminder(LocalDateTime newDueDate, Task task) {
+    TaskReminder reminder =
+        taskReminderRepository.findByTaskIdAndRemindAt(task.getId(), task.getDueDate());
+
+    cancelReminder(reminder.getId());
+
+    reminder.setRemindAt(newDueDate);
+    taskReminderRepository.save(reminder);
+
+    scheduleReminder(reminder);
+  }
+
+  @Override
+  public void rescheduleReminder(TaskReminder reminder) {
+    cancelReminder(reminder.getId());
+    scheduleReminder(reminder);
+  }
+
+  @Override
+  public void deleteUsedReminder(UUID reminderId) {
+    taskReminderRepository.deleteById(reminderId);
+  }
+
+  @Override
+  public void deleteInvalidReminders(
+      UUID taskId, LocalDateTime newStartDate, LocalDateTime newDueDate) {
+    List<TaskReminder> reminders = taskReminderRepository.findAllByTaskId(taskId);
+
+    for (TaskReminder reminder : reminders) {
+      if (reminder.getRemindAt().isBefore(newStartDate)
+          || reminder.getRemindAt().isAfter(newDueDate)) {
+        taskReminderRepository.delete(reminder);
+        cancelReminder(reminder.getId());
+      }
+    }
+  }
+
+  @Override
+  public void deleteAllRemindersForTask(UUID taskId) {
+    List<TaskReminder> reminders = taskReminderRepository.findAllByTaskId(taskId);
+    for (TaskReminder reminder : reminders) {
+      cancelReminder(reminder.getId());
+    }
+    taskReminderRepository.deleteAll(reminders);
+  }
+
+  @Override
+  public void cancelReminder(UUID reminderId) {
+    try {
+      JobKey key = new JobKey("reminder_" + reminderId);
+      if (scheduler.checkExists(key)) {
+        scheduler.deleteJob(key);
+      }
+    } catch (SchedulerException e) {
+      throw new BaseException(TaskReminderErrorCode.CANCEL_REMINDER_FAILED, reminderId);
+    }
+  }
+
   private void scheduleReminder(TaskReminder reminder) {
     JobDetail jobDetail =
         JobBuilder.newJob(TaskReminderJob.class)
             .withIdentity("reminder_" + reminder.getId())
+            .usingJobData("reminderId", reminder.getId().toString())
             .usingJobData("taskId", reminder.getTask().getId().toString())
             .build();
 

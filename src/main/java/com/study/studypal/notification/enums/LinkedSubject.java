@@ -4,5 +4,6 @@ public enum LinkedSubject {
   TEAM,
   INVITATION,
   TASK,
+  PLAN,
   CHAT
 }
