@@ -2,6 +2,7 @@ package com.study.studypal.plan.dto.task.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.study.studypal.plan.enums.Priority;
+import com.study.studypal.plan.enums.TaskType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Getter;
@@ -11,6 +12,9 @@ import lombok.Setter;
 @Setter
 public class TaskDetailResponseDto {
   private UUID id;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private TaskType taskType;
 
   private String taskCode;
 
@@ -31,4 +35,7 @@ public class TaskDetailResponseDto {
   private Priority priority;
 
   private TaskAdditionalDataResponseDto additionalData;
+
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime deletedAt;
 }

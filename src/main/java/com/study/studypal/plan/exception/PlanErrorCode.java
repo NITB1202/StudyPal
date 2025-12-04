@@ -6,7 +6,9 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum PlanErrorCode implements ErrorCode {
-  PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN_001", "Plan not found.");
+  PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN_001", "Plan not found."),
+  BLANK_TITLE(HttpStatus.BAD_REQUEST, "PLAN_002", "The plan title can't be left blank."),
+  ;
 
   private final HttpStatus httpStatus;
   private final String code;

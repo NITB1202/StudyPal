@@ -16,4 +16,6 @@ public interface TaskNotificationService {
   void publishPlanCompletedNotification(Plan plan);
 
   void publishPlanDeletedNotification(UUID userId, Plan plan);
+
+  void publishPlanUpdatedNotification(UUID userId, Plan plan);
 }

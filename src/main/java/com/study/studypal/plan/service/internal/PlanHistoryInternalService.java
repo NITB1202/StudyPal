@@ -14,4 +14,6 @@ public interface PlanHistoryInternalService {
   void logDeleteTask(UUID userId, UUID planId, String taskCode);
 
   void logDeletePlan(UUID userId, UUID planId);
+
+  void logUpdatePlan(UUID userId, UUID planId);
 }

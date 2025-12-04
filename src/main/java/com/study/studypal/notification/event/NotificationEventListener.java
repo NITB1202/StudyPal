@@ -7,6 +7,7 @@ import com.study.studypal.notification.service.internal.NotificationInternalServ
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.plan.PlanDeletedEvent;
+import com.study.studypal.plan.event.plan.PlanUpdatedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
 import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
@@ -305,6 +306,32 @@ public class NotificationEventListener {
 
     String title = "Plan deleted";
     String content = String.format("%s deleted plan [%s].", user.getName(), event.getPlanCode());
+
+    for (UUID memberId : relatedMemberIds) {
+      if (event.getUserId().equals(memberId)) continue;
+
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
+              .userId(memberId)
+              .imageUrl(user.getAvatarUrl())
+              .title(title)
+              .content(content)
+              .subject(LinkedSubject.PLAN)
+              .subjectId(event.getPlanId())
+              .build();
+
+      processNotification(dto);
+    }
+  }
+
+  @Async
+  @EventListener
+  public void handlePlanUpdatedEvent(PlanUpdatedEvent event) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
+
+    String title = "Plan updated";
+    String content = String.format("%s updated plan [%s].", user.getName(), event.getPlanCode());
 
     for (UUID memberId : relatedMemberIds) {
       if (event.getUserId().equals(memberId)) continue;

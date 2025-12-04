@@ -99,6 +99,7 @@ public class TaskServiceImpl implements TaskService {
 
     internalService.validateViewTaskPermission(userId, task);
     TaskDetailResponseDto response = modelMapper.map(task, TaskDetailResponseDto.class);
+    response.setTaskType(getTaskType(task));
 
     Plan plan = task.getPlan();
     User assignee = task.getAssignee();
@@ -344,7 +345,7 @@ public class TaskServiceImpl implements TaskService {
     int remainingTasks = taskRepository.countTasks(planId);
 
     if (remainingTasks == 0) {
-      planService.deletePlan(plan);
+      planService.softDeletePlan(plan);
       notificationService.publishPlanDeletedNotification(userId, plan);
       historyService.logDeletePlan(userId, planId);
     }

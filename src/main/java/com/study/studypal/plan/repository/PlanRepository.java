@@ -2,11 +2,13 @@ package com.study.studypal.plan.repository;
 
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.entity.Plan;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -55,4 +57,8 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
     """)
   List<LocalDateTime> findPlanDueDatesByTeamIdInMonth(
       @Param("teamId") UUID teamId, @Param("month") int month, @Param("year") int year);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT p FROM Plan p WHERE p.id = :id")
+  Optional<Plan> findByIdForUpdate(UUID id);
 }

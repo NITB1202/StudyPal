@@ -10,8 +10,10 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PlanInternalServiceImpl implements PlanInternalService {
   private final PlanRepository planRepository;
@@ -31,7 +33,7 @@ public class PlanInternalServiceImpl implements PlanInternalService {
   public float updatePlanProgress(UUID id) {
     Plan plan =
         planRepository
-            .findById(id)
+            .findByIdForUpdate(id)
             .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
     int totalTasks = taskService.getTotalTasksCount(id);
@@ -47,7 +49,7 @@ public class PlanInternalServiceImpl implements PlanInternalService {
   }
 
   @Override
-  public void deletePlan(Plan plan) {
+  public void softDeletePlan(Plan plan) {
     plan.setIsDeleted(true);
     planRepository.save(plan);
   }

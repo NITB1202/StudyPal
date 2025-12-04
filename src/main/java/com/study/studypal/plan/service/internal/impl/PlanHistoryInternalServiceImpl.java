@@ -26,7 +26,7 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
   @Override
   public void logCreatePlan(UUID userId, UUID planId) {
     UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s created the plan.", user.getName());
+    String message = String.format("%s created plan.", user.getName());
     logMessage(planId, message, user.getAvatarUrl());
   }
 
@@ -64,7 +64,14 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
   @Override
   public void logDeletePlan(UUID userId, UUID planId) {
     UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s deleted the plan.", user.getName());
+    String message = String.format("%s deleted plan.", user.getName());
+    logMessage(planId, message, user.getAvatarUrl());
+  }
+
+  @Override
+  public void logUpdatePlan(UUID userId, UUID planId) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
+    String message = String.format("%s updated plan.", user.getName());
     logMessage(planId, message, user.getAvatarUrl());
   }
 

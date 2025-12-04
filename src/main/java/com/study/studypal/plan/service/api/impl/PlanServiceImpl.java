@@ -7,9 +7,11 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.DateErrorCode;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
+import com.study.studypal.plan.dto.plan.request.UpdatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
+import com.study.studypal.plan.dto.plan.response.UpdatePlanResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.exception.PlanErrorCode;
@@ -18,6 +20,7 @@ import com.study.studypal.plan.service.api.PlanService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
+import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -44,6 +47,7 @@ public class PlanServiceImpl implements PlanService {
   private final TeamMembershipInternalService memberService;
   private final PlanHistoryInternalService historyService;
   private final TaskCounterService taskCounterService;
+  private final TaskNotificationService notificationService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -139,5 +143,27 @@ public class PlanServiceImpl implements PlanService {
         planRepository.findPlanDueDatesByTeamIdInMonth(teamId, handledMonth, handledYear);
 
     return dueDates.stream().map(d -> d.toLocalDate().toString()).distinct().sorted().toList();
+  }
+
+  @Override
+  public UpdatePlanResponseDto updatePlan(UUID userId, UUID planId, UpdatePlanRequestDto request) {
+    Plan plan =
+        planRepository
+            .findByIdForUpdate(planId)
+            .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+
+    memberService.validateUpdatePlanPermission(userId, plan.getTeam().getId());
+
+    if (request.getTitle() != null && request.getTitle().isBlank()) {
+      throw new BaseException(PlanErrorCode.BLANK_TITLE);
+    }
+
+    modelMapper.map(request, plan);
+    planRepository.save(plan);
+
+    historyService.logUpdatePlan(userId, planId);
+    notificationService.publishPlanUpdatedNotification(userId, plan);
+
+    return modelMapper.map(plan, UpdatePlanResponseDto.class);
   }
 }
