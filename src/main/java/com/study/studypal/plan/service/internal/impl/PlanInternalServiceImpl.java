@@ -6,18 +6,17 @@ import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
-import com.study.studypal.plan.service.internal.TaskNotificationService;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class PlanInternalServiceImpl implements PlanInternalService {
   private final PlanRepository planRepository;
   private final TaskInternalService taskService;
-  private final TaskNotificationService notificationService;
 
   @Override
   public UUID getTeamIdById(UUID id) {
@@ -30,7 +29,7 @@ public class PlanInternalServiceImpl implements PlanInternalService {
   }
 
   @Override
-  public void updatePlanProgress(UUID id) {
+  public float updatePlanProgress(UUID id) {
     Plan plan =
         planRepository
             .findById(id)
@@ -39,21 +38,19 @@ public class PlanInternalServiceImpl implements PlanInternalService {
     int totalTasks = taskService.getTotalTasksCount(id);
     int completedTasks = taskService.getCompletedTasksCount(id);
 
-    if (totalTasks == 0) {
-      plan.setIsDeleted(true);
-      planRepository.save(plan);
-      return;
-    }
-
-    float progress = (float) completedTasks / totalTasks;
+    float progress = totalTasks != 0 ? (float) completedTasks / totalTasks : 0f;
     float roundedProgress = Math.round(progress * 100f) / 100f;
 
     plan.setProgress(roundedProgress);
     planRepository.save(plan);
 
-    if (roundedProgress >= 1.0f) {
-      notificationService.publishPlanCompletedNotification(plan);
-    }
+    return roundedProgress;
+  }
+
+  @Override
+  @Transactional
+  public void deleteById(UUID id) {
+    planRepository.deleteById(id);
   }
 
   @Override

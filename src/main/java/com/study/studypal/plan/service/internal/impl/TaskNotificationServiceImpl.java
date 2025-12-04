@@ -12,7 +12,6 @@ import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.team.entity.Team;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -93,13 +92,12 @@ public class TaskNotificationServiceImpl implements TaskNotificationService {
   }
 
   @Override
-  public void publishPlanDeletedNotification(UUID userId, Plan plan, Set<UUID> relatedMemberIds) {
+  public void publishPlanDeletedNotification(UUID userId, Plan plan) {
     PlanDeletedEvent event =
         PlanDeletedEvent.builder()
             .userId(userId)
             .planId(plan.getId())
             .planCode(plan.getPlanCode())
-            .relatedMemberIds(relatedMemberIds)
             .build();
 
     eventPublisher.publishEvent(event);

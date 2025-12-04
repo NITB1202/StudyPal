@@ -10,6 +10,7 @@ import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.DeletedTaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskAdditionalDataResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
@@ -41,7 +42,10 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.modelmapper.internal.Pair;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -147,7 +151,47 @@ public class TaskServiceImpl implements TaskService {
   @Override
   public ListDeletedTaskResponseDto getDeletedTasks(
       UUID userId, UUID teamId, LocalDateTime cursor, int size) {
-    return null;
+    Pageable pageable = PageRequest.of(0, size);
+
+    if (teamId != null) {
+      memberService.validateUserBelongsToTeam(userId, teamId);
+    }
+
+    List<Task> tasks =
+        teamId != null
+            ? getTeamDeletedTasks(teamId, cursor, pageable)
+            : getPersonalDeletedTasks(userId, cursor, pageable);
+
+    List<DeletedTaskSummaryResponseDto> tasksDTO =
+        modelMapper.map(tasks, new TypeToken<List<DeletedTaskSummaryResponseDto>>() {}.getType());
+
+    long total =
+        teamId != null
+            ? taskRepository.countTeamDeletedTasks(teamId)
+            : taskRepository.countPersonalDeletedTasks(userId);
+
+    LocalDateTime nextCursor =
+        !tasks.isEmpty() && tasks.size() == size
+            ? tasks.get(tasks.size() - 1).getDeletedAt()
+            : null;
+
+    return ListDeletedTaskResponseDto.builder()
+        .tasks(tasksDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  private List<Task> getPersonalDeletedTasks(UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? taskRepository.getPersonalDeletedTasks(userId, pageable)
+        : taskRepository.getPersonalDeletedTasksWithCursor(userId, cursor, pageable);
+  }
+
+  private List<Task> getTeamDeletedTasks(UUID teamId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? taskRepository.getTeamDeletedTasks(teamId, pageable)
+        : taskRepository.getTeamDeletedTasksWithCursor(teamId, cursor, pageable);
   }
 
   @Override
@@ -234,10 +278,12 @@ public class TaskServiceImpl implements TaskService {
     task.setCompleteDate(LocalDateTime.now());
     taskRepository.save(task);
 
-    if (task.getPlan() != null) {
-      UUID planId = task.getPlan().getId();
-      planService.updatePlanProgress(planId);
-      historyService.logCompleteTask(userId, planId, task.getTaskCode());
+    Plan plan = task.getPlan();
+
+    if (plan != null) {
+      float planProgress = planService.updatePlanProgress(plan.getId());
+      if (planProgress >= 1.0f) notificationService.publishPlanCompletedNotification(plan);
+      historyService.logCompleteTask(userId, plan.getId(), task.getTaskCode());
     }
 
     return ActionResponseDto.builder().success(true).message("Mark successfully.").build();
@@ -270,8 +316,9 @@ public class TaskServiceImpl implements TaskService {
 
     if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
 
-    UUID planId = task.getPlan().getId();
-    UUID teamId = task.getPlan().getTeam().getId();
+    Plan plan = task.getPlan();
+    UUID planId = plan.getId();
+    UUID teamId = plan.getTeam().getId();
 
     internalService.validateTeamTask(task);
     memberService.validateUpdatePlanPermission(userId, teamId);
@@ -284,6 +331,13 @@ public class TaskServiceImpl implements TaskService {
     taskRepository.save(task);
 
     planService.updatePlanProgress(planId);
+
+    int remainingTasks = taskRepository.countTasks(planId);
+
+    if (remainingTasks == 0) {
+      planService.deleteById(planId);
+      notificationService.publishPlanDeletedNotification(userId, plan);
+    }
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }

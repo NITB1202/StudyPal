@@ -301,11 +301,12 @@ public class NotificationEventListener {
   @EventListener
   public void handlePlanDeletedEvent(PlanDeletedEvent event) {
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
 
     String title = "Plan deleted";
     String content = String.format("%s deleted plan [%s].", user.getName(), event.getPlanCode());
 
-    for (UUID memberId : event.getRelatedMemberIds()) {
+    for (UUID memberId : relatedMemberIds) {
       if (event.getUserId().equals(memberId)) continue;
 
       CreateNotificationRequest dto =

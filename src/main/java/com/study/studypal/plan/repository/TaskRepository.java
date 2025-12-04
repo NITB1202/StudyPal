@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -100,4 +101,73 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       AND t.deletedAt IS NULL
     """)
   Set<UUID> findDistinctAssigneeIdsByPlan(@Param("planId") UUID planId);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    JOIN t.assignee a
+    WHERE a.id = :userId
+    AND t.plan IS NULL
+    AND t.deletedAt IS NOT NULL
+    ORDER BY t.deletedAt DESC
+    """)
+  List<Task> getPersonalDeletedTasks(@Param("userId") UUID userId, Pageable pageable);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    JOIN t.assignee a
+    WHERE a.id = :userId
+    AND t.plan IS NULL
+    AND t.deletedAt <= :cursor
+    ORDER BY t.deletedAt DESC
+    """)
+  List<Task> getPersonalDeletedTasksWithCursor(
+      @Param("userId") UUID userId, @Param("cursor") LocalDateTime cursor, Pageable pageable);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    JOIN t.plan p
+    WHERE p.team.id = :teamId
+    AND t.deletedAt IS NOT NULL
+    ORDER BY t.deletedAt DESC
+    """)
+  List<Task> getTeamDeletedTasks(@Param("teamId") UUID teamId, Pageable pageable);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    JOIN t.plan p
+    WHERE p.team.id = :teamId
+    AND t.deletedAt <= :cursor
+    ORDER BY t.deletedAt DESC
+    """)
+  List<Task> getTeamDeletedTasksWithCursor(
+      @Param("teamId") UUID teamId, @Param("cursor") LocalDateTime cursor, Pageable pageable);
+
+  @Query(
+      """
+    SELECT COUNT(t)
+    FROM Task t
+    JOIN t.plan p
+    WHERE p.team.id = :teamId
+    AND t.deletedAt IS NOT NULL
+    """)
+  long countTeamDeletedTasks(@Param("teamId") UUID teamId);
+
+  @Query(
+      """
+    SELECT COUNT(t)
+    FROM Task t
+    JOIN t.assignee a
+    WHERE a.id = :userId
+    AND t.plan IS NULL
+    AND t.deletedAt <= :cursor
+    """)
+  long countPersonalDeletedTasks(@Param("userId") UUID userId);
 }

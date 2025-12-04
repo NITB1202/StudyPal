@@ -1,5 +1,7 @@
 package com.study.studypal.plan.controller;
 
+import static com.study.studypal.common.util.Constants.DEFAULT_PAGE_SIZE;
+
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
@@ -7,6 +9,7 @@ import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
@@ -16,9 +19,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -108,5 +113,18 @@ public class TaskController {
   public ResponseEntity<ActionResponseDto> markTaskAsCompleted(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
     return ResponseEntity.ok(taskService.markTaskAsCompleted(userId, taskId));
+  }
+
+  @GetMapping("/deleted")
+  @Operation(summary = "Get a list of deleted tasks.")
+  @ApiResponse(responseCode = "200", description = "Get successfully.")
+  @UnauthorizedApiResponse
+  public ResponseEntity<ListDeletedTaskResponseDto> getDeletedTasks(
+      @AuthenticationPrincipal UUID userId,
+      @RequestParam(required = false) UUID teamId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          LocalDateTime cursor,
+      @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
+    return ResponseEntity.ok(taskService.getDeletedTasks(userId, teamId, cursor, size));
   }
 }
