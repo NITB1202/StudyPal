@@ -1,5 +1,6 @@
 package com.study.studypal.plan.service.internal;
 
+import com.study.studypal.plan.entity.Plan;
 import java.util.Set;
 import java.util.UUID;
 
@@ -10,5 +11,5 @@ public interface PlanInternalService {
 
   float updatePlanProgress(UUID id);
 
-  void deleteById(UUID id);
+  void deletePlan(Plan plan);
 }

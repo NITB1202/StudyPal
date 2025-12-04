@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,9 +47,9 @@ public class PlanInternalServiceImpl implements PlanInternalService {
   }
 
   @Override
-  @Transactional
-  public void deleteById(UUID id) {
-    planRepository.deleteById(id);
+  public void deletePlan(Plan plan) {
+    plan.setIsDeleted(true);
+    planRepository.save(plan);
   }
 
   @Override

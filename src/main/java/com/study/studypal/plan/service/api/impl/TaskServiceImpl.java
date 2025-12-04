@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.modelmapper.internal.Pair;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -163,7 +162,17 @@ public class TaskServiceImpl implements TaskService {
             : getPersonalDeletedTasks(userId, cursor, pageable);
 
     List<DeletedTaskSummaryResponseDto> tasksDTO =
-        modelMapper.map(tasks, new TypeToken<List<DeletedTaskSummaryResponseDto>>() {}.getType());
+        tasks.stream()
+            .map(
+                task -> {
+                  DeletedTaskSummaryResponseDto taskDto =
+                      modelMapper.map(task, DeletedTaskSummaryResponseDto.class);
+                  if (teamId != null) {
+                    taskDto.setPlanCode(task.getPlan().getPlanCode());
+                  }
+                  return taskDto;
+                })
+            .toList();
 
     long total =
         teamId != null
@@ -335,8 +344,9 @@ public class TaskServiceImpl implements TaskService {
     int remainingTasks = taskRepository.countTasks(planId);
 
     if (remainingTasks == 0) {
-      planService.deleteById(planId);
+      planService.deletePlan(plan);
       notificationService.publishPlanDeletedNotification(userId, plan);
+      historyService.logDeletePlan(userId, planId);
     }
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();

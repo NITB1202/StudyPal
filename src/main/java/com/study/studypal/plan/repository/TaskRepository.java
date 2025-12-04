@@ -167,7 +167,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     JOIN t.assignee a
     WHERE a.id = :userId
     AND t.plan IS NULL
-    AND t.deletedAt <= :cursor
+    AND t.deletedAt IS NOT NULL
     """)
   long countPersonalDeletedTasks(@Param("userId") UUID userId);
 }

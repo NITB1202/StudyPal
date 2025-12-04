@@ -25,7 +25,7 @@ public class DeletedTaskSummaryResponseDto {
   private LocalDateTime startDate;
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  private LocalDateTime dueDue;
+  private LocalDateTime dueDate;
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime deletedAt;
