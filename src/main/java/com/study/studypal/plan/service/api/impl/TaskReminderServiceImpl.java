@@ -88,8 +88,18 @@ public class TaskReminderServiceImpl implements TaskReminderService {
 
   @Override
   public ActionResponseDto deleteReminder(UUID userId, UUID reminderId) {
+    TaskReminder reminder =
+        taskReminderRepository
+            .findById(reminderId)
+            .orElseThrow(() -> new BaseException(TaskReminderErrorCode.REMINDER_NOT_FOUND));
 
-    return null;
+    Task task = reminder.getTask();
+    taskService.validateTaskOwnership(userId, task);
+
+    internalService.cancelReminder(reminder.getId());
+    taskReminderRepository.delete(reminder);
+
+    return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
   private void validateReminder(Task task, LocalDateTime remindAt) {

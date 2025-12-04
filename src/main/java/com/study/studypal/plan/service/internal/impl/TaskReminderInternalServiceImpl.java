@@ -95,6 +95,18 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
     taskReminderRepository.deleteAll(reminders);
   }
 
+  @Override
+  public void cancelReminder(UUID reminderId) {
+    try {
+      JobKey key = new JobKey("reminder_" + reminderId);
+      if (scheduler.checkExists(key)) {
+        scheduler.deleteJob(key);
+      }
+    } catch (SchedulerException e) {
+      throw new BaseException(TaskReminderErrorCode.CANCEL_REMINDER_FAILED, reminderId);
+    }
+  }
+
   private void scheduleReminder(TaskReminder reminder) {
     JobDetail jobDetail =
         JobBuilder.newJob(TaskReminderJob.class)
@@ -116,17 +128,6 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
       throw new BaseException(
           TaskReminderErrorCode.SCHEDULE_REMINDER_FAILED,
           reminder.getRemindAt().format(JSON_DATETIME_FORMATTER));
-    }
-  }
-
-  private void cancelReminder(UUID reminderId) {
-    try {
-      JobKey key = new JobKey("reminder_" + reminderId);
-      if (scheduler.checkExists(key)) {
-        scheduler.deleteJob(key);
-      }
-    } catch (SchedulerException e) {
-      throw new BaseException(TaskReminderErrorCode.CANCEL_REMINDER_FAILED, reminderId);
     }
   }
 }

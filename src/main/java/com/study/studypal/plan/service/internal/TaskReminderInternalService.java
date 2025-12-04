@@ -17,4 +17,6 @@ public interface TaskReminderInternalService {
   void deleteInvalidReminders(UUID taskId, LocalDateTime newStartDate, LocalDateTime newDueDate);
 
   void deleteAllRemindersForTask(UUID taskId);
+
+  void cancelReminder(UUID reminderId);
 }
