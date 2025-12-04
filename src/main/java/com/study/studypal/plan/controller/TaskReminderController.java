@@ -5,6 +5,7 @@ import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.reminder.request.CreateTaskReminderRequestDto;
+import com.study.studypal.plan.dto.reminder.request.UpdateTaskReminderRequestDto;
 import com.study.studypal.plan.dto.reminder.response.TaskReminderResponseDto;
 import com.study.studypal.plan.service.api.TaskReminderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +35,7 @@ public class TaskReminderController {
   @ApiResponse(responseCode = "200", description = "Create successfully.")
   @UnauthorizedApiResponse
   @BadRequestApiResponse
-  public ResponseEntity<ActionResponseDto> createTaskReminder(
+  public ResponseEntity<ActionResponseDto> createReminder(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID taskId,
       @Valid @RequestBody CreateTaskReminderRequestDto request) {
@@ -45,8 +47,20 @@ public class TaskReminderController {
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @UnauthorizedApiResponse
   @NotFoundApiResponse
-  public ResponseEntity<List<TaskReminderResponseDto>> getTaskReminders(
+  public ResponseEntity<List<TaskReminderResponseDto>> getReminders(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
     return ResponseEntity.ok(reminderService.getAll(userId, taskId));
+  }
+
+  @PutMapping("/{reminderId}")
+  @Operation(summary = "Update a task reminder.")
+  @ApiResponse(responseCode = "200", description = "Update successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> updateReminder(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID reminderId,
+      @Valid @RequestBody UpdateTaskReminderRequestDto request) {
+    return ResponseEntity.ok(reminderService.updateReminder(userId, reminderId, request));
   }
 }

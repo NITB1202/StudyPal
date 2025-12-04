@@ -25,9 +25,7 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
 
   @Override
   public void logCreatePlan(UUID userId, UUID planId) {
-    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s created plan.", user.getName());
-    logMessage(planId, message, user.getAvatarUrl());
+    logUserPlanActivity(userId, planId, "%s created plan.");
   }
 
   @Override
@@ -42,37 +40,27 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
 
   @Override
   public void logUpdateTask(UUID userId, UUID planId, String taskCode) {
-    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s updated task [%s].", user.getName(), taskCode);
-    logMessage(planId, message, user.getAvatarUrl());
+    logUserTaskActivity(userId, planId, taskCode, "%s updated task [%s].");
   }
 
   @Override
   public void logCompleteTask(UUID userId, UUID planId, String taskCode) {
-    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s completed task [%s].", user.getName(), taskCode);
-    logMessage(planId, message, user.getAvatarUrl());
+    logUserTaskActivity(userId, planId, taskCode, "%s completed task [%s].");
   }
 
   @Override
   public void logDeleteTask(UUID userId, UUID planId, String taskCode) {
-    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s deleted task [%s].", user.getName(), taskCode);
-    logMessage(planId, message, user.getAvatarUrl());
+    logUserTaskActivity(userId, planId, taskCode, "%s deleted task [%s].");
   }
 
   @Override
   public void logDeletePlan(UUID userId, UUID planId) {
-    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s deleted plan.", user.getName());
-    logMessage(planId, message, user.getAvatarUrl());
+    logUserPlanActivity(userId, planId, "%s deleted plan.");
   }
 
   @Override
   public void logUpdatePlan(UUID userId, UUID planId) {
-    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
-    String message = String.format("%s updated plan.", user.getName());
-    logMessage(planId, message, user.getAvatarUrl());
+    logUserPlanActivity(userId, planId, "%s updated plan.");
   }
 
   private void logMessage(UUID planId, String message, String imageUrl) {
@@ -87,5 +75,18 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
             .build();
 
     planHistoryRepository.save(planHistory);
+  }
+
+  private void logUserPlanActivity(UUID userId, UUID planId, String messageTemplate) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
+    String message = String.format(messageTemplate, user.getName());
+    logMessage(planId, message, user.getAvatarUrl());
+  }
+
+  private void logUserTaskActivity(
+      UUID userId, UUID planId, String taskCode, String messageTemplate) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(userId);
+    String message = String.format(messageTemplate, user.getName(), taskCode);
+    logMessage(planId, message, user.getAvatarUrl());
   }
 }

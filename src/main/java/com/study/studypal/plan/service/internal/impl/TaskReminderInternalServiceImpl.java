@@ -62,6 +62,12 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
   }
 
   @Override
+  public void rescheduleReminder(TaskReminder reminder) {
+    cancelReminder(reminder.getId());
+    scheduleReminder(reminder);
+  }
+
+  @Override
   public void deleteUsedReminder(UUID reminderId) {
     taskReminderRepository.deleteById(reminderId);
   }

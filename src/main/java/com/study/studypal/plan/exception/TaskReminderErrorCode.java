@@ -18,6 +18,7 @@ public enum TaskReminderErrorCode implements ErrorCode {
       HttpStatus.INTERNAL_SERVER_ERROR, "REMINDER_004", "Failed to cancel reminder with id %s"),
   PAST_REMINDER_NOT_ALLOWED(
       HttpStatus.BAD_REQUEST, "REMINDER_005", "Reminder %s cannot be set in the past."),
+  REMINDER_NOT_FOUND(HttpStatus.NOT_FOUND, "REMINDER_006", "Reminder not found."),
   ;
 
   private final HttpStatus httpStatus;
