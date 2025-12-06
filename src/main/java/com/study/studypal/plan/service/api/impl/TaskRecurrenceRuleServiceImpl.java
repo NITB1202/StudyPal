@@ -59,15 +59,15 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
 
     if (!currentType.equals(RecurrenceType.NONE) && changeType.equals(RecurrenceType.NONE)) {
       deleteActiveClonedTasksExcludeCurrent(task);
+      taskService.detachFromParent(task);
       deleteRecurrenceRule(existingRule);
-      detachFromParent(task);
 
       return successResponse;
     }
 
     validateRecurrenceRule(request, task);
     deleteActiveClonedTasksExcludeCurrent(task);
-    detachFromParent(task);
+    taskService.detachFromParent(task);
 
     TaskRecurrenceRule updatedRule = updateRecurrenceRule(request, task, existingRule);
     cloneTaskUtilRecurrenceEndDate(taskId, updatedRule);
@@ -145,8 +145,9 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
             ? request.getWeekDays().stream().map(DayOfWeek::name).collect(Collectors.joining(","))
             : null;
 
-    rule = rule != null ? rule : TaskRecurrenceRule.builder().task(task).build();
+    rule = rule != null ? rule : new TaskRecurrenceRule();
 
+    rule.setTask(task);
     rule.setRecurrenceType(request.getType());
     rule.setRecurrenceStartDate(startDate);
     rule.setRecurrenceEndDate(endDate);
@@ -199,9 +200,5 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
     List<Task> tasks = taskService.getAllActiveClonedTasksIncludingOriginal(task);
     tasks.remove(task);
     taskService.hardDelete(tasks);
-  }
-
-  private void detachFromParent(Task task) {
-    task.setParentTask(null);
   }
 }

@@ -45,5 +45,7 @@ public interface TaskInternalService {
 
   void deleteAllTasksByPlanId(UUID planId);
 
+  void detachFromParent(Task task);
+
   void hardDelete(List<Task> tasks);
 }

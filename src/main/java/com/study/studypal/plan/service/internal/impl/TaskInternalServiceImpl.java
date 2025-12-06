@@ -238,6 +238,12 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
+  public void detachFromParent(Task task) {
+    task.setParentTask(null);
+    taskRepository.save(task);
+  }
+
+  @Override
   public void hardDelete(List<Task> tasks) {
     for (Task task : tasks) {
       reminderService.deleteAllRemindersForTask(task.getId());
