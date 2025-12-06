@@ -4,14 +4,17 @@ import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.DateErrorCode;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
+import com.study.studypal.plan.dto.task.internal.TaskCursor;
 import com.study.studypal.plan.dto.task.internal.UpdateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.SearchTasksRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.DeletedTaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskAdditionalDataResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
@@ -29,6 +32,7 @@ import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.plan.service.internal.TaskRecurrenceRuleInternalService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
+import com.study.studypal.plan.util.TaskCursorUtils;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -189,6 +193,58 @@ public class TaskServiceImpl implements TaskService {
             : null;
 
     return ListDeletedTaskResponseDto.builder()
+        .tasks(tasksDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  @Override
+  public ListTaskResponseDto searchTasks(UUID userId, SearchTasksRequestDto request) {
+    if (!request.getFromDate().isBefore(request.getToDate())) {
+      throw new BaseException(TaskErrorCode.INVALID_SEARCH_DATE_RANGE);
+    }
+
+    Pageable pageable = PageRequest.of(0, request.getSize());
+
+    List<Task> tasks;
+    if (request.getCursor() != null && !request.getCursor().isEmpty()) {
+      TaskCursor decodedCursor = TaskCursorUtils.decodeCursor(request.getCursor());
+      tasks =
+          taskRepository.searchTasksWithCursor(
+              request.getKeyword(),
+              request.getFromDate(),
+              request.getToDate(),
+              decodedCursor.dueDate(),
+              decodedCursor.priorityValue(),
+              decodedCursor.id(),
+              pageable);
+    } else {
+      tasks =
+          taskRepository.searchTasks(
+              request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
+    }
+
+    List<TaskSummaryResponseDto> tasksDTO =
+        tasks.stream()
+            .map(
+                task -> {
+                  TaskSummaryResponseDto taskDto =
+                      modelMapper.map(task, TaskSummaryResponseDto.class);
+                  taskDto.setTaskType(getTaskType(task));
+                  return taskDto;
+                })
+            .toList();
+
+    long total = taskRepository.countPersonalTasks(userId);
+
+    String nextCursor = null;
+    if (!tasks.isEmpty() && tasks.size() == request.getSize()) {
+      Task lastTask = tasks.get(tasks.size() - 1);
+      nextCursor = TaskCursorUtils.encodeCursor(lastTask);
+    }
+
+    return ListTaskResponseDto.builder()
         .tasks(tasksDTO)
         .total(total)
         .nextCursor(nextCursor)

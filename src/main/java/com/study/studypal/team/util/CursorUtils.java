@@ -6,9 +6,11 @@ import com.study.studypal.team.exception.TeamMembershipErrorCode;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CursorUtils {
-  private CursorUtils() {}
 
   public static String encodeCursor(int rolePriority, String name, UUID userId) {
     return Base64.getEncoder()

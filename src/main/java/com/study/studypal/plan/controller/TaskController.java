@@ -7,9 +7,11 @@ import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.SearchTasksRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
@@ -138,5 +140,13 @@ public class TaskController {
       @PathVariable UUID taskId,
       @RequestParam(required = false) ApplyScope applyScope) {
     return ResponseEntity.ok(taskService.recoverTask(userId, taskId, applyScope));
+  }
+
+  @PostMapping("/search")
+  @Operation(summary = "Search for tasks.")
+  @ApiResponse(responseCode = "Search successfully.")
+  public ResponseEntity<ListTaskResponseDto> searchTasks(
+      @AuthenticationPrincipal UUID userId, @Valid @RequestBody SearchTasksRequestDto request) {
+    return ResponseEntity.ok(taskService.searchTasks(userId, request));
   }
 }

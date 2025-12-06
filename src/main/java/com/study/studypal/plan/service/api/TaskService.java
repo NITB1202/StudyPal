@@ -3,10 +3,12 @@ package com.study.studypal.plan.service.api;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.SearchTasksRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
@@ -30,6 +32,8 @@ public interface TaskService {
 
   ListDeletedTaskResponseDto getDeletedTasks(
       UUID userId, UUID teamId, LocalDateTime cursor, int size);
+
+  ListTaskResponseDto searchTasks(UUID userId, SearchTasksRequestDto request);
 
   UpdateTaskResponseDto updateTask(
       UUID userId, UUID taskId, ApplyScope applyScope, UpdateTaskRequestDto request);

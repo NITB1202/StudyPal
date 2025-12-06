@@ -1,7 +1,7 @@
 package com.study.studypal.plan.enums;
 
 public enum Priority {
-  LOW,
+  HIGH,
   MEDIUM,
-  HIGH
+  LOW
 }

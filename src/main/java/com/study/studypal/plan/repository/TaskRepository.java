@@ -181,4 +181,62 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     AND t.deletedAt IS NOT NULL
     """)
   List<Task> findAllDeletedChildTask(@Param("taskId") UUID taskId);
+
+  @Query(
+      """
+     SELECT t
+     FROM Task t
+     WHERE t.deletedAt IS NULL
+       AND LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+       AND t.dueDate >= :fromDate
+       AND t.startDate <= :toDate
+     ORDER BY
+         t.dueDate ASC,
+         t.priorityValue ASC,
+         t.id ASC
+    """)
+  List<Task> searchTasks(
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      Pageable pageable);
+
+  @Query(
+      """
+     SELECT t
+     FROM Task t
+     WHERE t.deletedAt IS NULL
+       AND LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+       AND t.dueDate >= :fromDate
+       AND t.startDate <= :toDate
+       AND (
+       t.dueDate > :cursorDue
+         OR (t.dueDate = :cursorDue AND t.priorityValue > :cursorPriority)
+         OR (t.dueDate = :cursorDue AND t.priorityValue = :cursorPriority AND t.id > :cursorId)
+       )
+
+     ORDER BY
+         t.dueDate ASC,
+         t.priorityValue ASC,
+         t.id ASC
+    """)
+  List<Task> searchTasksWithCursor(
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      @Param("cursorDue") LocalDateTime cursorDue,
+      @Param("cursorPriority") Integer cursorPriority,
+      @Param("cursorId") UUID cursorId,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT COUNT(t)
+    FROM Task t
+    JOIN t.assignee a
+    WHERE a.id = :userId
+    AND t.plan IS NULL
+    AND t.deletedAt IS NULL
+    """)
+  long countPersonalTasks(@Param("userId") UUID userId);
 }
