@@ -145,6 +145,7 @@ public class TaskController {
   @PostMapping("/search")
   @Operation(summary = "Search for tasks.")
   @ApiResponse(responseCode = "Search successfully.")
+  @BadRequestApiResponse
   public ResponseEntity<ListTaskResponseDto> searchTasks(
       @AuthenticationPrincipal UUID userId, @Valid @RequestBody SearchTasksRequestDto request) {
     return ResponseEntity.ok(taskService.searchTasks(userId, request));

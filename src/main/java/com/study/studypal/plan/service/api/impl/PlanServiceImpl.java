@@ -6,6 +6,7 @@ import static com.study.studypal.plan.constant.PlanConstant.PLAN_CODE_PREFIX;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.CommonErrorCode;
+import com.study.studypal.plan.dto.plan.internal.PlanCursor;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.SearchPlanRequestDto;
@@ -27,6 +28,7 @@ import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.util.PlanCursorUtils;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -42,6 +44,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -142,7 +146,46 @@ public class PlanServiceImpl implements PlanService {
 
   @Override
   public ListPlanResponseDto searchPlans(UUID userId, UUID teamId, SearchPlanRequestDto request) {
-    return null;
+    if (!request.getFromDate().isBefore(request.getToDate())) {
+      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+    }
+
+    memberService.validateUserBelongsToTeam(userId, teamId);
+    Pageable pageable = PageRequest.of(0, request.getSize());
+
+    List<Plan> plans;
+    if (request.getCursor() != null && !request.getCursor().isEmpty()) {
+      PlanCursor decodedCursor = PlanCursorUtils.decodeCursor(request.getCursor());
+      plans =
+          planRepository.searchPlansWithCursor(
+              teamId,
+              request.getKeyword(),
+              request.getFromDate(),
+              request.getToDate(),
+              decodedCursor.dueDate(),
+              decodedCursor.id(),
+              pageable);
+    } else {
+      plans =
+          planRepository.searchPlans(
+              teamId, request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
+    }
+
+    List<PlanSummaryResponseDto> plansDTO =
+        modelMapper.map(plans, new TypeToken<List<PlanSummaryResponseDto>>() {}.getType());
+    long total = planRepository.countPlans(teamId);
+
+    String nextCursor = null;
+    if (!plans.isEmpty() && plans.size() == request.getSize()) {
+      Plan lastPlan = plans.get(plans.size() - 1);
+      nextCursor = PlanCursorUtils.encodeCursor(lastPlan);
+    }
+
+    return ListPlanResponseDto.builder()
+        .plans(plansDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
   }
 
   @Override

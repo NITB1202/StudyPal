@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -53,4 +54,68 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT p FROM Plan p WHERE p.id = :id")
   Optional<Plan> findByIdForUpdate(UUID id);
+
+  @Query(
+      """
+    SELECT p
+    FROM Plan p
+    WHERE p.isDeleted = false
+    AND p.team.id = :teamId
+    AND (
+        LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(p.planCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    AND p.dueDate >= :fromDate
+    AND p.startDate <= :toDate
+    ORDER BY
+    p.dueDate ASC,
+    p.id ASC
+    """)
+  List<Plan> searchPlans(
+      @Param("teamId") UUID teamId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT p
+    FROM Plan p
+    WHERE p.isDeleted = false
+    AND p.team.id = :teamId
+    AND (
+        LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(p.planCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    AND p.dueDate >= :fromDate
+    AND p.startDate <= :toDate
+    AND (
+        p.dueDate > :cursorDue
+        OR (
+            p.dueDate = :cursorDue
+            AND p.id > :cursorId
+        )
+    )
+    ORDER BY
+    p.dueDate ASC,
+    p.id ASC
+    """)
+  List<Plan> searchPlansWithCursor(
+      @Param("teamId") UUID teamId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      @Param("cursorDue") LocalDateTime cursorDue,
+      @Param("cursorId") UUID cursorId,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT COUNT(p)
+    FROM Plan p
+    WHERE p.team.id = :teamId
+    AND p.isDeleted = false
+    """)
+  long countPlans(@Param("teamId") UUID teamId);
 }

@@ -6,8 +6,10 @@ import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.history.ListPlanHistoryResponseDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
+import com.study.studypal.plan.dto.plan.request.SearchPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.UpdatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
+import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.dto.plan.response.UpdatePlanResponseDto;
@@ -114,5 +116,17 @@ public class PlanController {
   public ResponseEntity<ActionResponseDto> deletePlan(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID planId) {
     return ResponseEntity.ok(planService.deletePlan(userId, planId));
+  }
+
+  @PostMapping("/api/teams/{teamId}/plans/search")
+  @Operation(summary = "Search for plans.")
+  @ApiResponse(responseCode = "200", description = "Search successfully.")
+  @UnauthorizedApiResponse
+  @BadRequestApiResponse
+  public ResponseEntity<ListPlanResponseDto> searchPlans(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID teamId,
+      @Valid @RequestBody SearchPlanRequestDto request) {
+    return ResponseEntity.ok(planService.searchPlans(userId, teamId, request));
   }
 }
