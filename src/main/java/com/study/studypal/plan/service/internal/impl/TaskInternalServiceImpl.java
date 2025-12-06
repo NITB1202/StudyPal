@@ -4,6 +4,7 @@ import static com.study.studypal.plan.constant.PlanConstant.CODE_NUMBER_FORMAT;
 import static com.study.studypal.plan.constant.PlanConstant.TASK_CODE_PREFIX;
 
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.code.CommonErrorCode;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
@@ -63,7 +64,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @Override
   public Task createTask(UUID assigneeId, Pair<UUID, UUID> planInfo, CreateTaskInfo taskInfo) {
     if (taskInfo.getDueDate().isBefore(taskInfo.getStartDate())) {
-      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, taskInfo.getContent());
+      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
     }
 
     UUID planId = planInfo.getLeft();

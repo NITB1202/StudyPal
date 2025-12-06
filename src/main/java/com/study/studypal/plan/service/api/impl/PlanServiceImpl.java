@@ -8,8 +8,10 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.CommonErrorCode;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
+import com.study.studypal.plan.dto.plan.request.SearchPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.UpdatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
+import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.dto.plan.response.UpdatePlanResponseDto;
@@ -139,6 +141,11 @@ public class PlanServiceImpl implements PlanService {
   }
 
   @Override
+  public ListPlanResponseDto searchPlans(UUID userId, UUID teamId, SearchPlanRequestDto request) {
+    return null;
+  }
+
+  @Override
   public List<String> getDatesWithPlanDueDatesInMonth(
       UUID userId, UUID teamId, Integer month, Integer year) {
     memberService.validateUserBelongsToTeam(userId, teamId);
@@ -175,7 +182,7 @@ public class PlanServiceImpl implements PlanService {
     memberService.validateUpdatePlanPermission(userId, plan.getTeam().getId());
 
     if (request.getTitle() != null && request.getTitle().isBlank()) {
-      throw new BaseException(PlanErrorCode.BLANK_TITLE);
+      throw new BaseException(CommonErrorCode.FIELD_BLANK, "Title");
     }
 
     modelMapper.map(request, plan);

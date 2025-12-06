@@ -2,8 +2,10 @@ package com.study.studypal.plan.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
+import com.study.studypal.plan.dto.plan.request.SearchPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.UpdatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
+import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.dto.plan.response.UpdatePlanResponseDto;
@@ -17,6 +19,8 @@ public interface PlanService {
   PlanDetailResponseDto getPlanDetail(UUID userId, UUID planId);
 
   List<PlanSummaryResponseDto> getPlansOnDate(UUID userId, UUID teamId, LocalDate date);
+
+  ListPlanResponseDto searchPlans(UUID userId, UUID teamId, SearchPlanRequestDto request);
 
   List<String> getDatesWithPlanDueDatesInMonth(
       UUID userId, UUID teamId, Integer month, Integer year);

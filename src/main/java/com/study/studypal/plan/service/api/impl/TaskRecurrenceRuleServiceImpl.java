@@ -2,6 +2,7 @@ package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.code.CommonErrorCode;
 import com.study.studypal.plan.dto.recurrence.request.UpdateTaskRecurrenceRuleRequestDto;
 import com.study.studypal.plan.dto.recurrence.response.TaskRecurrenceRuleResponseDto;
 import com.study.studypal.plan.entity.Task;
@@ -118,11 +119,9 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
     if (!taskStartDate.equals(taskDueDate))
       throw new BaseException(TaskRecurrenceRuleErrorCode.RECURRING_TASK_DURATION_INVALID);
 
-    if (endDate == null)
-      throw new BaseException(TaskRecurrenceRuleErrorCode.END_DATE_MUST_NOT_BE_NULL);
+    if (endDate == null) throw new BaseException(CommonErrorCode.FIELD_NULL, "End date");
 
-    if (startDate.isAfter(endDate))
-      throw new BaseException(TaskRecurrenceRuleErrorCode.START_DATE_AFTER_END_DATE);
+    if (startDate.isAfter(endDate)) throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
 
     if (!startDate.isAfter(taskDueDate))
       throw new BaseException(TaskRecurrenceRuleErrorCode.START_DATE_AFTER_DUE_DATE);

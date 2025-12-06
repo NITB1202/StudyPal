@@ -194,7 +194,7 @@ public class TaskServiceImpl implements TaskService {
   @Override
   public ListTaskResponseDto searchTasks(UUID userId, SearchTasksRequestDto request) {
     if (!request.getFromDate().isBefore(request.getToDate())) {
-      throw new BaseException(TaskErrorCode.INVALID_SEARCH_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
     }
 
     Pageable pageable = PageRequest.of(0, request.getSize());
@@ -472,14 +472,13 @@ public class TaskServiceImpl implements TaskService {
 
   private void validateUpdateTaskRequest(Task task, UpdateTaskInfo info) {
     if (info.getContent() != null && info.getContent().isBlank())
-      throw new BaseException(TaskErrorCode.BLANK_TASK);
+      throw new BaseException(CommonErrorCode.FIELD_BLANK, "Content");
 
     LocalDateTime startDate =
         info.getStartDate() != null ? info.getStartDate() : task.getStartDate();
     LocalDateTime dueDate = info.getDueDate() != null ? info.getDueDate() : task.getDueDate();
 
-    if (dueDate.isBefore(startDate))
-      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, task.getContent());
+    if (dueDate.isBefore(startDate)) throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
   }
 
   private void updatePersonalTask(Task task, UpdateTaskRequestDto request) {

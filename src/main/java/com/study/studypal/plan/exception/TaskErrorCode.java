@@ -6,27 +6,22 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum TaskErrorCode implements ErrorCode {
-  INVALID_DUE_DATE(
-      HttpStatus.BAD_REQUEST, "TASK_001", "Task '%s' must have a due date after its start date."),
-  TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_002", "Task not found."),
+  TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_001", "Task not found."),
   PERMISSION_TASK_OWNER_DENIED(
-      HttpStatus.FORBIDDEN, "TASK_003", "You are not the owner of this task."),
+      HttpStatus.FORBIDDEN, "TASK_002", "You are not the owner of this task."),
   PERSONAL_TASK_REQUIRED(
-      HttpStatus.BAD_REQUEST, "TASK_004", "This operation is only allowed for personal tasks."),
-  BLANK_TASK(HttpStatus.BAD_REQUEST, "TASK_005", "The task content can't be left blank."),
+      HttpStatus.BAD_REQUEST, "TASK_003", "This operation is only allowed for personal tasks."),
   TEAM_TASK_REQUIRED(
-      HttpStatus.FORBIDDEN, "TASK_006", "This operation is only allowed for team tasks."),
-  TASK_ALREADY_COMPLETED(HttpStatus.CONFLICT, "TASK_007", "Task is already completed."),
+      HttpStatus.FORBIDDEN, "TASK_004", "This operation is only allowed for team tasks."),
+  TASK_ALREADY_COMPLETED(HttpStatus.CONFLICT, "TASK_005", "Task is already completed."),
   TASK_ASSIGNEE_ONLY(
       HttpStatus.FORBIDDEN,
-      "TASK_008",
+      "TASK_006",
       "Only the task assignee is allowed to perform this action."),
-  TASK_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "TASK_009", "Task is already deleted."),
-  TASK_NOT_DELETED(HttpStatus.BAD_REQUEST, "TASK_010", "Task is not deleted."),
+  TASK_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "TASK_007", "Task is already deleted."),
+  TASK_NOT_DELETED(HttpStatus.BAD_REQUEST, "TASK_008", "Task is not deleted."),
   TASK_SCOPE_REQUIRED(
-      HttpStatus.BAD_REQUEST, "TASK_011", "Apply scope must be specified for cloned tasks."),
-  INVALID_SEARCH_DATE_RANGE(
-      HttpStatus.BAD_REQUEST, "TASK_012", "From date must be before or equal to to date."),
+      HttpStatus.BAD_REQUEST, "TASK_009", "Apply scope must be specified for cloned tasks."),
   ;
 
   private final HttpStatus httpStatus;
