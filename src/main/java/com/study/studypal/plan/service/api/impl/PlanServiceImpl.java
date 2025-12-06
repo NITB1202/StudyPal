@@ -5,7 +5,7 @@ import static com.study.studypal.plan.constant.PlanConstant.PLAN_CODE_PREFIX;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.code.DateErrorCode;
+import com.study.studypal.common.exception.code.CommonErrorCode;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.UpdatePlanRequestDto;
@@ -148,11 +148,11 @@ public class PlanServiceImpl implements PlanService {
     int handledYear = year == null ? now.getYear() : year;
 
     if (handledMonth < 1 || handledMonth > 12) {
-      throw new BaseException(DateErrorCode.INVALID_M0NTH);
+      throw new BaseException(CommonErrorCode.INVALID_M0NTH);
     }
 
     if (handledYear <= 0) {
-      throw new BaseException(DateErrorCode.INVALID_YEAR);
+      throw new BaseException(CommonErrorCode.INVALID_YEAR);
     }
 
     List<LocalDateTime> dueDates =

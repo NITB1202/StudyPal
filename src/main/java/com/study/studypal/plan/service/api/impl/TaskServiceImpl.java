@@ -2,7 +2,7 @@ package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.code.DateErrorCode;
+import com.study.studypal.common.exception.code.CommonErrorCode;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.internal.TaskCursor;
 import com.study.studypal.plan.dto.task.internal.UpdateTaskInfo;
@@ -135,10 +135,10 @@ public class TaskServiceImpl implements TaskService {
     int handledYear = year == null ? now.getYear() : year;
 
     if (handledMonth < 1 || handledMonth > 12) {
-      throw new BaseException(DateErrorCode.INVALID_M0NTH);
+      throw new BaseException(CommonErrorCode.INVALID_M0NTH);
     }
     if (handledYear <= 0) {
-      throw new BaseException(DateErrorCode.INVALID_YEAR);
+      throw new BaseException(CommonErrorCode.INVALID_YEAR);
     }
 
     List<LocalDateTime> dueDates =

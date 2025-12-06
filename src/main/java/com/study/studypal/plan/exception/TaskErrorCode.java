@@ -25,9 +25,8 @@ public enum TaskErrorCode implements ErrorCode {
   TASK_NOT_DELETED(HttpStatus.BAD_REQUEST, "TASK_010", "Task is not deleted."),
   TASK_SCOPE_REQUIRED(
       HttpStatus.BAD_REQUEST, "TASK_011", "Apply scope must be specified for cloned tasks."),
-  CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "TASK_012", "Failed to decode cursor: %s"),
   INVALID_SEARCH_DATE_RANGE(
-      HttpStatus.BAD_REQUEST, "TASK_013", "From date must be before or equal to to date."),
+      HttpStatus.BAD_REQUEST, "TASK_012", "From date must be before or equal to to date."),
   ;
 
   private final HttpStatus httpStatus;

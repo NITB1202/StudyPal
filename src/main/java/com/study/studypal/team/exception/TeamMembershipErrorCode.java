@@ -36,13 +36,12 @@ public enum TeamMembershipErrorCode implements ErrorCode {
       HttpStatus.CONFLICT, "TEAM_MEM_011", "The invitee is already a member of this team."),
   MEMBER_ALREADY_REMOVED(
       HttpStatus.CONFLICT, "TEAM_MEM_012", "The member has already been removed from the team."),
-  CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "TEAM_MEM_013", "Failed to decode cursor: %s"),
   TEAM_OWNER_LIMIT_REACHED(
       HttpStatus.BAD_REQUEST,
-      "TEAM_MEM_014",
+      "TEAM_MEM_013",
       "The selected member already owns the maximum number of teams allowed."),
   PERMISSION_UPDATE_PLAN_DENIED(
-      HttpStatus.FORBIDDEN, "TEAM_MEM_015", "Only the owner or an admin can update team's plan.");
+      HttpStatus.FORBIDDEN, "TEAM_MEM_014", "Only the owner or an admin can update team's plan.");
 
   private final HttpStatus httpStatus;
   private final String code;
