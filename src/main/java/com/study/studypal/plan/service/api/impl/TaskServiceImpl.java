@@ -212,17 +212,16 @@ public class TaskServiceImpl implements TaskService {
       TaskCursor decodedCursor = TaskCursorUtils.decodeCursor(request.getCursor());
       tasks =
           taskRepository.searchTasksWithCursor(
+              userId,
               request.getKeyword(),
               request.getFromDate(),
               request.getToDate(),
-              decodedCursor.dueDate(),
-              decodedCursor.priorityValue(),
-              decodedCursor.id(),
+              decodedCursor,
               pageable);
     } else {
       tasks =
           taskRepository.searchTasks(
-              request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
+              userId, request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
     }
 
     List<TaskSummaryResponseDto> tasksDTO =
