@@ -18,7 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateTaskRecurrenceRuleRequestDto {
+public class UpdateTaskRecurrenceRuleRequestDto {
   @NotNull(message = "Recurrence type is required")
   private RecurrenceType type;
 
@@ -28,7 +28,6 @@ public class CreateTaskRecurrenceRuleRequestDto {
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate recurrenceStartDate;
 
-  @NotNull(message = "Recurrence end date is required")
   @Future(message = "Recurrence end date must be in the future")
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate recurrenceEndDate;

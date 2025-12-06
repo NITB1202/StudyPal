@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Formula;
 
 @Entity
 @Getter
@@ -70,4 +71,15 @@ public class Task {
 
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
+
+  @Formula(
+      """
+        CASE priority
+            WHEN 'HIGH' THEN 1
+            WHEN 'MEDIUM' THEN 2
+            WHEN 'LOW' THEN 3
+            ELSE 4
+        END
+    """)
+  private Integer priorityValue;
 }

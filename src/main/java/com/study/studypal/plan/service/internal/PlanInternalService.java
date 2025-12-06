@@ -9,7 +9,9 @@ public interface PlanInternalService {
 
   Set<UUID> getPlanRelatedMemberIds(UUID planId);
 
-  float updatePlanProgress(UUID id);
+  void syncPlanFromTasks(Plan plan);
 
   void softDeletePlan(Plan plan);
+
+  void recoverPlan(Plan plan);
 }

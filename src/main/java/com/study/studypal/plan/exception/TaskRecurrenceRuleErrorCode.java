@@ -6,18 +6,15 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum TaskRecurrenceRuleErrorCode implements ErrorCode {
-  START_DATE_AFTER_END_DATE(
-      HttpStatus.BAD_REQUEST,
-      "RECUR_001",
-      "Recurrence start date must be after recurrence end date."),
   START_DATE_AFTER_DUE_DATE(
       HttpStatus.BAD_REQUEST,
-      "RECUR_002",
+      "RECUR_001",
       "Recurrence start date must be after the task's due date."),
   INVALID_WEEKLY_RECURRENCE(
-      HttpStatus.BAD_REQUEST, "RECUR_003", "Weekdays must not be empty for weekly recurrence."),
+      HttpStatus.BAD_REQUEST, "RECUR_002", "Weekdays must not be empty for weekly recurrence."),
   RECURRING_TASK_DURATION_INVALID(
-      HttpStatus.BAD_REQUEST, "RECUR_004", "Recurring tasks must start and end on the same day.");
+      HttpStatus.BAD_REQUEST, "RECUR_003", "Recurring tasks must start and end on the same day."),
+  ;
 
   private final HttpStatus httpStatus;
   private final String code;

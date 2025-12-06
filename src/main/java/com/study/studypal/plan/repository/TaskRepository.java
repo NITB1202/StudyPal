@@ -1,5 +1,6 @@
 package com.study.studypal.plan.repository;
 
+import com.study.studypal.plan.dto.task.internal.TaskCursor;
 import com.study.studypal.plan.entity.Task;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
@@ -172,4 +173,90 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     AND t.deletedAt IS NOT NULL
     """)
   long countPersonalDeletedTasks(@Param("userId") UUID userId);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    WHERE t.parentTask.id = :taskId
+    AND t.deletedAt IS NOT NULL
+    """)
+  List<Task> findAllDeletedChildTask(@Param("taskId") UUID taskId);
+
+  @Query(
+      """
+     SELECT t
+     FROM Task t
+     WHERE t.deletedAt IS NULL
+       AND t.assignee.id = :userId
+       AND (
+            LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+            LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+       )
+       AND t.dueDate >= :fromDate
+       AND t.startDate <= :toDate
+     ORDER BY
+         t.dueDate ASC,
+         t.priorityValue ASC,
+         t.id ASC
+    """)
+  List<Task> searchTasks(
+      @Param("userId") UUID userId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      Pageable pageable);
+
+  @Query(
+      """
+     SELECT t
+     FROM Task t
+     WHERE t.deletedAt IS NULL
+       AND t.assignee.id = :userId
+
+       AND (
+            LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+       )
+
+       AND t.dueDate >= :fromDate
+       AND t.startDate <= :toDate
+
+       AND (
+            :#{#cursor} IS NULL
+         OR t.dueDate > :#{#cursor.dueDate}
+         OR (
+              t.dueDate = :#{#cursor.dueDate}
+              AND t.priorityValue > :#{#cursor.priorityValue}
+            )
+         OR (
+              t.dueDate = :#{#cursor.dueDate}
+              AND t.priorityValue = :#{#cursor.priorityValue}
+              AND t.id > :#{#cursor.id}
+            )
+       )
+
+     ORDER BY
+         t.dueDate ASC,
+         t.priorityValue ASC,
+         t.id ASC
+    """)
+  List<Task> searchTasksWithCursor(
+      @Param("userId") UUID userId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      @Param("cursor") TaskCursor cursor,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT COUNT(t)
+    FROM Task t
+    JOIN t.assignee a
+    WHERE a.id = :userId
+    AND t.plan IS NULL
+    AND t.deletedAt IS NULL
+    """)
+  long countPersonalTasks(@Param("userId") UUID userId);
 }

@@ -63,6 +63,16 @@ public class PlanHistoryInternalServiceImpl implements PlanHistoryInternalServic
     logUserPlanActivity(userId, planId, "%s updated plan.");
   }
 
+  @Override
+  public void logRecoverPlan(UUID userId, UUID planId) {
+    logUserPlanActivity(userId, planId, "%s recovered plan.");
+  }
+
+  @Override
+  public void logRecoverTask(UUID userId, UUID planId, String taskCode) {
+    logUserTaskActivity(userId, planId, taskCode, "%s recovered task [%s].");
+  }
+
   private void logMessage(UUID planId, String message, String imageUrl) {
     Plan plan = entityManager.getReference(Plan.class, planId);
 

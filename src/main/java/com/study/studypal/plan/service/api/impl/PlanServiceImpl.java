@@ -5,17 +5,22 @@ import static com.study.studypal.plan.constant.PlanConstant.PLAN_CODE_PREFIX;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.code.DateErrorCode;
+import com.study.studypal.common.exception.code.CommonErrorCode;
+import com.study.studypal.plan.dto.plan.internal.PlanCursor;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.plan.request.CreatePlanRequestDto;
+import com.study.studypal.plan.dto.plan.request.SearchPlanRequestDto;
 import com.study.studypal.plan.dto.plan.request.UpdatePlanRequestDto;
 import com.study.studypal.plan.dto.plan.response.CreatePlanResponseDto;
+import com.study.studypal.plan.dto.plan.response.ListPlanResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanDetailResponseDto;
 import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.dto.plan.response.UpdatePlanResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
+import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.exception.PlanErrorCode;
+import com.study.studypal.plan.mapper.TaskMapper;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.api.PlanService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
@@ -23,6 +28,7 @@ import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.util.PlanCursorUtils;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -37,7 +43,9 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.internal.Pair;
+import org.modelmapper.TypeToken;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,6 +60,7 @@ public class PlanServiceImpl implements PlanService {
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
   private final PlanInternalService internalService;
+  private final TaskMapper taskMapper;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -72,6 +81,8 @@ public class PlanServiceImpl implements PlanService {
             .title(request.getTitle())
             .description(request.getDescription())
             .progress(0f)
+            .startDate(LocalDateTime.now())
+            .dueDate(LocalDateTime.now())
             .isDeleted(false)
             .team(team)
             .build();
@@ -80,8 +91,9 @@ public class PlanServiceImpl implements PlanService {
 
     PlanInfo planInfo =
         PlanInfo.builder().assignerId(userId).teamId(teamId).planId(plan.getId()).build();
-
     taskService.createTasksForPlan(planInfo, request.getTasks());
+
+    internalService.syncPlanFromTasks(plan);
     historyService.logCreatePlan(userId, plan.getId());
 
     return modelMapper.map(plan, CreatePlanResponseDto.class);
@@ -108,16 +120,15 @@ public class PlanServiceImpl implements PlanService {
 
     PlanDetailResponseDto dto = modelMapper.map(plan, PlanDetailResponseDto.class);
 
-    List<TaskResponseDto> tasks = taskService.getAll(planId);
+    List<Task> tasks = taskService.getAll(planId);
+    List<TaskResponseDto> tasksDTO = taskMapper.toTaskResponseDtoList(tasks);
+
     int totalTasksCount = taskService.getTotalTasksCount(planId);
     int completedTasksCount = taskService.getCompletedTasksCount(planId);
-    Pair<LocalDateTime, LocalDateTime> planPeriod = taskService.getPlanPeriod(planId);
 
-    dto.setTasks(tasks);
+    dto.setTasks(tasksDTO);
     dto.setTotalTasksCount(totalTasksCount);
     dto.setCompletedTaskCount(completedTasksCount);
-    dto.setStartDate(planPeriod.getLeft());
-    dto.setDueDate(planPeriod.getRight());
 
     return dto;
   }
@@ -125,9 +136,56 @@ public class PlanServiceImpl implements PlanService {
   @Override
   public List<PlanSummaryResponseDto> getPlansOnDate(UUID userId, UUID teamId, LocalDate date) {
     memberService.validateUserBelongsToTeam(userId, teamId);
+
     LocalDateTime startOfDay = date.atStartOfDay();
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-    return planRepository.findPlansOnDate(userId, teamId, startOfDay, endOfDay);
+
+    List<Plan> plans = planRepository.findPlansOnDate(userId, teamId, startOfDay, endOfDay);
+    return modelMapper.map(plans, new TypeToken<List<PlanSummaryResponseDto>>() {}.getType());
+  }
+
+  @Override
+  public ListPlanResponseDto searchPlans(UUID userId, UUID teamId, SearchPlanRequestDto request) {
+    if (!request.getFromDate().isBefore(request.getToDate())) {
+      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+    }
+
+    memberService.validateUserBelongsToTeam(userId, teamId);
+    Pageable pageable = PageRequest.of(0, request.getSize());
+
+    List<Plan> plans;
+    if (request.getCursor() != null && !request.getCursor().isEmpty()) {
+      PlanCursor decodedCursor = PlanCursorUtils.decodeCursor(request.getCursor());
+      plans =
+          planRepository.searchPlansWithCursor(
+              teamId,
+              request.getKeyword(),
+              request.getFromDate(),
+              request.getToDate(),
+              decodedCursor.dueDate(),
+              decodedCursor.id(),
+              pageable);
+    } else {
+      plans =
+          planRepository.searchPlans(
+              teamId, request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
+    }
+
+    List<PlanSummaryResponseDto> plansDTO =
+        modelMapper.map(plans, new TypeToken<List<PlanSummaryResponseDto>>() {}.getType());
+    long total = planRepository.countPlans(teamId);
+
+    String nextCursor = null;
+    if (!plans.isEmpty() && plans.size() == request.getSize()) {
+      Plan lastPlan = plans.get(plans.size() - 1);
+      nextCursor = PlanCursorUtils.encodeCursor(lastPlan);
+    }
+
+    return ListPlanResponseDto.builder()
+        .plans(plansDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
   }
 
   @Override
@@ -140,11 +198,11 @@ public class PlanServiceImpl implements PlanService {
     int handledYear = year == null ? now.getYear() : year;
 
     if (handledMonth < 1 || handledMonth > 12) {
-      throw new BaseException(DateErrorCode.INVALID_M0NTH);
+      throw new BaseException(CommonErrorCode.INVALID_M0NTH);
     }
 
     if (handledYear <= 0) {
-      throw new BaseException(DateErrorCode.INVALID_YEAR);
+      throw new BaseException(CommonErrorCode.INVALID_YEAR);
     }
 
     List<LocalDateTime> dueDates =
@@ -167,7 +225,7 @@ public class PlanServiceImpl implements PlanService {
     memberService.validateUpdatePlanPermission(userId, plan.getTeam().getId());
 
     if (request.getTitle() != null && request.getTitle().isBlank()) {
-      throw new BaseException(PlanErrorCode.BLANK_TITLE);
+      throw new BaseException(CommonErrorCode.FIELD_BLANK, "Title");
     }
 
     modelMapper.map(request, plan);

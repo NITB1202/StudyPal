@@ -7,9 +7,11 @@ import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.NotFoundApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.SearchTasksRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
@@ -126,5 +128,26 @@ public class TaskController {
           LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
     return ResponseEntity.ok(taskService.getDeletedTasks(userId, teamId, cursor, size));
+  }
+
+  @PatchMapping("/{taskId}/recover")
+  @Operation(summary = "Recover a personal deleted task.")
+  @ApiResponse(responseCode = "200", description = "Recover successfully.")
+  @NotFoundApiResponse
+  @UnauthorizedApiResponse
+  public ResponseEntity<ActionResponseDto> recoverTask(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID taskId,
+      @RequestParam(required = false) ApplyScope applyScope) {
+    return ResponseEntity.ok(taskService.recoverTask(userId, taskId, applyScope));
+  }
+
+  @PostMapping("/search")
+  @Operation(summary = "Search for tasks.")
+  @ApiResponse(responseCode = "Search successfully.")
+  @BadRequestApiResponse
+  public ResponseEntity<ListTaskResponseDto> searchTasks(
+      @AuthenticationPrincipal UUID userId, @Valid @RequestBody SearchTasksRequestDto request) {
+    return ResponseEntity.ok(taskService.searchTasks(userId, request));
   }
 }

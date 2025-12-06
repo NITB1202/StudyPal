@@ -18,7 +18,7 @@ import lombok.Setter;
 @Builder
 public class TaskRecurrenceRuleResponseDto {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private RecurrenceType type;
+  private RecurrenceType recurrenceType;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private List<DayOfWeek> weekDays;

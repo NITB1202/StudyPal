@@ -1,12 +1,12 @@
 package com.study.studypal.plan.repository;
 
-import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -24,22 +24,15 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
 
   @Query(
       """
-    SELECT new com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto(
-        p.id,
-        p.title,
-        p.progress,
-        MIN(t.startDate),
-        MAX(t.dueDate),
-        CASE WHEN SUM(CASE WHEN t.assignee.id = :userId THEN 1 ELSE 0 END) > 0 THEN true ELSE false END
-    )
+    SELECT p
     FROM Plan p
     LEFT JOIN p.tasks t
     WHERE p.isDeleted = false
     AND p.team.id = :teamId
-    GROUP BY p.id, p.title, p.progress
-    HAVING MAX(t.dueDate) >= :startOfDay AND MIN(t.startDate) <= :endOfDay
+    AND p.dueDate >= :startOfDay
+    AND p.startDate <= :endOfDay
     """)
-  List<PlanSummaryResponseDto> findPlansOnDate(
+  List<Plan> findPlansOnDate(
       @Param("userId") UUID userId,
       @Param("teamId") UUID teamId,
       @Param("startOfDay") LocalDateTime startOfDay,
@@ -61,4 +54,68 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT p FROM Plan p WHERE p.id = :id")
   Optional<Plan> findByIdForUpdate(UUID id);
+
+  @Query(
+      """
+    SELECT p
+    FROM Plan p
+    WHERE p.isDeleted = false
+    AND p.team.id = :teamId
+    AND (
+        LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(p.planCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    AND p.dueDate >= :fromDate
+    AND p.startDate <= :toDate
+    ORDER BY
+    p.dueDate ASC,
+    p.id ASC
+    """)
+  List<Plan> searchPlans(
+      @Param("teamId") UUID teamId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT p
+    FROM Plan p
+    WHERE p.isDeleted = false
+    AND p.team.id = :teamId
+    AND (
+        LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(p.planCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    AND p.dueDate >= :fromDate
+    AND p.startDate <= :toDate
+    AND (
+        p.dueDate > :cursorDue
+        OR (
+            p.dueDate = :cursorDue
+            AND p.id > :cursorId
+        )
+    )
+    ORDER BY
+    p.dueDate ASC,
+    p.id ASC
+    """)
+  List<Plan> searchPlansWithCursor(
+      @Param("teamId") UUID teamId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      @Param("cursorDue") LocalDateTime cursorDue,
+      @Param("cursorId") UUID cursorId,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT COUNT(p)
+    FROM Plan p
+    WHERE p.team.id = :teamId
+    AND p.isDeleted = false
+    """)
+  long countPlans(@Param("teamId") UUID teamId);
 }

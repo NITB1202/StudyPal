@@ -2,16 +2,19 @@ package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.code.DateErrorCode;
+import com.study.studypal.common.exception.code.CommonErrorCode;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
+import com.study.studypal.plan.dto.task.internal.TaskCursor;
 import com.study.studypal.plan.dto.task.internal.UpdateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.CreateTaskRequestDto;
+import com.study.studypal.plan.dto.task.request.SearchTasksRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.DeletedTaskSummaryResponseDto;
 import com.study.studypal.plan.dto.task.response.ListDeletedTaskResponseDto;
+import com.study.studypal.plan.dto.task.response.ListTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskAdditionalDataResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskDetailResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskSummaryResponseDto;
@@ -19,8 +22,8 @@ import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.enums.ApplyScope;
-import com.study.studypal.plan.enums.TaskType;
 import com.study.studypal.plan.exception.TaskErrorCode;
+import com.study.studypal.plan.mapper.TaskMapper;
 import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.api.TaskService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
@@ -29,6 +32,7 @@ import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
 import com.study.studypal.plan.service.internal.TaskRecurrenceRuleInternalService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
+import com.study.studypal.plan.util.TaskCursorUtils;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -42,18 +46,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.internal.Pair;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
   private final TaskRepository taskRepository;
   private final ModelMapper modelMapper;
+  private final TaskMapper taskMapper;
   private final TeamMembershipInternalService memberService;
   private final PlanInternalService planService;
   private final TaskNotificationService notificationService;
@@ -85,7 +92,7 @@ public class TaskServiceImpl implements TaskService {
 
     reminderService.scheduleReminder(task.getDueDate(), task);
     notificationService.publishTaskAssignedNotification(userId, task);
-    planService.updatePlanProgress(planId);
+    planService.syncPlanFromTasks(task.getPlan());
     historyService.logAssignTask(userId, assigneeId, planId, task.getTaskCode());
 
     return modelMapper.map(task, CreateTaskResponseDto.class);
@@ -99,8 +106,7 @@ public class TaskServiceImpl implements TaskService {
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
     internalService.validateViewTaskPermission(userId, task);
-    TaskDetailResponseDto response = modelMapper.map(task, TaskDetailResponseDto.class);
-    response.setTaskType(getTaskType(task));
+    TaskDetailResponseDto response = taskMapper.toTaskDetailResponseDto(task);
 
     Plan plan = task.getPlan();
     User assignee = task.getAssignee();
@@ -119,15 +125,7 @@ public class TaskServiceImpl implements TaskService {
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
     List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDay, endOfDay);
-
-    return tasks.stream()
-        .map(
-            t -> {
-              TaskSummaryResponseDto summary = modelMapper.map(t, TaskSummaryResponseDto.class);
-              summary.setTaskType(getTaskType(t));
-              return summary;
-            })
-        .toList();
+    return taskMapper.toTaskSummaryResponseDtoList(tasks);
   }
 
   @Override
@@ -137,10 +135,10 @@ public class TaskServiceImpl implements TaskService {
     int handledYear = year == null ? now.getYear() : year;
 
     if (handledMonth < 1 || handledMonth > 12) {
-      throw new BaseException(DateErrorCode.INVALID_M0NTH);
+      throw new BaseException(CommonErrorCode.INVALID_M0NTH);
     }
     if (handledYear <= 0) {
-      throw new BaseException(DateErrorCode.INVALID_YEAR);
+      throw new BaseException(CommonErrorCode.INVALID_YEAR);
     }
 
     List<LocalDateTime> dueDates =
@@ -187,6 +185,47 @@ public class TaskServiceImpl implements TaskService {
             : null;
 
     return ListDeletedTaskResponseDto.builder()
+        .tasks(tasksDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  @Override
+  public ListTaskResponseDto searchTasks(UUID userId, SearchTasksRequestDto request) {
+    if (!request.getFromDate().isBefore(request.getToDate())) {
+      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+    }
+
+    Pageable pageable = PageRequest.of(0, request.getSize());
+
+    List<Task> tasks;
+    if (request.getCursor() != null && !request.getCursor().isEmpty()) {
+      TaskCursor decodedCursor = TaskCursorUtils.decodeCursor(request.getCursor());
+      tasks =
+          taskRepository.searchTasksWithCursor(
+              userId,
+              request.getKeyword(),
+              request.getFromDate(),
+              request.getToDate(),
+              decodedCursor,
+              pageable);
+    } else {
+      tasks =
+          taskRepository.searchTasks(
+              userId, request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
+    }
+
+    List<TaskSummaryResponseDto> tasksDTO = taskMapper.toTaskSummaryResponseDtoList(tasks);
+    long total = taskRepository.countPersonalTasks(userId);
+
+    String nextCursor = null;
+    if (!tasks.isEmpty() && tasks.size() == request.getSize()) {
+      Task lastTask = tasks.get(tasks.size() - 1);
+      nextCursor = TaskCursorUtils.encodeCursor(lastTask);
+    }
+
+    return ListTaskResponseDto.builder()
         .tasks(tasksDTO)
         .total(total)
         .nextCursor(nextCursor)
@@ -261,7 +300,7 @@ public class TaskServiceImpl implements TaskService {
       task.setAssignee(newAssignee);
 
       task.setCompleteDate(null);
-      planService.updatePlanProgress(task.getPlan().getId());
+      planService.syncPlanFromTasks(task.getPlan());
 
       notificationService.publishTaskAssignedNotification(userId, task);
       historyService.logAssignTask(userId, assigneeId, task.getPlan().getId(), task.getTaskCode());
@@ -292,8 +331,8 @@ public class TaskServiceImpl implements TaskService {
     Plan plan = task.getPlan();
 
     if (plan != null) {
-      float planProgress = planService.updatePlanProgress(plan.getId());
-      if (planProgress >= 1.0f) notificationService.publishPlanCompletedNotification(plan);
+      planService.syncPlanFromTasks(plan);
+      if (plan.getProgress() >= 1.0f) notificationService.publishPlanCompletedNotification(plan);
       historyService.logCompleteTask(userId, plan.getId(), task.getTaskCode());
     }
 
@@ -346,12 +385,62 @@ public class TaskServiceImpl implements TaskService {
       notificationService.publishPlanDeletedNotification(userId, plan, relatedMemberIds);
       historyService.logDeletePlan(userId, planId);
     } else {
-      planService.updatePlanProgress(planId);
+      planService.syncPlanFromTasks(plan);
       notificationService.publishTaskDeletedNotification(userId, task);
       historyService.logDeleteTask(userId, planId, task.getTaskCode());
     }
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
+  }
+
+  @Override
+  public ActionResponseDto recoverTask(UUID userId, UUID taskId, ApplyScope applyScope) {
+    Task task =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    internalService.validatePersonalTask(task);
+    internalService.validateTaskOwnership(userId, task);
+
+    if (task.getDeletedAt() == null) throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+
+    if (ruleService.isRootOrClonedTask(task)) recoverClonedTask(task, applyScope);
+    else recoverPersonalTask(task);
+
+    return ActionResponseDto.builder().success(true).message("Recover successfully.").build();
+  }
+
+  @Override
+  public ActionResponseDto recoverTaskForPlan(UUID userId, UUID taskId) {
+    Task task =
+        taskRepository
+            .findByIdForUpdate(taskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    if (task.getDeletedAt() == null) throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+
+    Plan plan = task.getPlan();
+    UUID planId = plan.getId();
+    UUID teamId = plan.getTeam().getId();
+
+    internalService.validateTeamTask(task);
+    memberService.validateUpdatePlanPermission(userId, teamId);
+
+    task.setDeletedAt(null);
+    taskRepository.save(task);
+
+    if (plan.getIsDeleted().equals(Boolean.TRUE)) {
+      planService.recoverPlan(plan);
+      historyService.logRecoverPlan(userId, planId);
+    } else {
+      historyService.logRecoverTask(userId, planId, task.getTaskCode());
+    }
+
+    planService.syncPlanFromTasks(plan);
+    notificationService.publishTaskAssignedNotification(userId, task);
+
+    return ActionResponseDto.builder().success(true).message("Recover successfully.").build();
   }
 
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
@@ -364,29 +453,32 @@ public class TaskServiceImpl implements TaskService {
         .build();
   }
 
-  private TaskType getTaskType(Task task) {
-    if (task.getPlan() != null) return TaskType.TEAM;
-    if (ruleService.isRootOrClonedTask(task)) return TaskType.CLONED;
-    return TaskType.PERSONAL;
+  private List<Task> getClonedTasks(Task task, ApplyScope applyScope) {
+    if (applyScope == null) throw new BaseException(TaskErrorCode.TASK_SCOPE_REQUIRED);
+
+    if (applyScope.equals(ApplyScope.CURRENT_ONLY)) return List.of(task);
+
+    return task.getDeletedAt() != null
+        ? findAllDeletedClonedTasks(task)
+        : internalService.getAllActiveClonedTasksIncludingOriginal(task);
+  }
+
+  private List<Task> findAllDeletedClonedTasks(Task task) {
+    Task rootTask = task.getParentTask() != null ? task.getParentTask() : task;
+    List<Task> tasks = taskRepository.findAllDeletedChildTask(rootTask.getId());
+    tasks.add(0, rootTask);
+    return tasks;
   }
 
   private void validateUpdateTaskRequest(Task task, UpdateTaskInfo info) {
     if (info.getContent() != null && info.getContent().isBlank())
-      throw new BaseException(TaskErrorCode.BLANK_TASK);
+      throw new BaseException(CommonErrorCode.FIELD_BLANK, "Content");
 
     LocalDateTime startDate =
         info.getStartDate() != null ? info.getStartDate() : task.getStartDate();
     LocalDateTime dueDate = info.getDueDate() != null ? info.getDueDate() : task.getDueDate();
 
-    if (dueDate.isBefore(startDate))
-      throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, task.getContent());
-  }
-
-  private List<Task> findAllActiveTasksIncludingOriginal(Task task) {
-    Task rootTask = task.getParentTask();
-    List<Task> tasks = taskRepository.findAllActiveChildTasks(rootTask.getId());
-    tasks.add(0, rootTask);
-    return tasks;
+    if (dueDate.isBefore(startDate)) throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
   }
 
   private void updatePersonalTask(Task task, UpdateTaskRequestDto request) {
@@ -410,10 +502,7 @@ public class TaskServiceImpl implements TaskService {
 
     ruleService.validateClonedTaskDuration(newStartDate, newDueDate);
 
-    List<Task> tasksToUpdate =
-        applyScope.equals(ApplyScope.CURRENT_ONLY)
-            ? List.of(task)
-            : findAllActiveTasksIncludingOriginal(task);
+    List<Task> tasksToUpdate = getClonedTasks(task, applyScope);
 
     Duration startDateDelta = Duration.between(task.getStartDate(), newStartDate);
     Duration dueDateDelta = Duration.between(task.getDueDate(), newDueDate);
@@ -442,16 +531,28 @@ public class TaskServiceImpl implements TaskService {
   }
 
   private void deleteClonedTask(Task task, ApplyScope applyScope) {
-    List<Task> tasksToUpdate =
-        applyScope.equals(ApplyScope.CURRENT_ONLY)
-            ? List.of(task)
-            : findAllActiveTasksIncludingOriginal(task);
+    List<Task> tasksToDelete = getClonedTasks(task, applyScope);
 
-    for (Task taskToUpdate : tasksToUpdate) {
-      reminderService.deleteAllRemindersForTask(taskToUpdate.getId());
-      taskToUpdate.setDeletedAt(LocalDateTime.now());
+    for (Task taskToDelete : tasksToDelete) {
+      reminderService.deleteAllRemindersForTask(taskToDelete.getId());
+      taskToDelete.setDeletedAt(LocalDateTime.now());
     }
 
-    taskRepository.saveAll(tasksToUpdate);
+    taskRepository.saveAll(tasksToDelete);
+  }
+
+  private void recoverPersonalTask(Task task) {
+    task.setDeletedAt(null);
+    taskRepository.save(task);
+  }
+
+  private void recoverClonedTask(Task task, ApplyScope applyScope) {
+    List<Task> tasksToRecover = getClonedTasks(task, applyScope);
+
+    for (Task taskToRecover : tasksToRecover) {
+      taskToRecover.setDeletedAt(null);
+    }
+
+    taskRepository.saveAll(tasksToRecover);
   }
 }

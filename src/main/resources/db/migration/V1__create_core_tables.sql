@@ -96,6 +96,8 @@ CREATE TABLE IF NOT EXISTS plans (
     plan_code VARCHAR(20) NOT NULL,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(255),
+    start_date TIMESTAMP NOT NULL,
+    due_date TIMESTAMP NOT NULL,
     progress FLOAT NOT NULL,
     is_deleted BOOLEAN NOT NULL,
     team_id UUID,

@@ -63,4 +63,14 @@ public class PlanTaskController {
       @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
     return ResponseEntity.ok(taskService.deleteTaskForPlan(userId, taskId));
   }
+
+  @PatchMapping("/tasks/{taskId}/recover")
+  @Operation(summary = "Recover a task in a plan.")
+  @ApiResponse(responseCode = "200", description = "Recover successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> recoverTaskForPlan(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
+    return ResponseEntity.ok(taskService.recoverTaskForPlan(userId, taskId));
+  }
 }

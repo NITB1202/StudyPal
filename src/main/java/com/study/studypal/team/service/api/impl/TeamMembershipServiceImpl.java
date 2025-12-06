@@ -21,7 +21,7 @@ import com.study.studypal.team.repository.TeamUserRepository;
 import com.study.studypal.team.service.api.TeamMembershipService;
 import com.study.studypal.team.service.internal.TeamInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
-import com.study.studypal.team.util.CursorUtils;
+import com.study.studypal.team.util.TeamCursorUtils;
 import com.study.studypal.user.entity.User;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -99,7 +99,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     List<TeamUser> memberships;
     if (cursor != null && !cursor.isEmpty()) {
-      DecodedCursor decodedCursor = CursorUtils.decodeCursor(cursor);
+      DecodedCursor decodedCursor = TeamCursorUtils.decodeCursor(cursor);
       memberships =
           teamUserRepository.findTeamMembersWithCursor(
               teamId,
@@ -131,7 +131,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     if (!members.isEmpty() && members.size() == size) {
       TeamMemberResponseDto lastMember = members.get(members.size() - 1);
       nextCursor =
-          CursorUtils.encodeCursor(
+          TeamCursorUtils.encodeCursor(
               lastMember.getRole().ordinal() + 1, lastMember.getName(), lastMember.getUserId());
     }
 
