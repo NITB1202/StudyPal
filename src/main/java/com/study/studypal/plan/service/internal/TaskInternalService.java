@@ -31,6 +31,8 @@ public interface TaskInternalService {
 
   Set<UUID> getDistinctAssigneeIdsByPlanId(UUID planId);
 
+  List<Task> getAllActiveClonedTasksIncludingOriginal(Task task);
+
   void validateViewTaskPermission(UUID userId, Task task);
 
   void validateUpdateTaskPermission(UUID userId, Task task);
@@ -42,4 +44,6 @@ public interface TaskInternalService {
   void validateTeamTask(Task task);
 
   void deleteAllTasksByPlanId(UUID planId);
+
+  void hardDelete(List<Task> tasks);
 }

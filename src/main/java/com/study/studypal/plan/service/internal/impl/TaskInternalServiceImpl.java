@@ -187,6 +187,14 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
+  public List<Task> getAllActiveClonedTasksIncludingOriginal(Task task) {
+    Task rootTask = task.getParentTask() != null ? task.getParentTask() : task;
+    List<Task> tasks = taskRepository.findAllActiveChildTasks(rootTask.getId());
+    tasks.add(0, rootTask);
+    return tasks;
+  }
+
+  @Override
   public void validateViewTaskPermission(UUID userId, Task task) {
     Plan plan = task.getPlan();
     if (plan != null) validateUserBelongsToTeam(userId, plan);
@@ -227,6 +235,15 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     }
 
     taskRepository.saveAll(tasks);
+  }
+
+  @Override
+  public void hardDelete(List<Task> tasks) {
+    for (Task task : tasks) {
+      reminderService.deleteAllRemindersForTask(task.getId());
+    }
+
+    taskRepository.deleteAll(tasks);
   }
 
   private void validateUserBelongsToTeam(UUID userId, Plan plan) {

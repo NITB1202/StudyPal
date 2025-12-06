@@ -3,7 +3,7 @@ package com.study.studypal.plan.controller;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
-import com.study.studypal.plan.dto.recurrence.request.CreateTaskRecurrenceRuleRequestDto;
+import com.study.studypal.plan.dto.recurrence.request.UpdateTaskRecurrenceRuleRequestDto;
 import com.study.studypal.plan.dto.recurrence.response.TaskRecurrenceRuleResponseDto;
 import com.study.studypal.plan.service.api.TaskRecurrenceRuleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,19 +27,19 @@ public class TaskRecurrenceRuleController {
   private final TaskRecurrenceRuleService ruleService;
 
   @PostMapping
-  @Operation(summary = "Create a task recurrence rule (personal task only).")
+  @Operation(summary = "Update a task recurrence rule (personal task only).")
   @ApiResponse(responseCode = "200", description = "Create successfully.")
   @UnauthorizedApiResponse
   @BadRequestApiResponse
-  public ResponseEntity<ActionResponseDto> createRecurrenceRule(
+  public ResponseEntity<ActionResponseDto> updateRecurrenceRule(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID taskId,
-      @Valid @RequestBody CreateTaskRecurrenceRuleRequestDto request) {
-    return ResponseEntity.ok(ruleService.createRecurrenceRule(userId, taskId, request));
+      @Valid @RequestBody UpdateTaskRecurrenceRuleRequestDto request) {
+    return ResponseEntity.ok(ruleService.updateRecurrenceRule(userId, taskId, request));
   }
 
   @GetMapping
-  @Operation(summary = "Get task's recurrence rule.")
+  @Operation(summary = "Get a task recurrence rule.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @UnauthorizedApiResponse
   public ResponseEntity<TaskRecurrenceRuleResponseDto> getRecurrenceRule(

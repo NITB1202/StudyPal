@@ -382,13 +382,6 @@ public class TaskServiceImpl implements TaskService {
       throw new BaseException(TaskErrorCode.INVALID_DUE_DATE, task.getContent());
   }
 
-  private List<Task> findAllActiveTasksIncludingOriginal(Task task) {
-    Task rootTask = task.getParentTask();
-    List<Task> tasks = taskRepository.findAllActiveChildTasks(rootTask.getId());
-    tasks.add(0, rootTask);
-    return tasks;
-  }
-
   private void updatePersonalTask(Task task, UpdateTaskRequestDto request) {
     LocalDateTime newStartDate =
         request.getStartDate() != null ? request.getStartDate() : task.getStartDate();
@@ -413,7 +406,7 @@ public class TaskServiceImpl implements TaskService {
     List<Task> tasksToUpdate =
         applyScope.equals(ApplyScope.CURRENT_ONLY)
             ? List.of(task)
-            : findAllActiveTasksIncludingOriginal(task);
+            : internalService.getAllActiveClonedTasksIncludingOriginal(task);
 
     Duration startDateDelta = Duration.between(task.getStartDate(), newStartDate);
     Duration dueDateDelta = Duration.between(task.getDueDate(), newDueDate);
@@ -445,7 +438,7 @@ public class TaskServiceImpl implements TaskService {
     List<Task> tasksToUpdate =
         applyScope.equals(ApplyScope.CURRENT_ONLY)
             ? List.of(task)
-            : findAllActiveTasksIncludingOriginal(task);
+            : internalService.getAllActiveClonedTasksIncludingOriginal(task);
 
     for (Task taskToUpdate : tasksToUpdate) {
       reminderService.deleteAllRemindersForTask(taskToUpdate.getId());
