@@ -42,12 +42,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.internal.Pair;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -374,7 +376,34 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   public ActionResponseDto recoverTaskForPlan(UUID userId, UUID taskId) {
-    return null;
+    Task task =
+        taskRepository
+            .findByIdForUpdate(taskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    if (task.getDeletedAt() == null) throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+
+    Plan plan = task.getPlan();
+    UUID planId = plan.getId();
+    UUID teamId = plan.getTeam().getId();
+
+    internalService.validateTeamTask(task);
+    memberService.validateUpdatePlanPermission(userId, teamId);
+
+    task.setDeletedAt(null);
+    taskRepository.save(task);
+
+    if (plan.getIsDeleted().equals(Boolean.TRUE)) {
+      planService.recoverPlan(plan);
+      historyService.logRecoverPlan(userId, planId);
+    } else {
+      historyService.logRecoverTask(userId, planId, task.getTaskCode());
+    }
+
+    planService.updatePlanProgress(planId);
+    notificationService.publishTaskAssignedNotification(userId, task);
+
+    return ActionResponseDto.builder().success(true).message("Recover successfully.").build();
   }
 
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {

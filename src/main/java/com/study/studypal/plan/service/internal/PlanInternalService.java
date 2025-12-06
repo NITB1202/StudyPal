@@ -12,4 +12,6 @@ public interface PlanInternalService {
   float updatePlanProgress(UUID id);
 
   void softDeletePlan(Plan plan);
+
+  void recoverPlan(Plan plan);
 }

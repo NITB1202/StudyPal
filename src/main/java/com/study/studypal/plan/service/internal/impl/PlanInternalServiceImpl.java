@@ -55,6 +55,12 @@ public class PlanInternalServiceImpl implements PlanInternalService {
   }
 
   @Override
+  public void recoverPlan(Plan plan) {
+    plan.setIsDeleted(false);
+    planRepository.save(plan);
+  }
+
+  @Override
   public Set<UUID> getPlanRelatedMemberIds(UUID planId) {
     Plan plan =
         planRepository
