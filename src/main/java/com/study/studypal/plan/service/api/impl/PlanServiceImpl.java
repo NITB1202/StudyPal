@@ -15,7 +15,9 @@ import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.dto.plan.response.UpdatePlanResponseDto;
 import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
+import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.exception.PlanErrorCode;
+import com.study.studypal.plan.mapper.TaskMapper;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.service.api.PlanService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
@@ -37,7 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.internal.Pair;
+import org.modelmapper.TypeToken;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,6 +54,7 @@ public class PlanServiceImpl implements PlanService {
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
   private final PlanInternalService internalService;
+  private final TaskMapper taskMapper;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -72,6 +75,8 @@ public class PlanServiceImpl implements PlanService {
             .title(request.getTitle())
             .description(request.getDescription())
             .progress(0f)
+            .startDate(LocalDateTime.now())
+            .dueDate(LocalDateTime.now())
             .isDeleted(false)
             .team(team)
             .build();
@@ -80,8 +85,9 @@ public class PlanServiceImpl implements PlanService {
 
     PlanInfo planInfo =
         PlanInfo.builder().assignerId(userId).teamId(teamId).planId(plan.getId()).build();
-
     taskService.createTasksForPlan(planInfo, request.getTasks());
+
+    internalService.syncPlanFromTasks(plan);
     historyService.logCreatePlan(userId, plan.getId());
 
     return modelMapper.map(plan, CreatePlanResponseDto.class);
@@ -108,16 +114,15 @@ public class PlanServiceImpl implements PlanService {
 
     PlanDetailResponseDto dto = modelMapper.map(plan, PlanDetailResponseDto.class);
 
-    List<TaskResponseDto> tasks = taskService.getAll(planId);
+    List<Task> tasks = taskService.getAll(planId);
+    List<TaskResponseDto> tasksDTO = taskMapper.toTaskResponseDtoList(tasks);
+
     int totalTasksCount = taskService.getTotalTasksCount(planId);
     int completedTasksCount = taskService.getCompletedTasksCount(planId);
-    Pair<LocalDateTime, LocalDateTime> planPeriod = taskService.getPlanPeriod(planId);
 
-    dto.setTasks(tasks);
+    dto.setTasks(tasksDTO);
     dto.setTotalTasksCount(totalTasksCount);
     dto.setCompletedTaskCount(completedTasksCount);
-    dto.setStartDate(planPeriod.getLeft());
-    dto.setDueDate(planPeriod.getRight());
 
     return dto;
   }
@@ -125,9 +130,12 @@ public class PlanServiceImpl implements PlanService {
   @Override
   public List<PlanSummaryResponseDto> getPlansOnDate(UUID userId, UUID teamId, LocalDate date) {
     memberService.validateUserBelongsToTeam(userId, teamId);
+
     LocalDateTime startOfDay = date.atStartOfDay();
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-    return planRepository.findPlansOnDate(userId, teamId, startOfDay, endOfDay);
+
+    List<Plan> plans = planRepository.findPlansOnDate(userId, teamId, startOfDay, endOfDay);
+    return modelMapper.map(plans, new TypeToken<List<PlanSummaryResponseDto>>() {}.getType());
   }
 
   @Override

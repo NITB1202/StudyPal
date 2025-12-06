@@ -3,10 +3,8 @@ package com.study.studypal.plan.service.internal;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
-import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Task;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -21,13 +19,11 @@ public interface TaskInternalService {
 
   Task getById(UUID id);
 
-  List<TaskResponseDto> getAll(UUID planId);
+  List<Task> getAll(UUID planId);
 
   int getTotalTasksCount(UUID planId);
 
   int getCompletedTasksCount(UUID planId);
-
-  Pair<LocalDateTime, LocalDateTime> getPlanPeriod(UUID planId);
 
   Set<UUID> getDistinctAssigneeIdsByPlanId(UUID planId);
 

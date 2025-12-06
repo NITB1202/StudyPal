@@ -24,6 +24,4 @@ public class PlanSummaryResponseDto {
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dueDate;
-
-  private Boolean hasAssignedTask;
 }

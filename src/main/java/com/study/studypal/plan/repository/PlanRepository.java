@@ -1,6 +1,5 @@
 package com.study.studypal.plan.repository;
 
-import com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
@@ -24,22 +23,15 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
 
   @Query(
       """
-    SELECT new com.study.studypal.plan.dto.plan.response.PlanSummaryResponseDto(
-        p.id,
-        p.title,
-        p.progress,
-        MIN(t.startDate),
-        MAX(t.dueDate),
-        CASE WHEN SUM(CASE WHEN t.assignee.id = :userId THEN 1 ELSE 0 END) > 0 THEN true ELSE false END
-    )
+    SELECT p
     FROM Plan p
     LEFT JOIN p.tasks t
     WHERE p.isDeleted = false
     AND p.team.id = :teamId
-    GROUP BY p.id, p.title, p.progress
-    HAVING MAX(t.dueDate) >= :startOfDay AND MIN(t.startDate) <= :endOfDay
+    AND p.dueDate >= :startOfDay
+    AND p.startDate <= :endOfDay
     """)
-  List<PlanSummaryResponseDto> findPlansOnDate(
+  List<Plan> findPlansOnDate(
       @Param("userId") UUID userId,
       @Param("teamId") UUID teamId,
       @Param("startOfDay") LocalDateTime startOfDay,

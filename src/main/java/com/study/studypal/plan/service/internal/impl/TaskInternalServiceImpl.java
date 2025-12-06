@@ -7,7 +7,6 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.dto.plan.internal.PlanInfo;
 import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
-import com.study.studypal.plan.dto.task.response.TaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.exception.TaskErrorCode;
@@ -145,22 +144,8 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
-  public List<TaskResponseDto> getAll(UUID planId) {
-    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDates(planId);
-    List<TaskResponseDto> responseDtoList = new ArrayList<>();
-
-    for (Task task : tasks) {
-      TaskResponseDto responseDto = modelMapper.map(task, TaskResponseDto.class);
-      User assignee = task.getAssignee();
-
-      responseDto.setAssigneeId(assignee.getId());
-      responseDto.setAssigneeName(assignee.getName());
-      responseDto.setAssigneeAvatarUrl(assignee.getAvatarUrl());
-
-      responseDtoList.add(responseDto);
-    }
-
-    return responseDtoList;
+  public List<Task> getAll(UUID planId) {
+    return taskRepository.findAllByPlanIdOrderByDates(planId);
   }
 
   @Override
@@ -171,14 +156,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @Override
   public int getCompletedTasksCount(UUID planId) {
     return taskRepository.countCompletedTasks(planId);
-  }
-
-  @Override
-  public Pair<LocalDateTime, LocalDateTime> getPlanPeriod(UUID planId) {
-    List<Task> tasks = taskRepository.findAllByPlanIdOrderByDates(planId);
-    LocalDateTime startDate = tasks.get(0).getStartDate();
-    LocalDateTime dueDate = tasks.get(tasks.size() - 1).getDueDate();
-    return Pair.of(startDate, dueDate);
   }
 
   @Override

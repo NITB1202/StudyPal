@@ -22,8 +22,8 @@ import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.enums.ApplyScope;
-import com.study.studypal.plan.enums.TaskType;
 import com.study.studypal.plan.exception.TaskErrorCode;
+import com.study.studypal.plan.mapper.TaskMapper;
 import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.api.TaskService;
 import com.study.studypal.plan.service.internal.PlanHistoryInternalService;
@@ -60,6 +60,7 @@ import org.springframework.stereotype.Service;
 public class TaskServiceImpl implements TaskService {
   private final TaskRepository taskRepository;
   private final ModelMapper modelMapper;
+  private final TaskMapper taskMapper;
   private final TeamMembershipInternalService memberService;
   private final PlanInternalService planService;
   private final TaskNotificationService notificationService;
@@ -91,7 +92,7 @@ public class TaskServiceImpl implements TaskService {
 
     reminderService.scheduleReminder(task.getDueDate(), task);
     notificationService.publishTaskAssignedNotification(userId, task);
-    planService.updatePlanProgress(planId);
+    planService.syncPlanFromTasks(task.getPlan());
     historyService.logAssignTask(userId, assigneeId, planId, task.getTaskCode());
 
     return modelMapper.map(task, CreateTaskResponseDto.class);
@@ -105,8 +106,7 @@ public class TaskServiceImpl implements TaskService {
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
     internalService.validateViewTaskPermission(userId, task);
-    TaskDetailResponseDto response = modelMapper.map(task, TaskDetailResponseDto.class);
-    response.setTaskType(getTaskType(task));
+    TaskDetailResponseDto response = taskMapper.toTaskDetailResponseDto(task);
 
     Plan plan = task.getPlan();
     User assignee = task.getAssignee();
@@ -125,15 +125,7 @@ public class TaskServiceImpl implements TaskService {
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
     List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDay, endOfDay);
-
-    return tasks.stream()
-        .map(
-            t -> {
-              TaskSummaryResponseDto summary = modelMapper.map(t, TaskSummaryResponseDto.class);
-              summary.setTaskType(getTaskType(t));
-              return summary;
-            })
-        .toList();
+    return taskMapper.toTaskSummaryResponseDtoList(tasks);
   }
 
   @Override
@@ -224,17 +216,7 @@ public class TaskServiceImpl implements TaskService {
               userId, request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
     }
 
-    List<TaskSummaryResponseDto> tasksDTO =
-        tasks.stream()
-            .map(
-                task -> {
-                  TaskSummaryResponseDto taskDto =
-                      modelMapper.map(task, TaskSummaryResponseDto.class);
-                  taskDto.setTaskType(getTaskType(task));
-                  return taskDto;
-                })
-            .toList();
-
+    List<TaskSummaryResponseDto> tasksDTO = taskMapper.toTaskSummaryResponseDtoList(tasks);
     long total = taskRepository.countPersonalTasks(userId);
 
     String nextCursor = null;
@@ -318,7 +300,7 @@ public class TaskServiceImpl implements TaskService {
       task.setAssignee(newAssignee);
 
       task.setCompleteDate(null);
-      planService.updatePlanProgress(task.getPlan().getId());
+      planService.syncPlanFromTasks(task.getPlan());
 
       notificationService.publishTaskAssignedNotification(userId, task);
       historyService.logAssignTask(userId, assigneeId, task.getPlan().getId(), task.getTaskCode());
@@ -349,8 +331,8 @@ public class TaskServiceImpl implements TaskService {
     Plan plan = task.getPlan();
 
     if (plan != null) {
-      float planProgress = planService.updatePlanProgress(plan.getId());
-      if (planProgress >= 1.0f) notificationService.publishPlanCompletedNotification(plan);
+      planService.syncPlanFromTasks(plan);
+      if (plan.getProgress() >= 1.0f) notificationService.publishPlanCompletedNotification(plan);
       historyService.logCompleteTask(userId, plan.getId(), task.getTaskCode());
     }
 
@@ -403,7 +385,7 @@ public class TaskServiceImpl implements TaskService {
       notificationService.publishPlanDeletedNotification(userId, plan, relatedMemberIds);
       historyService.logDeletePlan(userId, planId);
     } else {
-      planService.updatePlanProgress(planId);
+      planService.syncPlanFromTasks(plan);
       notificationService.publishTaskDeletedNotification(userId, task);
       historyService.logDeleteTask(userId, planId, task.getTaskCode());
     }
@@ -455,7 +437,7 @@ public class TaskServiceImpl implements TaskService {
       historyService.logRecoverTask(userId, planId, task.getTaskCode());
     }
 
-    planService.updatePlanProgress(planId);
+    planService.syncPlanFromTasks(plan);
     notificationService.publishTaskAssignedNotification(userId, task);
 
     return ActionResponseDto.builder().success(true).message("Recover successfully.").build();
@@ -469,12 +451,6 @@ public class TaskServiceImpl implements TaskService {
         .assigneeName(assignee.getName())
         .assigneeAvatarUrl(assignee.getAvatarUrl())
         .build();
-  }
-
-  private TaskType getTaskType(Task task) {
-    if (task.getPlan() != null) return TaskType.TEAM;
-    if (ruleService.isRootOrClonedTask(task)) return TaskType.CLONED;
-    return TaskType.PERSONAL;
   }
 
   private List<Task> getClonedTasks(Task task, ApplyScope applyScope) {
