@@ -127,4 +127,16 @@ public class TaskController {
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
     return ResponseEntity.ok(taskService.getDeletedTasks(userId, teamId, cursor, size));
   }
+
+  @PatchMapping("/{taskId}/recover")
+  @Operation(summary = "Recover a personal deleted task.")
+  @ApiResponse(responseCode = "200", description = "Recover successfully.")
+  @NotFoundApiResponse
+  @UnauthorizedApiResponse
+  public ResponseEntity<ActionResponseDto> recoverTask(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID taskId,
+      @RequestParam(required = false) ApplyScope applyScope) {
+    return ResponseEntity.ok(taskService.recoverTask(userId, taskId, applyScope));
+  }
 }

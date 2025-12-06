@@ -22,6 +22,9 @@ public enum TaskErrorCode implements ErrorCode {
       "TASK_008",
       "Only the task assignee is allowed to perform this action."),
   TASK_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "TASK_009", "Task is already deleted."),
+  TASK_NOT_DELETED(HttpStatus.BAD_REQUEST, "TASK_010", "Task is not deleted."),
+  TASK_SCOPE_REQUIRED(
+      HttpStatus.BAD_REQUEST, "TASK_011", "Apply scope must be specified for cloned tasks."),
   ;
 
   private final HttpStatus httpStatus;

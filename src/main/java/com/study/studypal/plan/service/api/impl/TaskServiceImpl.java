@@ -354,6 +354,29 @@ public class TaskServiceImpl implements TaskService {
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
+  @Override
+  public ActionResponseDto recoverTask(UUID userId, UUID taskId, ApplyScope applyScope) {
+    Task task =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
+
+    internalService.validatePersonalTask(task);
+    internalService.validateTaskOwnership(userId, task);
+
+    if (task.getDeletedAt() == null) throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+
+    if (ruleService.isRootOrClonedTask(task)) recoverClonedTask(task, applyScope);
+    else recoverPersonalTask(task);
+
+    return ActionResponseDto.builder().success(true).message("Recover successfully.").build();
+  }
+
+  @Override
+  public ActionResponseDto recoverTaskForPlan(UUID userId, UUID taskId) {
+    return null;
+  }
+
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
     return TaskAdditionalDataResponseDto.builder()
         .planId(plan.getId())
@@ -368,6 +391,23 @@ public class TaskServiceImpl implements TaskService {
     if (task.getPlan() != null) return TaskType.TEAM;
     if (ruleService.isRootOrClonedTask(task)) return TaskType.CLONED;
     return TaskType.PERSONAL;
+  }
+
+  private List<Task> getClonedTasks(Task task, ApplyScope applyScope) {
+    if (applyScope == null) throw new BaseException(TaskErrorCode.TASK_SCOPE_REQUIRED);
+
+    if (applyScope.equals(ApplyScope.CURRENT_ONLY)) return List.of(task);
+
+    return task.getDeletedAt() != null
+        ? findAllDeletedClonedTasks(task)
+        : internalService.getAllActiveClonedTasksIncludingOriginal(task);
+  }
+
+  private List<Task> findAllDeletedClonedTasks(Task task) {
+    Task rootTask = task.getParentTask() != null ? task.getParentTask() : task;
+    List<Task> tasks = taskRepository.findAllDeletedChildTask(rootTask.getId());
+    tasks.add(0, rootTask);
+    return tasks;
   }
 
   private void validateUpdateTaskRequest(Task task, UpdateTaskInfo info) {
@@ -403,10 +443,7 @@ public class TaskServiceImpl implements TaskService {
 
     ruleService.validateClonedTaskDuration(newStartDate, newDueDate);
 
-    List<Task> tasksToUpdate =
-        applyScope.equals(ApplyScope.CURRENT_ONLY)
-            ? List.of(task)
-            : internalService.getAllActiveClonedTasksIncludingOriginal(task);
+    List<Task> tasksToUpdate = getClonedTasks(task, applyScope);
 
     Duration startDateDelta = Duration.between(task.getStartDate(), newStartDate);
     Duration dueDateDelta = Duration.between(task.getDueDate(), newDueDate);
@@ -435,16 +472,28 @@ public class TaskServiceImpl implements TaskService {
   }
 
   private void deleteClonedTask(Task task, ApplyScope applyScope) {
-    List<Task> tasksToUpdate =
-        applyScope.equals(ApplyScope.CURRENT_ONLY)
-            ? List.of(task)
-            : internalService.getAllActiveClonedTasksIncludingOriginal(task);
+    List<Task> tasksToDelete = getClonedTasks(task, applyScope);
 
-    for (Task taskToUpdate : tasksToUpdate) {
-      reminderService.deleteAllRemindersForTask(taskToUpdate.getId());
-      taskToUpdate.setDeletedAt(LocalDateTime.now());
+    for (Task taskToDelete : tasksToDelete) {
+      reminderService.deleteAllRemindersForTask(taskToDelete.getId());
+      taskToDelete.setDeletedAt(LocalDateTime.now());
     }
 
-    taskRepository.saveAll(tasksToUpdate);
+    taskRepository.saveAll(tasksToDelete);
+  }
+
+  private void recoverPersonalTask(Task task) {
+    task.setDeletedAt(null);
+    taskRepository.save(task);
+  }
+
+  private void recoverClonedTask(Task task, ApplyScope applyScope) {
+    List<Task> tasksToRecover = getClonedTasks(task, applyScope);
+
+    for (Task taskToRecover : tasksToRecover) {
+      taskToRecover.setDeletedAt(null);
+    }
+
+    taskRepository.saveAll(tasksToRecover);
   }
 }

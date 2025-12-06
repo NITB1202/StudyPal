@@ -42,4 +42,8 @@ public interface TaskService {
   ActionResponseDto deleteTask(UUID userId, UUID taskId, ApplyScope applyScope);
 
   ActionResponseDto deleteTaskForPlan(UUID userId, UUID taskId);
+
+  ActionResponseDto recoverTask(UUID userId, UUID taskId, ApplyScope applyScope);
+
+  ActionResponseDto recoverTaskForPlan(UUID userId, UUID taskId);
 }

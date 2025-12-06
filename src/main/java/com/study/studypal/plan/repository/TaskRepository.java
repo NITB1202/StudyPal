@@ -172,4 +172,13 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     AND t.deletedAt IS NOT NULL
     """)
   long countPersonalDeletedTasks(@Param("userId") UUID userId);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    WHERE t.parentTask.id = :taskId
+    AND t.deletedAt IS NOT NULL
+    """)
+  List<Task> findAllDeletedChildTask(@Param("taskId") UUID taskId);
 }
