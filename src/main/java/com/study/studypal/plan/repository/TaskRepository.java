@@ -272,4 +272,24 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     ORDER BY t.startDate ASC
     """)
   List<Task> findAllNotDeletedChildTasks(@Param("parentId") UUID parentId);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    JOIN t.plan p
+    WHERE p.team.id = :teamId
+    AND t.deletedAt IS NULL
+    """)
+  List<Task> findAllByTeamId(@Param("teamId") UUID teamId);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    JOIN t.plan p
+    WHERE p.team.id = :teamId
+    AND t.deletedAt IS NULL
+    """)
+  List<Task> findAllByTeamIdAndUserId(@Param("teamId") UUID teamId, @Param("userId") UUID userId);
 }
