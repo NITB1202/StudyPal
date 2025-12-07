@@ -200,6 +200,6 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
   private void deleteActiveClonedTasksExcludeCurrent(Task task) {
     List<Task> tasks = taskService.getAllActiveClonedTasksIncludingOriginal(task);
     tasks.remove(task);
-    taskService.hardDelete(tasks);
+    taskService.hardDeleteTasks(tasks);
   }
 }

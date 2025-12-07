@@ -325,7 +325,7 @@ public class TaskServiceImpl implements TaskService {
 
   private List<Task> findAllDeletedClonedTasks(Task task) {
     Task rootTask = task.getParentTask() != null ? task.getParentTask() : task;
-    List<Task> tasks = taskRepository.findAllDeletedChildTask(rootTask.getId());
+    List<Task> tasks = taskRepository.findAllDeletedChildTasks(rootTask.getId());
     tasks.add(0, rootTask);
     return tasks;
   }

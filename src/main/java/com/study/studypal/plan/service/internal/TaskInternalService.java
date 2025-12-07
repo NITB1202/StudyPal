@@ -5,6 +5,7 @@ import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.entity.Task;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -33,5 +34,7 @@ public interface TaskInternalService {
 
   void detachFromParent(Task task);
 
-  void hardDelete(List<Task> tasks);
+  void hardDeleteTasks(List<Task> tasks);
+
+  void hardDeleteTasksBefore(LocalDateTime cutoffTime);
 }

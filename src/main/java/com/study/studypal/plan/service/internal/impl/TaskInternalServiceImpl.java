@@ -15,6 +15,7 @@ import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskRecurrenceRuleInternalService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -42,6 +43,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
   private final TaskReminderInternalService reminderService;
+  private final TaskRecurrenceRuleInternalService ruleService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -191,11 +193,39 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
-  public void hardDelete(List<Task> tasks) {
+  public void hardDeleteTasks(List<Task> tasks) {
     for (Task task : tasks) {
       reminderService.deleteAllRemindersForTask(task.getId());
     }
 
     taskRepository.deleteAll(tasks);
+  }
+
+  @Override
+  public void hardDeleteTasksBefore(LocalDateTime cutoffTime) {
+    List<Task> tasks = taskRepository.getDeletedTasksBefore(cutoffTime);
+
+    for (Task task : tasks) {
+      if (ruleService.isRootTask(task)) {
+        List<Task> childTasks = taskRepository.findAllNotDeletedChildTasks(task.getId());
+
+        if (!childTasks.isEmpty()) {
+          Task oldestChildTask = childTasks.remove(0);
+          detachFromParent(oldestChildTask);
+
+          ruleService.updateRootTask(task, oldestChildTask);
+          updateNewRootTask(oldestChildTask, childTasks);
+        }
+      }
+    }
+
+    taskRepository.deleteAll(tasks);
+  }
+
+  private void updateNewRootTask(Task newRootTask, List<Task> childTasks) {
+    for (Task childTask : childTasks) {
+      childTask.setParentTask(newRootTask);
+    }
+    taskRepository.saveAll(childTasks);
   }
 }

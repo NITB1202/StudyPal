@@ -14,6 +14,7 @@ import com.study.studypal.plan.repository.TaskReminderRepository;
 import com.study.studypal.plan.service.api.TaskReminderService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
+import com.study.studypal.plan.service.internal.TaskValidationService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 public class TaskReminderServiceImpl implements TaskReminderService {
   private final TaskReminderRepository taskReminderRepository;
   private final TaskInternalService taskService;
+  private final TaskValidationService taskValidationService;
   private final TaskReminderInternalService internalService;
   private final ModelMapper modelMapper;
 
@@ -38,7 +40,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
   public ActionResponseDto createReminder(
       UUID userId, UUID taskId, CreateTaskReminderRequestDto request) {
     Task task = taskService.getById(taskId);
-    taskService.validateTaskOwnership(userId, task);
+    taskValidationService.validateTaskOwnership(userId, task);
 
     LocalDateTime remindAt = request.getRemindAt();
 
@@ -51,7 +53,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
   @Override
   public List<TaskReminderResponseDto> getAll(UUID userId, UUID taskId) {
     Task task = taskService.getById(taskId);
-    taskService.validateViewTaskPermission(userId, task);
+    taskValidationService.validateViewTaskPermission(userId, task);
 
     List<TaskReminder> reminders = taskReminderRepository.findAllByTaskIdOrderByRemindAtAsc(taskId);
     List<TaskReminder> filteredReminders =
@@ -70,7 +72,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
             .orElseThrow(() -> new BaseException(TaskReminderErrorCode.REMINDER_NOT_FOUND));
 
     Task task = reminder.getTask();
-    taskService.validateTaskOwnership(userId, task);
+    taskValidationService.validateTaskOwnership(userId, task);
 
     LocalDateTime remindAt = request.getRemindAt();
 
@@ -94,7 +96,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
             .orElseThrow(() -> new BaseException(TaskReminderErrorCode.REMINDER_NOT_FOUND));
 
     Task task = reminder.getTask();
-    taskService.validateTaskOwnership(userId, task);
+    taskValidationService.validateTaskOwnership(userId, task);
 
     internalService.cancelReminder(reminder.getId());
     taskReminderRepository.delete(reminder);

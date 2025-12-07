@@ -181,24 +181,24 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     WHERE t.parentTask.id = :taskId
     AND t.deletedAt IS NOT NULL
     """)
-  List<Task> findAllDeletedChildTask(@Param("taskId") UUID taskId);
+  List<Task> findAllDeletedChildTasks(@Param("taskId") UUID taskId);
 
   @Query(
       """
-     SELECT t
-     FROM Task t
-     WHERE t.deletedAt IS NULL
-       AND t.assignee.id = :userId
-       AND (
-            LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-            LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
-       )
-       AND t.dueDate >= :fromDate
-       AND t.startDate <= :toDate
-     ORDER BY
-         t.dueDate ASC,
-         t.priorityValue ASC,
-         t.id ASC
+    SELECT t
+    FROM Task t
+    WHERE t.deletedAt IS NULL
+      AND t.assignee.id = :userId
+      AND (
+           LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+           LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      )
+      AND t.dueDate >= :fromDate
+      AND t.startDate <= :toDate
+    ORDER BY
+        t.dueDate ASC,
+        t.priorityValue ASC,
+        t.id ASC
     """)
   List<Task> searchTasks(
       @Param("userId") UUID userId,
@@ -209,37 +209,33 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   @Query(
       """
-     SELECT t
-     FROM Task t
-     WHERE t.deletedAt IS NULL
-       AND t.assignee.id = :userId
-
-       AND (
-            LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
-       )
-
-       AND t.dueDate >= :fromDate
-       AND t.startDate <= :toDate
-
-       AND (
-            :#{#cursor} IS NULL
-         OR t.dueDate > :#{#cursor.dueDate}
-         OR (
-              t.dueDate = :#{#cursor.dueDate}
-              AND t.priorityValue > :#{#cursor.priorityValue}
-            )
-         OR (
-              t.dueDate = :#{#cursor.dueDate}
-              AND t.priorityValue = :#{#cursor.priorityValue}
-              AND t.id > :#{#cursor.id}
-            )
-       )
-
-     ORDER BY
-         t.dueDate ASC,
-         t.priorityValue ASC,
-         t.id ASC
+    SELECT t
+    FROM Task t
+    WHERE t.deletedAt IS NULL
+      AND t.assignee.id = :userId
+      AND (
+           LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      )
+      AND t.dueDate >= :fromDate
+      AND t.startDate <= :toDate
+      AND (
+           :#{#cursor} IS NULL
+        OR t.dueDate > :#{#cursor.dueDate}
+        OR (
+             t.dueDate = :#{#cursor.dueDate}
+             AND t.priorityValue > :#{#cursor.priorityValue}
+           )
+        OR (
+             t.dueDate = :#{#cursor.dueDate}
+             AND t.priorityValue = :#{#cursor.priorityValue}
+             AND t.id > :#{#cursor.id}
+           )
+      )
+    ORDER BY
+        t.dueDate ASC,
+        t.priorityValue ASC,
+        t.id ASC
     """)
   List<Task> searchTasksWithCursor(
       @Param("userId") UUID userId,
@@ -259,4 +255,21 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     AND t.deletedAt IS NULL
     """)
   long countPersonalTasks(@Param("userId") UUID userId);
+
+  @Query("""
+    SELECT t
+    FROM Task t
+    WHERE t.deletedAt <= :cutoffTime
+    """)
+  List<Task> getDeletedTasksBefore(@Param("cutoffTime") LocalDateTime cutoffTime);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    WHERE t.parentTask.id = :parentId
+    AND t.deletedAt IS NULL
+    ORDER BY t.startDate ASC
+    """)
+  List<Task> findAllNotDeletedChildTasks(@Param("parentId") UUID parentId);
 }
