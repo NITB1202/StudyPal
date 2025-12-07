@@ -29,16 +29,6 @@ public interface TaskInternalService {
 
   List<Task> getAllActiveClonedTasksIncludingOriginal(Task task);
 
-  void validateViewTaskPermission(UUID userId, Task task);
-
-  void validateUpdateTaskPermission(UUID userId, Task task);
-
-  void validateTaskOwnership(UUID userId, Task task);
-
-  void validatePersonalTask(Task task);
-
-  void validateTeamTask(Task task);
-
   void deleteAllTasksByPlanId(UUID planId);
 
   void detachFromParent(Task task);

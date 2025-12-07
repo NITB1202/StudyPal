@@ -12,6 +12,7 @@ import com.study.studypal.plan.exception.TaskRecurrenceRuleErrorCode;
 import com.study.studypal.plan.repository.TaskRecurrenceRuleRepository;
 import com.study.studypal.plan.service.api.TaskRecurrenceRuleService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
+import com.study.studypal.plan.service.internal.TaskValidationService;
 import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -35,6 +36,7 @@ import org.springframework.util.CollectionUtils;
 public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService {
   private final TaskRecurrenceRuleRepository ruleRepository;
   private final TaskInternalService taskService;
+  private final TaskValidationService taskValidationService;
   private final ModelMapper modelMapper;
 
   @Override
@@ -42,8 +44,8 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
       UUID userId, UUID taskId, UpdateTaskRecurrenceRuleRequestDto request) {
     Task task = taskService.getById(taskId);
 
-    taskService.validatePersonalTask(task);
-    taskService.validateUpdateTaskPermission(userId, task);
+    taskValidationService.validatePersonalTask(task);
+    taskValidationService.validateUpdateTaskPermission(userId, task);
 
     Optional<TaskRecurrenceRule> rule = getRecurrenceRule(task);
     TaskRecurrenceRule existingRule = rule.orElse(null);
@@ -80,8 +82,8 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
   public TaskRecurrenceRuleResponseDto getRecurrenceRule(UUID userId, UUID taskId) {
     Task task = taskService.getById(taskId);
 
-    taskService.validatePersonalTask(task);
-    taskService.validateViewTaskPermission(userId, task);
+    taskValidationService.validatePersonalTask(task);
+    taskValidationService.validateViewTaskPermission(userId, task);
 
     Optional<TaskRecurrenceRule> rule = getRecurrenceRule(task);
 
