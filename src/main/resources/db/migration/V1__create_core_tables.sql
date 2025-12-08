@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     due_date TIMESTAMP NOT NULL,
     priority VARCHAR(50) NOT NULL,
     note VARCHAR(255),
-    complete_date TIMESTAMP,
+    completed_at TIMESTAMP,
     parent_task_id UUID,
     deleted_at TIMESTAMP,
     CONSTRAINT fk_tasks_plans_plan FOREIGN KEY (plan_id)

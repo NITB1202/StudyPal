@@ -102,4 +102,14 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   public UserSummaryProfile getOwnerProfile(UUID teamId) {
     return teamUserRepository.getTeamOwner(teamId);
   }
+
+  @Override
+  public long countMembers(UUID teamId) {
+    return teamUserRepository.getTotalMembers(teamId);
+  }
+
+  @Override
+  public long countMembersByName(UUID teamId, String keyword) {
+    return teamUserRepository.countTeamMembersByName(teamId, keyword);
+  }
 }

@@ -49,7 +49,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     long total = notificationRepository.countByUserId(userId);
     LocalDateTime nextCursor =
-        !notifications.isEmpty() && notifications.size() == size
+        notifications.size() == size
             ? notifications.get(notifications.size() - 1).getCreatedAt()
             : null;
 

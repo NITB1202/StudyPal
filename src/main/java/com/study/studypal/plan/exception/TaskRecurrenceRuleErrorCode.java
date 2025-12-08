@@ -14,6 +14,7 @@ public enum TaskRecurrenceRuleErrorCode implements ErrorCode {
       HttpStatus.BAD_REQUEST, "RECUR_002", "Weekdays must not be empty for weekly recurrence."),
   RECURRING_TASK_DURATION_INVALID(
       HttpStatus.BAD_REQUEST, "RECUR_003", "Recurring tasks must start and end on the same day."),
+  RECURRENCE_RULE_NOT_FOUND(HttpStatus.NOT_FOUND, "RECUR_004", "Recurrence rule not found."),
   ;
 
   private final HttpStatus httpStatus;

@@ -72,11 +72,19 @@ public interface TeamUserRepository extends JpaRepository<TeamUser, UUID> {
       """
     SELECT COUNT(tu) FROM TeamUser tu
     WHERE tu.team.id = :teamId
-        AND LOWER(tu.user.name) LIKE CONCAT('%', :keyword, '%')
-        AND tu.user.id <> :userId
+    AND LOWER(tu.user.name) LIKE CONCAT('%', :keyword, '%')
+    AND tu.user.id <> :userId
     """)
   long countTeamMembersByName(
       @Param("userId") UUID userId, @Param("teamId") UUID teamId, @Param("keyword") String keyword);
+
+  @Query(
+      """
+    SELECT COUNT(tu) FROM TeamUser tu
+    WHERE tu.team.id = :teamId
+    AND LOWER(tu.user.name) LIKE CONCAT('%', :keyword, '%')
+    """)
+  long countTeamMembersByName(@Param("teamId") UUID teamId, @Param("keyword") String keyword);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT tu FROM TeamUser tu WHERE tu.user.id = :userId AND tu.team.id = :teamId")

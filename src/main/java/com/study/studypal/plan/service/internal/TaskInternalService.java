@@ -5,6 +5,7 @@ import com.study.studypal.plan.dto.task.internal.CreateTaskInfo;
 import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.entity.Task;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -29,19 +30,11 @@ public interface TaskInternalService {
 
   List<Task> getAllActiveClonedTasksIncludingOriginal(Task task);
 
-  void validateViewTaskPermission(UUID userId, Task task);
-
-  void validateUpdateTaskPermission(UUID userId, Task task);
-
-  void validateTaskOwnership(UUID userId, Task task);
-
-  void validatePersonalTask(Task task);
-
-  void validateTeamTask(Task task);
-
   void deleteAllTasksByPlanId(UUID planId);
 
   void detachFromParent(Task task);
 
-  void hardDelete(List<Task> tasks);
+  void hardDeleteTasks(List<Task> tasks);
+
+  void hardDeleteTasksBefore(LocalDateTime cutoffTime);
 }

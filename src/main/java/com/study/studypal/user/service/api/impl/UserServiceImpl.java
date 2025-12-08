@@ -66,8 +66,7 @@ public class UserServiceImpl implements UserService {
         userRepository.searchByNameOrEmailWithCursor(userId, handledKeyword, cursor, pageable);
 
     long total = userRepository.countByNameOrEmail(userId, handledKeyword);
-    UUID nextCursor =
-        !users.isEmpty() && users.size() == size ? users.get(users.size() - 1).getId() : null;
+    UUID nextCursor = users.size() == size ? users.get(users.size() - 1).getId() : null;
 
     return ListUserResponseDto.builder().users(users).total(total).nextCursor(nextCursor).build();
   }

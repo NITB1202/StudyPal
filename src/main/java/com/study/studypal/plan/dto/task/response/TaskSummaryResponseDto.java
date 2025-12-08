@@ -34,5 +34,5 @@ public class TaskSummaryResponseDto {
   private TaskType taskType;
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  private LocalDateTime completeDate;
+  private LocalDateTime completedAt;
 }

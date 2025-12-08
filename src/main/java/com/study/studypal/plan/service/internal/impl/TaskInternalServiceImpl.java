@@ -15,6 +15,7 @@ import com.study.studypal.plan.repository.TaskRepository;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.plan.service.internal.TaskNotificationService;
+import com.study.studypal.plan.service.internal.TaskRecurrenceRuleInternalService;
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -42,6 +43,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   private final TaskCounterService taskCounterService;
   private final TaskNotificationService notificationService;
   private final TaskReminderInternalService reminderService;
+  private final TaskRecurrenceRuleInternalService ruleService;
 
   @PersistenceContext private final EntityManager entityManager;
 
@@ -173,37 +175,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
-  public void validateViewTaskPermission(UUID userId, Task task) {
-    Plan plan = task.getPlan();
-    if (plan != null) validateUserBelongsToTeam(userId, plan);
-    else validateTaskOwnership(userId, task);
-  }
-
-  @Override
-  public void validateTaskOwnership(UUID userId, Task task) {
-    User assignee = task.getAssignee();
-    if (!userId.equals(assignee.getId()))
-      throw new BaseException(TaskErrorCode.PERMISSION_TASK_OWNER_DENIED);
-  }
-
-  @Override
-  public void validatePersonalTask(Task task) {
-    if (task.getPlan() != null) throw new BaseException(TaskErrorCode.PERSONAL_TASK_REQUIRED);
-  }
-
-  @Override
-  public void validateTeamTask(Task task) {
-    if (task.getPlan() == null) throw new BaseException(TaskErrorCode.TEAM_TASK_REQUIRED);
-  }
-
-  @Override
-  public void validateUpdateTaskPermission(UUID userId, Task task) {
-    Plan plan = task.getPlan();
-    if (plan != null) validateUpdateTaskPermission(userId, plan);
-    else validateTaskOwnership(userId, task);
-  }
-
-  @Override
   public void deleteAllTasksByPlanId(UUID planId) {
     List<Task> tasks = taskRepository.findAllByPlanId(planId);
 
@@ -222,7 +193,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
-  public void hardDelete(List<Task> tasks) {
+  public void hardDeleteTasks(List<Task> tasks) {
     for (Task task : tasks) {
       reminderService.deleteAllRemindersForTask(task.getId());
     }
@@ -230,13 +201,31 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     taskRepository.deleteAll(tasks);
   }
 
-  private void validateUserBelongsToTeam(UUID userId, Plan plan) {
-    UUID teamId = plan.getTeam().getId();
-    memberService.validateUserBelongsToTeam(userId, teamId);
+  @Override
+  public void hardDeleteTasksBefore(LocalDateTime cutoffTime) {
+    List<Task> tasks = taskRepository.getDeletedTasksBefore(cutoffTime);
+
+    for (Task task : tasks) {
+      if (ruleService.isRootTask(task)) {
+        List<Task> childTasks = taskRepository.findAllNotDeletedChildTasks(task.getId());
+
+        if (!childTasks.isEmpty()) {
+          Task oldestChildTask = childTasks.remove(0);
+          detachFromParent(oldestChildTask);
+
+          ruleService.updateRootTask(task, oldestChildTask);
+          updateNewRootTask(oldestChildTask, childTasks);
+        }
+      }
+    }
+
+    taskRepository.deleteAll(tasks);
   }
 
-  private void validateUpdateTaskPermission(UUID userId, Plan plan) {
-    UUID teamId = plan.getTeam().getId();
-    memberService.validateUpdatePlanPermission(userId, teamId);
+  private void updateNewRootTask(Task newRootTask, List<Task> childTasks) {
+    for (Task childTask : childTasks) {
+      childTask.setParentTask(newRootTask);
+    }
+    taskRepository.saveAll(childTasks);
   }
 }

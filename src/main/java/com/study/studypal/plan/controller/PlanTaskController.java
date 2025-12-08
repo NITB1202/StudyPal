@@ -8,7 +8,7 @@ import com.study.studypal.plan.dto.task.request.CreateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.request.UpdateTaskForPlanRequestDto;
 import com.study.studypal.plan.dto.task.response.CreateTaskResponseDto;
 import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
-import com.study.studypal.plan.service.api.TaskService;
+import com.study.studypal.plan.service.api.PlanTaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/plans")
 public class PlanTaskController {
-  private final TaskService taskService;
+  private final PlanTaskService planTaskService;
 
   @PostMapping("/{planId}/tasks")
   @Operation(summary = "Create a new task for plan.")
@@ -39,7 +39,7 @@ public class PlanTaskController {
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID planId,
       @Valid @RequestBody CreateTaskForPlanRequestDto request) {
-    return ResponseEntity.ok(taskService.createTaskForPlan(userId, planId, request));
+    return ResponseEntity.ok(planTaskService.createTaskForPlan(userId, planId, request));
   }
 
   @PatchMapping("/tasks/{taskId}")
@@ -51,7 +51,7 @@ public class PlanTaskController {
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID taskId,
       @Valid @RequestBody UpdateTaskForPlanRequestDto request) {
-    return ResponseEntity.ok(taskService.updateTaskForPlan(userId, taskId, request));
+    return ResponseEntity.ok(planTaskService.updateTaskForPlan(userId, taskId, request));
   }
 
   @DeleteMapping("/tasks/{taskId}")
@@ -61,7 +61,7 @@ public class PlanTaskController {
   @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> deleteTaskForPlan(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
-    return ResponseEntity.ok(taskService.deleteTaskForPlan(userId, taskId));
+    return ResponseEntity.ok(planTaskService.deleteTaskForPlan(userId, taskId));
   }
 
   @PatchMapping("/tasks/{taskId}/recover")
@@ -71,6 +71,6 @@ public class PlanTaskController {
   @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> recoverTaskForPlan(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID taskId) {
-    return ResponseEntity.ok(taskService.recoverTaskForPlan(userId, taskId));
+    return ResponseEntity.ok(planTaskService.recoverTaskForPlan(userId, taskId));
   }
 }

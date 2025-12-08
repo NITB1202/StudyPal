@@ -196,7 +196,7 @@ public class TeamServiceImpl implements TeamService {
         };
 
     LocalDateTime nextCursor = null;
-    if (!teams.isEmpty()) {
+    if (teams.size() == size) {
       UUID lastTeamId = teams.get(teams.size() - 1).getId();
       nextCursor = teamMembershipService.getTeamListCursor(userId, lastTeamId, teams.size(), size);
     }

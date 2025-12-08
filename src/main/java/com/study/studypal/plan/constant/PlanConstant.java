@@ -11,6 +11,9 @@ public final class PlanConstant {
   public static final String PLAN_CODE_PREFIX = "PLN-";
   public static final String TASK_CODE_PREFIX = "TSK-";
   public static final String CODE_NUMBER_FORMAT = "%05d";
+
   public static final DateTimeFormatter JSON_DATETIME_FORMATTER =
       DateTimeFormatter.ofPattern(DATE_PATTERN);
+
+  public static final int TASK_CUTOFF_DAYS = 30;
 }

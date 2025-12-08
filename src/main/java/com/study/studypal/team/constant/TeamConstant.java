@@ -8,4 +8,5 @@ public final class TeamConstant {
   public static final int TEAM_CODE_LENGTH = 8;
   public static final String TEAM_AVATAR_FOLDER = "teams";
   public static final long MAX_OWNED_TEAMS = 5;
+  public static final int INVITATION_CUTOFF_DAYS = 7;
 }
