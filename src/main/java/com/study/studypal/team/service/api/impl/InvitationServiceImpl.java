@@ -107,8 +107,7 @@ public class InvitationServiceImpl implements InvitationService {
     List<InvitationResponseDto> dto =
         modelMapper.map(invitations, new TypeToken<List<InvitationResponseDto>>() {}.getType());
     long total = invitationRepository.countByInviteeId(userId);
-    LocalDateTime nextCursor =
-        !dto.isEmpty() && dto.size() == size ? dto.get(dto.size() - 1).getInvitedAt() : null;
+    LocalDateTime nextCursor = dto.size() == size ? dto.get(dto.size() - 1).getInvitedAt() : null;
 
     return ListInvitationResponseDto.builder()
         .invitations(dto)

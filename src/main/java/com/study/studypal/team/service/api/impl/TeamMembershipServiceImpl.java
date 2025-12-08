@@ -128,7 +128,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     long total = teamUserRepository.getTotalMembers(teamId);
 
     String nextCursor = null;
-    if (!members.isEmpty() && members.size() == size) {
+    if (members.size() == size) {
       TeamMemberResponseDto lastMember = members.get(members.size() - 1);
       nextCursor =
           TeamCursorUtils.encodeCursor(
@@ -176,9 +176,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     long total = teamUserRepository.countTeamMembersByName(userId, teamId, handledKeyword);
     String nextCursor =
-        !members.isEmpty() && members.size() == size
-            ? members.get(members.size() - 1).getUserId().toString()
-            : null;
+        members.size() == size ? members.get(members.size() - 1).getUserId().toString() : null;
 
     return ListTeamMemberResponseDto.builder()
         .members(members)
