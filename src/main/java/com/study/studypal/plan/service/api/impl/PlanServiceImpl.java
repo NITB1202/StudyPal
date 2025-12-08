@@ -151,7 +151,12 @@ public class PlanServiceImpl implements PlanService {
     }
 
     memberService.validateUserBelongsToTeam(userId, teamId);
+
     Pageable pageable = PageRequest.of(0, request.getSize());
+    String handledKeyword = request.getKeyword().trim().toLowerCase();
+
+    LocalDateTime fromDate = request.getFromDate();
+    LocalDateTime toDate = request.getToDate();
 
     List<Plan> plans;
     if (request.getCursor() != null && !request.getCursor().isEmpty()) {
@@ -159,24 +164,22 @@ public class PlanServiceImpl implements PlanService {
       plans =
           planRepository.searchPlansWithCursor(
               teamId,
-              request.getKeyword(),
-              request.getFromDate(),
-              request.getToDate(),
+              handledKeyword,
+              fromDate,
+              toDate,
               decodedCursor.dueDate(),
               decodedCursor.id(),
               pageable);
     } else {
-      plans =
-          planRepository.searchPlans(
-              teamId, request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
+      plans = planRepository.searchPlans(teamId, handledKeyword, fromDate, toDate, pageable);
     }
 
     List<PlanSummaryResponseDto> plansDTO =
         modelMapper.map(plans, new TypeToken<List<PlanSummaryResponseDto>>() {}.getType());
-    long total = planRepository.countPlans(teamId);
+    long total = planRepository.countPlans(teamId, handledKeyword, fromDate, toDate);
 
     String nextCursor = null;
-    if (!plans.isEmpty() && plans.size() == request.getSize()) {
+    if (plans.size() == request.getSize()) {
       Plan lastPlan = plans.get(plans.size() - 1);
       nextCursor = PlanCursorUtils.encodeCursor(lastPlan);
     }

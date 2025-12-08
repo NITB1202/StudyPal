@@ -1,5 +1,5 @@
 quartz:
-  job-packages: com.study.studypal.team.job, com.study.studypal.notification.job
+  job-packages: com.study.studypal.team.job, com.study.studypal.notification.job, com.study.studypal.plan.job
   jobs:
     invitation-clean-up: "0 0 0 * * ?"
     device-token-clean-up: " 0 0 0 * * ?"

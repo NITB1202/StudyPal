@@ -62,8 +62,8 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
     WHERE p.isDeleted = false
     AND p.team.id = :teamId
     AND (
-        LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-        OR LOWER(p.planCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        LOWER(p.title) LIKE CONCAT('%', :keyword, '%')
+        OR LOWER(p.planCode) LIKE CONCAT('%', :keyword, '%')
     )
     AND p.dueDate >= :fromDate
     AND p.startDate <= :toDate
@@ -85,8 +85,8 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
     WHERE p.isDeleted = false
     AND p.team.id = :teamId
     AND (
-        LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-        OR LOWER(p.planCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        LOWER(p.title) LIKE CONCAT('%', :keyword, '%')
+        OR LOWER(p.planCode) LIKE CONCAT('%', :keyword, '%')
     )
     AND p.dueDate >= :fromDate
     AND p.startDate <= :toDate
@@ -115,7 +115,17 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
     SELECT COUNT(p)
     FROM Plan p
     WHERE p.team.id = :teamId
+    AND (
+        LOWER(p.title) LIKE CONCAT('%', :keyword, '%')
+        OR LOWER(p.planCode) LIKE CONCAT('%', :keyword, '%')
+    )
+    AND p.dueDate >= :fromDate
+    AND p.startDate <= :toDate
     AND p.isDeleted = false
     """)
-  long countPlans(@Param("teamId") UUID teamId);
+  long countPlans(
+      @Param("teamId") UUID teamId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate);
 }

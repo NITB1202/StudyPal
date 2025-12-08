@@ -1,4 +1,4 @@
-package com.study.studypal.plan.dto.task.response;
+package com.study.studypal.plan.dto.statistic.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

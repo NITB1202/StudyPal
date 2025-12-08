@@ -102,7 +102,7 @@ public class PlanTaskServiceImpl implements PlanTaskService {
       User newAssignee = entityManager.getReference(User.class, assigneeId);
       task.setAssignee(newAssignee);
 
-      task.setCompleteDate(null);
+      task.setCompletedAt(null);
       planService.syncPlanFromTasks(task.getPlan());
 
       notificationService.publishTaskAssignedNotification(userId, task);

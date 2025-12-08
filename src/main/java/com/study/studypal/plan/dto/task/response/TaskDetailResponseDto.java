@@ -29,7 +29,7 @@ public class TaskDetailResponseDto {
   private LocalDateTime dueDate;
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  private LocalDateTime completeDate;
+  private LocalDateTime completedAt;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private Priority priority;

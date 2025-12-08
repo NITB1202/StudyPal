@@ -154,9 +154,7 @@ public class TaskServiceImpl implements TaskService {
             : taskRepository.countPersonalDeletedTasks(userId);
 
     LocalDateTime nextCursor =
-        !tasks.isEmpty() && tasks.size() == size
-            ? tasks.get(tasks.size() - 1).getDeletedAt()
-            : null;
+        tasks.size() == size ? tasks.get(tasks.size() - 1).getDeletedAt() : null;
 
     return ListDeletedTaskResponseDto.builder()
         .tasks(tasksDTO)
@@ -172,29 +170,26 @@ public class TaskServiceImpl implements TaskService {
     }
 
     Pageable pageable = PageRequest.of(0, request.getSize());
+    String handledKeyword = request.getKeyword().trim().toLowerCase();
+
+    LocalDateTime fromDate = request.getFromDate();
+    LocalDateTime toDate = request.getToDate();
 
     List<Task> tasks;
     if (request.getCursor() != null && !request.getCursor().isEmpty()) {
       TaskCursor decodedCursor = TaskCursorUtils.decodeCursor(request.getCursor());
       tasks =
           taskRepository.searchTasksWithCursor(
-              userId,
-              request.getKeyword(),
-              request.getFromDate(),
-              request.getToDate(),
-              decodedCursor,
-              pageable);
+              userId, handledKeyword, fromDate, toDate, decodedCursor, pageable);
     } else {
-      tasks =
-          taskRepository.searchTasks(
-              userId, request.getKeyword(), request.getFromDate(), request.getToDate(), pageable);
+      tasks = taskRepository.searchTasks(userId, handledKeyword, fromDate, toDate, pageable);
     }
 
     List<TaskSummaryResponseDto> tasksDTO = taskMapper.toTaskSummaryResponseDtoList(tasks);
-    long total = taskRepository.countPersonalTasks(userId);
+    long total = taskRepository.countTasks(userId, handledKeyword, fromDate, toDate);
 
     String nextCursor = null;
-    if (!tasks.isEmpty() && tasks.size() == request.getSize()) {
+    if (tasks.size() == request.getSize()) {
       Task lastTask = tasks.get(tasks.size() - 1);
       nextCursor = TaskCursorUtils.encodeCursor(lastTask);
     }
@@ -247,13 +242,13 @@ public class TaskServiceImpl implements TaskService {
 
     if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
 
-    if (task.getCompleteDate() != null)
+    if (task.getCompletedAt() != null)
       throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
 
     if (!task.getAssignee().getId().equals(userId))
       throw new BaseException(TaskErrorCode.TASK_ASSIGNEE_ONLY);
 
-    task.setCompleteDate(LocalDateTime.now());
+    task.setCompletedAt(LocalDateTime.now());
     taskRepository.save(task);
 
     Plan plan = task.getPlan();

@@ -62,8 +62,8 @@ public class Task {
   @Column(name = "due_date", nullable = false)
   private LocalDateTime dueDate;
 
-  @Column(name = "complete_date")
-  private LocalDateTime completeDate;
+  @Column(name = "completed_at")
+  private LocalDateTime completedAt;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "parent_task_id")

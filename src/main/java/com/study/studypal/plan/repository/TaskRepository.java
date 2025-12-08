@@ -1,5 +1,6 @@
 package com.study.studypal.plan.repository;
 
+import com.study.studypal.plan.dto.statistic.response.TaskStatisticsResponseDto;
 import com.study.studypal.plan.dto.task.internal.TaskCursor;
 import com.study.studypal.plan.entity.Task;
 import jakarta.persistence.LockModeType;
@@ -44,7 +45,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     FROM Task t
     WHERE t.plan.id = :planId
     AND t.deletedAt IS NULL
-    AND t.completeDate IS NOT NULL
+    AND t.completedAt IS NOT NULL
     """)
   int countCompletedTasks(UUID planId);
 
@@ -56,12 +57,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     AND t.startDate <= :endOfDay
     AND t.dueDate >= :startOfDay
     AND t.deletedAt IS NULL
-    ORDER BY t.dueDate ASC,
-             CASE t.priority
-                 WHEN 'HIGH' THEN 1
-                 WHEN 'MEDIUM' THEN 2
-                 WHEN 'LOW' THEN 3
-             END ASC
+    ORDER BY t.dueDate ASC, t.priorityValue ASC
     """)
   List<Task> getAssignedTasksOnDate(
       @Param("userId") UUID userId,
@@ -190,8 +186,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     WHERE t.deletedAt IS NULL
       AND t.assignee.id = :userId
       AND (
-           LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-           LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           LOWER(t.content) LIKE CONCAT('%', :keyword, '%') OR
+           LOWER(t.taskCode) LIKE CONCAT('%', :keyword, '%')
       )
       AND t.dueDate >= :fromDate
       AND t.startDate <= :toDate
@@ -214,8 +210,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     WHERE t.deletedAt IS NULL
       AND t.assignee.id = :userId
       AND (
-           LOWER(t.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
-           OR LOWER(t.taskCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           LOWER(t.content) LIKE CONCAT('%', :keyword, '%')
+           OR LOWER(t.taskCode) LIKE CONCAT('%', :keyword, '%')
       )
       AND t.dueDate >= :fromDate
       AND t.startDate <= :toDate
@@ -249,12 +245,20 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       """
     SELECT COUNT(t)
     FROM Task t
-    JOIN t.assignee a
-    WHERE a.id = :userId
-    AND t.plan IS NULL
-    AND t.deletedAt IS NULL
+    WHERE t.deletedAt IS NULL
+      AND t.assignee.id = :userId
+      AND (
+           LOWER(t.content) LIKE CONCAT('%', :keyword, '%') OR
+           LOWER(t.taskCode) LIKE CONCAT('%', :keyword, '%')
+      )
+      AND t.dueDate >= :fromDate
+      AND t.startDate <= :toDate
     """)
-  long countPersonalTasks(@Param("userId") UUID userId);
+  long countTasks(
+      @Param("userId") UUID userId,
+      @Param("keyword") String keyword,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate);
 
   @Query("""
     SELECT t
@@ -280,8 +284,13 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     JOIN t.plan p
     WHERE p.team.id = :teamId
     AND t.deletedAt IS NULL
+    AND t.dueDate >= :fromDate
+    AND t.startDate <= :toDate
     """)
-  List<Task> findAllByTeamId(@Param("teamId") UUID teamId);
+  List<Task> findAllByTeamIdInRange(
+      @Param("teamId") UUID teamId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate);
 
   @Query(
       """
@@ -290,6 +299,145 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     JOIN t.plan p
     WHERE p.team.id = :teamId
     AND t.deletedAt IS NULL
+    AND t.dueDate >= :fromDate
+    AND t.startDate <= :toDate
     """)
-  List<Task> findAllByTeamIdAndUserId(@Param("teamId") UUID teamId, @Param("userId") UUID userId);
+  List<Task> findAllByTeamIdAndUserIdInRange(
+      @Param("teamId") UUID teamId,
+      @Param("userId") UUID userId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate);
+
+  @Query(
+      """
+    SELECT COUNT(t)
+    FROM Task t
+    JOIN t.plan p
+    WHERE p.team.id = :teamId
+    AND t.deletedAt IS NULL
+    AND t.dueDate >= :fromDate
+    AND t.startDate <= :toDate
+    AND t.assignee.id = :userId
+    """)
+  long countCompletedTasksInRange(
+      @Param("teamId") UUID teamId,
+      @Param("userId") UUID userId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate);
+
+  @Query(
+      """
+    SELECT new com.study.studypal.plan.dto.statistic.response.TaskStatisticsResponseDto(
+        u.id,
+        u.name,
+        u.avatarUrl,
+        COUNT(t)
+    )
+    FROM TeamUser tu JOIN tu.user u
+    LEFT JOIN Task t ON t.assignee = u
+        AND t.plan.team.id = :teamId
+        AND t.deletedAt IS NULL
+        AND t.completedAt IS NOT NULL
+        AND t.dueDate >= :fromDate
+        AND t.startDate <= :toDate
+    WHERE tu.team.id = :teamId
+    GROUP BY u.id, u.name, u.avatarUrl
+    ORDER BY COUNT(t) DESC, u.id ASC
+    """)
+  List<TaskStatisticsResponseDto> getTaskStatistics(
+      @Param("teamId") UUID teamId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT new com.study.studypal.plan.dto.statistic.response.TaskStatisticsResponseDto(
+        u.id,
+        u.name,
+        u.avatarUrl,
+        COUNT(t)
+    )
+    FROM TeamUser tu JOIN tu.user u
+    LEFT JOIN Task t ON t.assignee = u
+        AND t.plan.team.id = :teamId
+        AND t.deletedAt IS NULL
+        AND t.completedAt IS NOT NULL
+        AND t.dueDate >= :fromDate
+        AND t.startDate <= :toDate
+    WHERE tu.team.id = :teamId
+    GROUP BY u.id, u.name, u.avatarUrl
+    HAVING (
+        COUNT(t) < :cursorCount
+        OR (COUNT(t) = :cursorCount AND u.id > :cursorUserId)
+    )
+    ORDER BY COUNT(t) DESC, u.id ASC
+    """)
+  List<TaskStatisticsResponseDto> getTaskStatisticsWithCursor(
+      @Param("teamId") UUID teamId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      @Param("cursorCount") Long cursorCount,
+      @Param("cursorUserId") UUID cursorUserId,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT new com.study.studypal.plan.dto.statistic.response.TaskStatisticsResponseDto(
+        u.id,
+        u.name,
+        u.avatarUrl,
+        COUNT(t)
+    )
+    FROM TeamUser tu JOIN tu.user u
+    LEFT JOIN Task t ON t.assignee = u
+        AND t.plan.team.id = :teamId
+        AND t.deletedAt IS NULL
+        AND t.completedAt IS NOT NULL
+        AND t.dueDate >= :fromDate
+        AND t.startDate <= :toDate
+    WHERE tu.team.id = :teamId
+    AND LOWER(u.name) LIKE CONCAT('%', :keyword, '%')
+    GROUP BY u.id, u.name, u.avatarUrl
+    ORDER BY COUNT(t) DESC, u.id ASC
+    """)
+  List<TaskStatisticsResponseDto> searchTaskStatistics(
+      @Param("teamId") UUID teamId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      @Param("keyword") String keyword,
+      Pageable pageable);
+
+  @Query(
+      """
+    SELECT new com.study.studypal.plan.dto.statistic.response.TaskStatisticsResponseDto(
+        u.id,
+        u.name,
+        u.avatarUrl,
+        COUNT(t)
+    )
+    FROM TeamUser tu JOIN tu.user u
+    LEFT JOIN Task t ON t.assignee = u
+        AND t.plan.team.id = :teamId
+        AND t.deletedAt IS NULL
+        AND t.completedAt IS NOT NULL
+        AND t.dueDate >= :fromDate
+        AND t.startDate <= :toDate
+    WHERE tu.team.id = :teamId
+      AND LOWER(u.name) LIKE CONCAT('%', :keyword, '%')
+    GROUP BY u.id, u.name, u.avatarUrl
+    HAVING (
+        COUNT(t) < :cursorCount
+     OR (COUNT(t) = :cursorCount AND u.id > :cursorUserId)
+    )
+    ORDER BY COUNT(t) DESC, u.id ASC
+    """)
+  List<TaskStatisticsResponseDto> searchTaskStatisticsWithCursor(
+      @Param("teamId") UUID teamId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate,
+      @Param("keyword") String keyword,
+      @Param("cursorCount") Long cursorCount,
+      @Param("cursorUserId") UUID cursorUserId,
+      Pageable pageable);
 }

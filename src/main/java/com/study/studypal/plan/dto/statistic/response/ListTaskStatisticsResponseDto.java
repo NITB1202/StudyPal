@@ -1,4 +1,4 @@
-package com.study.studypal.plan.dto.task.response;
+package com.study.studypal.plan.dto.statistic.response;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class ListTaskStatisticsResponseDto {
-  private List<TaskStatisticsResponseDto> members;
+  private List<TaskStatisticsResponseDto> statistics;
 
   private long total;
 
