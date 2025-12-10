@@ -1,7 +1,11 @@
-package com.study.studypal.plan.entity;
+package com.study.studypal.chatbot.entity;
 
+import com.study.studypal.chatbot.enums.Sender;
+import com.study.studypal.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,7 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,23 +26,24 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "plan_histories")
-public class PlanHistory {
+@Table(name = "chat_messages")
+public class ChatMessage {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "id", nullable = false)
+  @JoinColumn(name = "id")
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "plan_id", nullable = false)
-  private Plan plan;
+  @JoinColumn(name = "user_id")
+  private User user;
 
-  @Column(name = "image_url")
-  private String imageUrl;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "sender", nullable = false)
+  private Sender sender;
 
   @Column(name = "message", nullable = false)
   private String message;
 
-  @Column(name = "timestamp", nullable = false)
-  private LocalDateTime timestamp;
+  @Column(name = "sequence", nullable = false)
+  private Long sequence;
 }
