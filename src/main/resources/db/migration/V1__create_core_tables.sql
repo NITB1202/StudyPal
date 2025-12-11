@@ -171,3 +171,47 @@ CREATE TABLE IF NOT EXISTS team_task_counters (
     CONSTRAINT fk_team_task_counters_teams_team FOREIGN KEY (id)
         REFERENCES teams(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS user_quotas (
+    id UUID PRIMARY KEY,
+    daily_quota BIGINT NOT NULL,
+    used_quota BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_user_quotas_users_user FOREIGN KEY (id)
+        REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    sender VARCHAR(50) NOT NULL,
+    message VARCHAR(5000) NOT NULL,
+    context_id UUID,
+    context_type VARCHAR(50),
+    created_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_chat_messages_users_user FOREIGN KEY (user_id)
+        REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS message_usages (
+    id UUID PRIMARY KEY,
+    input_tokens BIGINT NOT NULL,
+    output_tokens BIGINT NOT NULL,
+    latency_ms FLOAT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_message_usages_chat_messages_message FOREIGN KEY (id)
+        REFERENCES chat_messages(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS chat_message_attachments (
+    id UUID PRIMARY KEY,
+    message_id UUID NOT NULL,
+    url VARCHAR(100) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    size BIGINT NOT NULL,
+    uploaded_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_attachment_message FOREIGN KEY (message_id)
+        REFERENCES chat_messages(id) ON DELETE CASCADE
+);

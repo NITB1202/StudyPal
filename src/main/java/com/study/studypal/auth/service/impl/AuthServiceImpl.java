@@ -4,6 +4,9 @@ import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_CODE_LE
 import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_CONTENT;
 import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_SUBJECT;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import com.study.studypal.auth.dto.internal.OAuthUserInfo;
 import com.study.studypal.auth.dto.request.GenerateAccessTokenRequestDto;
 import com.study.studypal.auth.dto.request.LoginWithCredentialsRequestDto;
@@ -29,16 +32,11 @@ import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.user.service.internal.UserInternalService;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @Transactional
@@ -94,29 +92,19 @@ public class AuthServiceImpl implements AuthService {
     return saveUserSession(account);
   }
 
-  private OAuthUserInfo getUserInfoWithGoogle(String accessToken) {
-    String googleAPIUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+  private OAuthUserInfo getUserInfoWithGoogle(String idToken) {
+    try {
+      FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
 
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
+      String uid = decodedToken.getUid();
+      String email = decodedToken.getEmail();
+      String name = (String) decodedToken.getClaims().get("name");
+      String picture = (String) decodedToken.getClaims().get("picture");
 
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    var response = restTemplate.exchange(googleAPIUrl, HttpMethod.GET, entity, Map.class);
-
-    Map<String, String> userInfo = response.getBody();
-
-    if (userInfo == null) {
+      return OAuthUserInfo.builder().id(uid).email(email).name(name).picture(picture).build();
+    } catch (FirebaseAuthException e) {
       throw new BaseException(AuthErrorCode.OAUTH_USER_INFO_NOT_FOUND);
     }
-
-    return OAuthUserInfo.builder()
-        .id(userInfo.get("id"))
-        .email(userInfo.get("email"))
-        .name(userInfo.get("name"))
-        .picture(userInfo.get("picture"))
-        .build();
   }
 
   private LoginResponseDto saveUserSession(Account account) {
