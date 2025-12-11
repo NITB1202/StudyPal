@@ -1,6 +1,6 @@
 package com.study.studypal.chatbot.entity;
 
-import com.study.studypal.chatbot.enums.MessageStatus;
+import com.study.studypal.chatbot.enums.AttachmentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,17 +10,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
@@ -28,29 +26,30 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "message_usages")
-public class MessageUsage {
+@Table(name = "chat_message_attachments")
+public class ChatMessageAttachment {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", nullable = false)
   private UUID id;
 
-  @MapsId
-  @JoinColumn(name = "id")
-  @OneToOne(fetch = FetchType.LAZY, optional = false)
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ChatMessage message;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "message_id", nullable = false)
+  private ChatMessage chatMessage;
 
-  @Column(name = "input_tokens", nullable = false)
-  private Long inputTokens;
+  @Column(name = "url", nullable = false)
+  private String url;
 
-  @Column(name = "output_tokens", nullable = false)
-  private Long outputTokens;
-
-  @Column(name = "latency_ms", nullable = false)
-  private Float latencyMs;
+  @Column(name = "name", nullable = false)
+  private String name;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false)
-  private MessageStatus status;
+  @Column(name = "type", nullable = false)
+  private AttachmentType type;
+
+  @Column(name = "size", nullable = false)
+  private Long size;
+
+  @Column(name = "uploaded_at", nullable = false)
+  private LocalDateTime uploadedAt;
 }

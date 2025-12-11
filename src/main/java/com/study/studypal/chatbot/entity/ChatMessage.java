@@ -1,5 +1,6 @@
 package com.study.studypal.chatbot.entity;
 
+import com.study.studypal.chatbot.enums.ContextType;
 import com.study.studypal.chatbot.enums.Sender;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.Column;
@@ -13,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +46,13 @@ public class ChatMessage {
   @Column(name = "message", nullable = false)
   private String message;
 
-  @Column(name = "sequence", nullable = false)
-  private Long sequence;
+  @Column(name = "context_id")
+  private UUID contextId;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "context_type")
+  private ContextType contextType;
+
+  @Column(name = "created_at", nullable = false)
+  private LocalDateTime createdAt;
 }
