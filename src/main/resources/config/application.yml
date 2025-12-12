@@ -1,0 +1,3 @@
+notification:
+  device-token-cutoff-days: 30
+  notification-cutoff-days: 7

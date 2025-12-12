@@ -1,7 +1,6 @@
 package com.study.studypal.notification.job;
 
-import static com.study.studypal.notification.constant.NotificationConstant.NOTIFICATION_CUTOFF_DAYS;
-
+import com.study.studypal.notification.config.NotificationProperties;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +13,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NotificationCleanUpJob implements Job {
   private final NotificationInternalService notificationService;
+  private final NotificationProperties props;
 
   @Override
   public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
     LocalDateTime now = LocalDateTime.now();
-    LocalDateTime cutoffTime = now.minusDays(NOTIFICATION_CUTOFF_DAYS);
+    LocalDateTime cutoffTime = now.minusDays(props.getNotificationCutoffDays());
     notificationService.deleteNotificationBefore(cutoffTime);
   }
 }
