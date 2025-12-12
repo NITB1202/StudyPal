@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -210,8 +211,13 @@ public class PlanServiceImpl implements PlanService {
 
     List<LocalDateTime> dueDates =
         planRepository.findPlanDueDatesByTeamIdInMonth(teamId, handledMonth, handledYear);
+    List<LocalDateTime> filteredDuaDates = dueDates.stream().filter(Objects::nonNull).toList();
 
-    return dueDates.stream().map(d -> d.toLocalDate().toString()).distinct().sorted().toList();
+    return filteredDuaDates.stream()
+        .map(d -> d.toLocalDate().toString())
+        .distinct()
+        .sorted()
+        .toList();
   }
 
   @Override
