@@ -1,8 +1,9 @@
 package com.study.studypal.auth.service.impl;
 
 import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_CODE_LENGTH;
-import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_CONTENT;
+import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_CODE_VARIABLE;
 import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_SUBJECT;
+import static com.study.studypal.auth.constant.AuthConstant.VERIFICATION_EMAIL_TEMPLATE_PATH;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -37,6 +38,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Service
 @Transactional
@@ -53,6 +56,7 @@ public class AuthServiceImpl implements AuthService {
   private Cache verificationCodeCache;
   private Cache accessTokenCache;
   private Cache refreshTokenCache;
+  private final SpringTemplateEngine templateEngine;
 
   @PostConstruct
   public void initCaches() {
@@ -270,10 +274,12 @@ public class AuthServiceImpl implements AuthService {
   }
 
   private void sendVerificationEmail(String email, String verificationCode) {
-    mailService.sendHtmlEmail(
-        email,
-        VERIFICATION_EMAIL_SUBJECT,
-        String.format(VERIFICATION_EMAIL_CONTENT, verificationCode));
+    Context context = new Context();
+    context.setVariable(VERIFICATION_EMAIL_CODE_VARIABLE, verificationCode);
+
+    String content = templateEngine.process(VERIFICATION_EMAIL_TEMPLATE_PATH, context);
+
+    mailService.sendHtmlEmail(email, VERIFICATION_EMAIL_SUBJECT, content);
   }
 
   private boolean verifyCode(String email, String code, VerificationType type) {

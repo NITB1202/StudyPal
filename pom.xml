@@ -190,6 +190,12 @@
             <version>3.5.2</version>
         </dependency>
 
+        <!-- HTML Template -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
