@@ -98,3 +98,9 @@ INSERT INTO team_task_counters (id, counter)
 VALUES
     ('111e8400-e29b-41d4-a716-446655440001', 0),
     ('555e8400-e29b-41d4-a716-446655440006', 0);
+
+INSERT INTO user_quotas (id, daily_quota, used_quota, created_at, updated_at)
+VALUES
+    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 15000, 0, '2024-12-01 00:00:00', '2024-12-01 00:00:00'),
+    ('618c10ee-923f-4323-b32b-086caa534b46', 15000, 0, '2024-12-01 00:00:00', '2024-12-01 00:00:00'),
+    ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 15000, 0, '2024-12-01 00:00:00', '2024-12-01 00:00:00');
