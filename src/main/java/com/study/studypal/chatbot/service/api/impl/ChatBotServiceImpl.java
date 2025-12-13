@@ -6,11 +6,14 @@ import com.study.studypal.chatbot.dto.response.ChatMessageResponseDto;
 import com.study.studypal.chatbot.dto.response.ChatResponseDto;
 import com.study.studypal.chatbot.dto.response.ListChatMessageResponseDto;
 import com.study.studypal.chatbot.dto.response.MessageContextResponseDto;
+import com.study.studypal.chatbot.dto.response.UserQuotaUsageResponseDto;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.ChatMessageAttachment;
+import com.study.studypal.chatbot.entity.UserQuota;
 import com.study.studypal.chatbot.repository.ChatMessageRepository;
 import com.study.studypal.chatbot.service.api.ChatBotService;
 import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
+import com.study.studypal.chatbot.service.internal.UserQuotaUsageService;
 import com.study.studypal.plan.service.internal.PlanInternalService;
 import com.study.studypal.plan.service.internal.TaskInternalService;
 import java.time.LocalDateTime;
@@ -28,14 +31,27 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ChatBotServiceImpl implements ChatBotService {
   private final ChatMessageRepository chatMessageRepository;
-  private final ModelMapper modelMapper;
   private final PlanInternalService planService;
   private final TaskInternalService taskService;
   private final ChatMessageAttachmentService attachmentService;
+  private final UserQuotaUsageService usageService;
+  private final ModelMapper modelMapper;
 
   @Override
   public ChatResponseDto sendMessage(
       UUID userId, ChatRequestDto request, List<MultipartFile> attachments) {
+    //    String context = validateAndSerializeContext(request);
+    //    List<String> attachmentContents = validateAndSerializeAttachments(attachments);
+    //    String normalizedPrompt = normalizePrompt(request.getPrompt());
+    //
+    //    validateTokenQuota(normalizedPrompt, context, attachmentContents);
+    //
+    //    updateQuotaUsage(userId);
+    //
+    //    UUID messageId = saveMessage(request);
+    //    saveMessageUsage();
+    //    saveAttachments(messageId, attachments);
+
     return null;
   }
 
@@ -63,6 +79,12 @@ public class ChatBotServiceImpl implements ChatBotService {
         .total(total)
         .nextCursor(nextCursor)
         .build();
+  }
+
+  @Override
+  public UserQuotaUsageResponseDto getUsage(UUID userId) {
+    UserQuota userQuota = usageService.getById(userId);
+    return modelMapper.map(userQuota, UserQuotaUsageResponseDto.class);
   }
 
   private ChatMessageResponseDto toResponseDto(ChatMessage message) {
@@ -95,4 +117,12 @@ public class ChatBotServiceImpl implements ChatBotService {
       case TASK -> taskService.getTaskCodeById(message.getContextId());
     };
   }
+
+  //  private String validateAndSerializeContext(ChatRequestDto request) {
+  //    UUID contextId = request.getContextId();
+  //    ContextType contextType = request.getContextType();
+  //
+  //    if (contextId == null) return null;
+  //    if (contextType == null) throw new BaseException();
+  //  }
 }

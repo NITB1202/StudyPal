@@ -1,5 +1,6 @@
 package com.study.studypal.chatbot.dto.request;
 
+import com.study.studypal.chatbot.enums.ContextType;
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
 import lombok.Getter;
@@ -12,4 +13,6 @@ public class ChatRequestDto {
   private String prompt;
 
   private UUID contextId;
+
+  private ContextType contextType;
 }
