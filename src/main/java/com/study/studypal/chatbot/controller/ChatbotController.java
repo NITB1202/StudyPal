@@ -35,7 +35,7 @@ public class ChatbotController {
   private final ChatBotService chatBotService;
   private final UserQuotaUsageService usageService;
 
-  @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/messages", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Send a message to the chatbot.")
   @ApiResponse(responseCode = "200", description = "Send successfully.")
   @BadRequestApiResponse
@@ -46,7 +46,7 @@ public class ChatbotController {
     return ResponseEntity.ok(chatBotService.sendMessage(userId, request, files));
   }
 
-  @GetMapping("/all")
+  @GetMapping("/messages")
   @Operation(summary = "Get a list of messages.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<ListChatMessageResponseDto> getMessages(
