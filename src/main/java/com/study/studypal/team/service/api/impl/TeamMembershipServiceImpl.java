@@ -1,12 +1,11 @@
 package com.study.studypal.team.service.api.impl;
 
-import static com.study.studypal.team.constant.TeamConstant.MAX_OWNED_TEAMS;
-
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
+import com.study.studypal.team.config.TeamProperties;
 import com.study.studypal.team.dto.membership.internal.DecodedCursor;
 import com.study.studypal.team.dto.membership.request.RemoveTeamMemberRequestDto;
 import com.study.studypal.team.dto.membership.request.UpdateMemberRoleRequestDto;
@@ -47,6 +46,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
   private final CacheManager cacheManager;
   private final ApplicationEventPublisher eventPublisher;
+  private final TeamProperties props;
 
   /**
    * Note: Cache eviction for teamMembers is already handled inside TeamInternalService's
@@ -222,7 +222,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     // Each group can have only one creator
     if (request.getRole() == TeamRole.OWNER) {
-      if (teamService.countTeamsOwnerByUser(request.getMemberId()) == MAX_OWNED_TEAMS) {
+      if (teamService.countTeamsOwnerByUser(request.getMemberId()) == props.getMaxOwnedTeams()) {
         throw new BaseException(TeamMembershipErrorCode.TEAM_OWNER_LIMIT_REACHED);
       } else {
         userInfo.setRole(TeamRole.ADMIN);

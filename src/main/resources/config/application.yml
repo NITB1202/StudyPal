@@ -4,3 +4,7 @@ notification:
 
 plan:
   task-cutoff-days: 30
+
+team:
+  invitation-cutoff-days: 7
+  max-owned-teams: 5

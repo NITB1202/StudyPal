@@ -1,6 +1,5 @@
 package com.study.studypal.team.service.api.impl;
 
-import static com.study.studypal.team.constant.TeamConstant.MAX_OWNED_TEAMS;
 import static com.study.studypal.team.constant.TeamConstant.TEAM_AVATAR_FOLDER;
 import static com.study.studypal.team.constant.TeamConstant.TEAM_CODE_LENGTH;
 
@@ -13,6 +12,7 @@ import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
+import com.study.studypal.team.config.TeamProperties;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
@@ -68,12 +68,13 @@ public class TeamServiceImpl implements TeamService {
   private final TaskCounterService taskCounterService;
   private final ModelMapper modelMapper;
   private final ApplicationEventPublisher eventPublisher;
+  private final TeamProperties props;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
   @CacheEvict(value = CacheNames.USER_TEAMS, key = "@keys.of(#userId)")
   public TeamResponseDto createTeam(UUID userId, CreateTeamRequestDto request) {
-    if (internalService.countTeamsOwnerByUser(userId) == MAX_OWNED_TEAMS) {
+    if (internalService.countTeamsOwnerByUser(userId) == props.getMaxOwnedTeams()) {
       throw new BaseException(TeamErrorCode.TEAM_OWNER_LIMIT_REACHED);
     }
 
