@@ -8,3 +8,7 @@ plan:
 team:
   invitation-cutoff-days: 7
   max-owned-teams: 5
+
+chatbot:
+  daily-quota-tokens: 15000
+  avg-tokens-per-request: 500
