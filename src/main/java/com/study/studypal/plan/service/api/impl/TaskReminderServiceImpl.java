@@ -1,6 +1,6 @@
 package com.study.studypal.plan.service.api.impl;
 
-import static com.study.studypal.plan.constant.PlanConstant.JSON_DATETIME_FORMATTER;
+import static com.study.studypal.common.util.Constants.DATETIME_FORMATTER;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -107,18 +107,17 @@ public class TaskReminderServiceImpl implements TaskReminderService {
   private void validateReminder(Task task, LocalDateTime remindAt) {
     if (taskReminderRepository.existsByTaskIdAndRemindAt(task.getId(), remindAt)) {
       throw new BaseException(
-          TaskReminderErrorCode.REMINDER_ALREADY_EXISTS, remindAt.format(JSON_DATETIME_FORMATTER));
+          TaskReminderErrorCode.REMINDER_ALREADY_EXISTS, remindAt.format(DATETIME_FORMATTER));
     }
 
     if (!remindAt.isAfter(task.getStartDate()) || !remindAt.isBefore(task.getDueDate())) {
       throw new BaseException(
-          TaskReminderErrorCode.INVALID_REMINDER, remindAt.format(JSON_DATETIME_FORMATTER));
+          TaskReminderErrorCode.INVALID_REMINDER, remindAt.format(DATETIME_FORMATTER));
     }
 
     if (remindAt.isBefore(LocalDateTime.now())) {
       throw new BaseException(
-          TaskReminderErrorCode.PAST_REMINDER_NOT_ALLOWED,
-          remindAt.format(JSON_DATETIME_FORMATTER));
+          TaskReminderErrorCode.PAST_REMINDER_NOT_ALLOWED, remindAt.format(DATETIME_FORMATTER));
     }
   }
 }

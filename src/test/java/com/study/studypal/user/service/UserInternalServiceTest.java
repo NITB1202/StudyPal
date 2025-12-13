@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.study.studypal.chatbot.service.internal.UserQuotaUsageInternalService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.repository.UserRepository;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class UserInternalServiceTest {
   @Mock private UserRepository userRepository;
   @Mock private TaskCounterService taskCounterService;
+  @Mock private UserQuotaUsageInternalService quotaUsageService;
 
   @InjectMocks private UserInternalServiceImpl userInternalService;
 

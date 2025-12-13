@@ -47,6 +47,7 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
     AND MONTH(t.dueDate) = :month
     AND YEAR(t.dueDate) = :year
     AND p.isDeleted = false
+    GROUP BY p.id
     """)
   List<LocalDateTime> findPlanDueDatesByTeamIdInMonth(
       @Param("teamId") UUID teamId, @Param("month") int month, @Param("year") int year);

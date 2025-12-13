@@ -90,11 +90,48 @@ VALUES
 
 INSERT INTO user_task_counters (id, counter)
 VALUES
-    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 0),
+    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 3),
     ('618c10ee-923f-4323-b32b-086caa534b46', 0),
     ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 0);
 
 INSERT INTO team_task_counters (id, counter)
 VALUES
-    ('111e8400-e29b-41d4-a716-446655440001', 0),
+    ('111e8400-e29b-41d4-a716-446655440001', 4),
     ('555e8400-e29b-41d4-a716-446655440006', 0);
+
+INSERT INTO user_quotas (id, daily_quota, used_quota, created_at, updated_at)
+VALUES
+    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 15000, 0, '2024-12-01 00:00:00', '2024-12-01 00:00:00'),
+    ('618c10ee-923f-4323-b32b-086caa534b46', 15000, 0, '2024-12-01 00:00:00', '2024-12-01 00:00:00'),
+    ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 15000, 0, '2024-12-01 00:00:00', '2024-12-01 00:00:00');
+
+INSERT INTO plans (id, creator_id, plan_code, title, description, start_date, due_date, progress, team_id, is_deleted)
+VALUES
+    ('730a533f-f8dc-4f5d-8608-5f0d03a65186', '041c77e0-ae77-4005-b745-ea12dca9bec6', 'PLN-00001', 'Biology semester plan',
+     'Study plan and assignments for the Biology class', '2025-12-18 09:00:00', '2025-12-20 22:00:00', 0, '111e8400-e29b-41d4-a716-446655440001', false),
+    ('fc36b0df-ce9a-4431-bc87-1ebbed752905', '041c77e0-ae77-4005-b745-ea12dca9bec6', 'PLN-00003', 'Advanced biology lab plan',
+     null, '2025-12-19 07:00:00', '2025-12-23 12:00:00', 0, '111e8400-e29b-41d4-a716-446655440001', false);
+
+INSERT INTO plan_histories (id, plan_id, image_url, message, timestamp)
+VALUES
+    ('8fab9491-5e92-4282-acc6-5a0c388c1f24', '730a533f-f8dc-4f5d-8608-5f0d03a65186', 'https://res.cloudinary.com/drvyagz4w/image/upload/v1750258716/041c77e0-ae77-4005-b745-ea12dca9bec6.png',
+    'Adam Lambert created plan.', '2025-12-14 09:00:00'),
+    ('8d363274-8ad9-441f-aaf6-99385ad8c7b8', 'fc36b0df-ce9a-4431-bc87-1ebbed752905', 'https://res.cloudinary.com/drvyagz4w/image/upload/v1750258716/041c77e0-ae77-4005-b745-ea12dca9bec6.png',
+        'Adam Lambert created plan.', '2025-12-14 10:00:00');
+
+INSERT INTO tasks (id, plan_id, priority, content, task_code, note, assignee_id, start_date, due_date, parent_task_id)
+VALUES
+    ('62184f26-1d7b-4d4a-a506-24140fb999f8', null, 'MEDIUM', 'Practice Ielts test', 'TSK-00001', 'https://ieltsonlinetests.com/',
+     '041c77e0-ae77-4005-b745-ea12dca9bec6', '2025-12-18 08:00:00', '2025-12-18 10:00:00', null),
+    ('9f42fcae-75c3-4275-9328-a32fa160adb8', null, 'LOW', 'Practice Ielts test', 'TSK-00002', 'https://ieltsonlinetests.com/',
+     '041c77e0-ae77-4005-b745-ea12dca9bec6', '2025-12-19 08:00:00', '2025-12-19 10:00:00', '62184f26-1d7b-4d4a-a506-24140fb999f8'),
+    ('bd4b6ed7-1e11-4903-99e3-e3c058ad0a9d', null, 'HIGH', 'Clean living room', 'TSK-00003', 'Should be done as soon as possible',
+     '041c77e0-ae77-4005-b745-ea12dca9bec6', '2025-12-20 13:00:00', '2025-12-23 15:00:00', null),
+    ('de5f447c-6692-4b12-9385-e03c70780cc3', '730a533f-f8dc-4f5d-8608-5f0d03a65186', 'MEDIUM', 'Cell structure assignment', 'TSK-00002', null,
+     '618c10ee-923f-4323-b32b-086caa534b46', '2025-12-18 09:00:00', '2025-12-20 22:00:00', null),
+    ('29ae7b45-2898-4689-903d-b60185bc42b8', 'fc36b0df-ce9a-4431-bc87-1ebbed752905', 'LOW', 'Microscopy lab report', 'TSK-00004', 'Reference: https://microbenotes.com/category/microscopy/',
+     '618c10ee-923f-4323-b32b-086caa534b46', '2025-12-19 07:00:00', '2025-12-23 12:00:00', null);
+
+INSERT INTO task_recurrence_rules (id, task_id, recurrence_start_date, recurrence_end_date, recurrence_type)
+VALUES
+    ('235e15d2-a8c0-47d8-b5f3-a39ca3439902', '62184f26-1d7b-4d4a-a506-24140fb999f8', '2025-12-19', '2025-12-19', 'DAILY');

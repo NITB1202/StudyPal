@@ -1,6 +1,6 @@
 package com.study.studypal.plan.service.internal.impl;
 
-import static com.study.studypal.plan.constant.PlanConstant.JSON_DATETIME_FORMATTER;
+import static com.study.studypal.common.util.Constants.DATETIME_FORMATTER;
 
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.entity.Task;
@@ -42,7 +42,7 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
       taskReminderRepository.save(reminder);
     } catch (DataIntegrityViolationException ex) {
       throw new BaseException(
-          TaskReminderErrorCode.REMINDER_ALREADY_EXISTS, remindAt.format(JSON_DATETIME_FORMATTER));
+          TaskReminderErrorCode.REMINDER_ALREADY_EXISTS, remindAt.format(DATETIME_FORMATTER));
     }
 
     scheduleReminder(reminder);
@@ -127,7 +127,7 @@ public class TaskReminderInternalServiceImpl implements TaskReminderInternalServ
       log.warn(e.getMessage());
       throw new BaseException(
           TaskReminderErrorCode.SCHEDULE_REMINDER_FAILED,
-          reminder.getRemindAt().format(JSON_DATETIME_FORMATTER));
+          reminder.getRemindAt().format(DATETIME_FORMATTER));
     }
   }
 }

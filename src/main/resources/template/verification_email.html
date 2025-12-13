@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div style='font-family: Arial, sans-serif; padding: 20px;'>
+    <h2>Email Verification</h2>
+    <p>Use the verification code below:</p>
+
+    <div style='font-size: 24px; font-weight: bold; color: #2F54EB; margin: 20px 0;'
+         th:text="${code}">
+        CODE_HERE
+    </div>
+
+    <p>This code will expire in 5 minutes.</p>
+    <p style='margin-top: 40px;'>Regards,<br><strong>StudyPal</strong></p>
+</div>
+</body>
+</html>

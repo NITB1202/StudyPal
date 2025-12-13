@@ -20,6 +20,7 @@ import com.study.studypal.plan.dto.task.response.UpdateTaskResponseDto;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.enums.ApplyScope;
+import com.study.studypal.plan.enums.TaskType;
 import com.study.studypal.plan.exception.TaskErrorCode;
 import com.study.studypal.plan.mapper.TaskMapper;
 import com.study.studypal.plan.repository.TaskRepository;
@@ -80,7 +81,9 @@ public class TaskServiceImpl implements TaskService {
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
     validationService.validateViewTaskPermission(userId, task);
-    TaskDetailResponseDto response = taskMapper.toTaskDetailResponseDto(task);
+
+    TaskType taskType = getTaskType(task);
+    TaskDetailResponseDto response = taskMapper.toTaskDetailResponseDto(task, taskType);
 
     Plan plan = task.getPlan();
     User assignee = task.getAssignee();
@@ -99,7 +102,7 @@ public class TaskServiceImpl implements TaskService {
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
     List<Task> tasks = taskRepository.getAssignedTasksOnDate(userId, startOfDay, endOfDay);
-    return taskMapper.toTaskSummaryResponseDtoList(tasks);
+    return toTaskSummaryResponseDtoList(tasks);
   }
 
   @Override
@@ -185,7 +188,7 @@ public class TaskServiceImpl implements TaskService {
       tasks = taskRepository.searchTasks(userId, handledKeyword, fromDate, toDate, pageable);
     }
 
-    List<TaskSummaryResponseDto> tasksDTO = taskMapper.toTaskSummaryResponseDtoList(tasks);
+    List<TaskSummaryResponseDto> tasksDTO = toTaskSummaryResponseDtoList(tasks);
     long total = taskRepository.countTasks(userId, handledKeyword, fromDate, toDate);
 
     String nextCursor = null;
@@ -398,5 +401,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     taskRepository.saveAll(tasksToRecover);
+  }
+
+  private TaskType getTaskType(Task task) {
+    if (task.getPlan() != null) return TaskType.TEAM;
+    if (ruleService.isRootOrClonedTask(task)) return TaskType.CLONED;
+    return TaskType.PERSONAL;
+  }
+
+  private List<TaskSummaryResponseDto> toTaskSummaryResponseDtoList(List<Task> tasks) {
+    return tasks.stream()
+        .map(
+            task -> {
+              TaskType taskType = getTaskType(task);
+              return taskMapper.toTaskSummaryResponseDto(task, taskType);
+            })
+        .toList();
   }
 }

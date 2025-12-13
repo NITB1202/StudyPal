@@ -1,7 +1,6 @@
 package com.study.studypal.notification.job;
 
-import static com.study.studypal.notification.constant.NotificationConstant.DEVICE_TOKEN_CUTOFF_DAYS;
-
+import com.study.studypal.notification.config.NotificationProperties;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +13,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DeviceTokenCleanUpJob implements Job {
   private final DeviceTokenInternalService deviceTokenService;
+  private final NotificationProperties props;
 
   @Override
   public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
     LocalDateTime now = LocalDateTime.now();
-    LocalDateTime cutoffTime = now.minusDays(DEVICE_TOKEN_CUTOFF_DAYS);
+    LocalDateTime cutoffTime = now.minusDays(props.getDeviceTokenCutoffDays());
     deviceTokenService.deleteDeviceTokenBefore(cutoffTime);
   }
 }

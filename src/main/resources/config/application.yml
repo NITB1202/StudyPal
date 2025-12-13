@@ -1,0 +1,14 @@
+notification:
+  device-token-cutoff-days: 30
+  notification-cutoff-days: 7
+
+plan:
+  task-cutoff-days: 30
+
+team:
+  invitation-cutoff-days: 7
+  max-owned-teams: 5
+
+chatbot:
+  daily-quota-tokens: 15000
+  avg-tokens-per-request: 500
