@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class UserQuotaUsageResponseDto {
-  private int usedRequests;
+  private long usedQuota;
 
-  private int totalRequests;
+  private long dailyQuota;
 }
