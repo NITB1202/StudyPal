@@ -4,7 +4,7 @@ import com.study.studypal.chatbot.config.ChatbotProperties;
 import com.study.studypal.chatbot.entity.UserQuota;
 import com.study.studypal.chatbot.exception.UserQuotaErrorCode;
 import com.study.studypal.chatbot.repository.UserQuotaRepository;
-import com.study.studypal.chatbot.service.internal.UserQuotaUsageService;
+import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserQuotaUsageServiceImpl implements UserQuotaUsageService {
+public class UserQuotaServiceImpl implements UserQuotaService {
   private final UserQuotaRepository userQuotaRepository;
   private final ChatbotProperties props;
   @PersistenceContext private final EntityManager entityManager;

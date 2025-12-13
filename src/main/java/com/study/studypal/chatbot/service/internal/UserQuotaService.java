@@ -4,7 +4,7 @@ import com.study.studypal.chatbot.entity.UserQuota;
 import java.util.List;
 import java.util.UUID;
 
-public interface UserQuotaUsageService {
+public interface UserQuotaService {
   UserQuota getById(UUID id);
 
   void initializeUsage(UUID userId);

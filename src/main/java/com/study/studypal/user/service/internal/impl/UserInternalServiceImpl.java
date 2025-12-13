@@ -1,6 +1,6 @@
 package com.study.studypal.user.service.internal.impl;
 
-import com.study.studypal.chatbot.service.internal.UserQuotaUsageService;
+import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.user.dto.internal.UserSummaryProfile;
@@ -22,7 +22,7 @@ public class UserInternalServiceImpl implements UserInternalService {
   private final UserRepository userRepository;
   private final ModelMapper modelMapper;
   private final TaskCounterService taskCounterService;
-  private final UserQuotaUsageService quotaUsageService;
+  private final UserQuotaService quotaUsageService;
 
   @Override
   public UUID createDefaultProfile(String name) {
