@@ -9,8 +9,6 @@ public interface PlanInternalService {
 
   Set<UUID> getPlanRelatedMemberIds(UUID planId);
 
-  String getPlanCodeById(UUID id);
-
   void syncPlanFromTasks(Plan plan);
 
   void softDeletePlan(Plan plan);

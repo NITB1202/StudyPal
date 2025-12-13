@@ -81,14 +81,4 @@ public class PlanInternalServiceImpl implements PlanInternalService {
 
     return taskAssigneeIds;
   }
-
-  @Override
-  public String getPlanCodeById(UUID id) {
-    Plan plan =
-        planRepository
-            .findById(id)
-            .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
-
-    return plan.getPlanCode();
-  }
 }

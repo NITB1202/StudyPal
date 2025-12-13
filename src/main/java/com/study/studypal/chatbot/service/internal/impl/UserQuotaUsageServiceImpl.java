@@ -10,6 +10,7 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,4 +45,7 @@ public class UserQuotaUsageServiceImpl implements UserQuotaUsageService {
 
     userQuotaRepository.save(userQuota);
   }
+
+  @Override
+  public void validateTokenQuota(String prompt, String context, List<String> attachments) {}
 }

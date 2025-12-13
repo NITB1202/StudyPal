@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -16,5 +17,10 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
   @Override
   public List<ChatMessageAttachment> getByMessageId(UUID messageId) {
     return attachmentRepository.findByMessageId(messageId);
+  }
+
+  @Override
+  public List<String> validateAndSerializeAttachments(List<MultipartFile> files) {
+    return List.of();
   }
 }

@@ -152,16 +152,6 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   }
 
   @Override
-  public String getTaskCodeById(UUID id) {
-    Task task =
-        taskRepository
-            .findById(id)
-            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
-
-    return task.getTaskCode();
-  }
-
-  @Override
   public int getTotalTasksCount(UUID planId) {
     return taskRepository.countTasks(planId);
   }
