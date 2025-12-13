@@ -1,5 +1,7 @@
 package com.study.studypal.chatbot.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,5 +19,6 @@ public class ListChatMessageResponseDto {
 
   private long total;
 
-  private Long cursor;
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+  private LocalDateTime nextCursor;
 }

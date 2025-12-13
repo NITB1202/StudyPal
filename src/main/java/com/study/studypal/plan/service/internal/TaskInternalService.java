@@ -22,6 +22,8 @@ public interface TaskInternalService {
 
   List<Task> getAll(UUID planId);
 
+  String getTaskCodeById(UUID id);
+
   int getTotalTasksCount(UUID planId);
 
   int getCompletedTasksCount(UUID planId);
