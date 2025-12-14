@@ -1,5 +1,7 @@
 package com.study.studypal.common.service.impl;
 
+import static com.study.studypal.common.util.Constants.VALID_RESOURCE_TYPES;
+
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.study.studypal.common.dto.FileResponse;
@@ -7,7 +9,6 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
   private final Cloudinary cloudinary;
-  private static final List<String> validResourceTypes = List.of("image", "video", "raw");
 
   @Override
   public FileResponse uploadFile(String folderPath, String publicId, byte[] bytes) {
@@ -55,7 +55,7 @@ public class FileServiceImpl implements FileService {
 
   @Override
   public void deleteFile(String publicId, String resourceType) {
-    if (!validResourceTypes.contains(resourceType)) {
+    if (!VALID_RESOURCE_TYPES.contains(resourceType)) {
       throw new BaseException(FileErrorCode.INVALID_RESOURCE_TYPE);
     }
 

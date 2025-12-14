@@ -208,7 +208,6 @@ CREATE TABLE IF NOT EXISTS chat_message_attachments (
     message_id UUID NOT NULL,
     url VARCHAR(100) NOT NULL,
     name VARCHAR(50) NOT NULL,
-    type VARCHAR(50) NOT NULL,
     size BIGINT NOT NULL,
     uploaded_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_attachment_message FOREIGN KEY (message_id)

@@ -1,5 +1,6 @@
 package com.study.studypal.team.service.api.impl;
 
+import static com.study.studypal.common.util.Constants.RESOURCE_TYPE_IMAGE;
 import static com.study.studypal.team.constant.TeamConstant.TEAM_AVATAR_FOLDER;
 import static com.study.studypal.team.constant.TeamConstant.TEAM_CODE_LENGTH;
 
@@ -300,7 +301,7 @@ public class TeamServiceImpl implements TeamService {
     teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
     if (team.getAvatarUrl() != null) {
-      fileService.deleteFile(team.getId().toString(), "image");
+      fileService.deleteFile(team.getId().toString(), RESOURCE_TYPE_IMAGE);
     }
 
     TeamDeletedEvent event =

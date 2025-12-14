@@ -1,5 +1,8 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
+import static com.study.studypal.chatbot.constant.ChatbotConstant.CHATBOT_FOLDER;
+import static com.study.studypal.common.util.Constants.RESOURCE_TYPE_RAW;
+
 import com.study.studypal.chatbot.config.ChatbotProperties;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.ChatMessageAttachment;
@@ -7,8 +10,13 @@ import com.study.studypal.chatbot.exception.ChatMessageAttachmentErrorCode;
 import com.study.studypal.chatbot.repository.ChatMessageAttachmentRepository;
 import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
 import com.study.studypal.chatbot.service.internal.extractor.TextExtractor;
+import com.study.studypal.common.dto.FileResponse;
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.exception.code.FileErrorCode;
+import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +32,7 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
   private final ChatMessageAttachmentRepository attachmentRepository;
   private final ChatbotProperties props;
   private final TextExtractor extractor;
+  private final FileService fileService;
 
   @Override
   public List<ChatMessageAttachment> getByMessageId(UUID messageId) {
@@ -65,5 +74,38 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
   }
 
   @Override
-  public void saveAttachments(ChatMessage message, List<MultipartFile> files) {}
+  @Transactional
+  public void saveAttachments(ChatMessage message, List<MultipartFile> files) {
+    List<UUID> ids = new ArrayList<>();
+    List<ChatMessageAttachment> attachments = new ArrayList<>();
+
+    LocalDateTime now = LocalDateTime.now();
+    String folderPath = String.format("%s/%s", CHATBOT_FOLDER, message.getId());
+
+    for (MultipartFile file : files) {
+      try {
+        UUID id = UUID.randomUUID();
+        FileResponse fileResponse =
+            fileService.uploadFile(folderPath, id.toString(), file.getBytes());
+
+        ChatMessageAttachment attachment =
+            ChatMessageAttachment.builder()
+                .id(id)
+                .chatMessage(message)
+                .name(file.getOriginalFilename())
+                .url(fileResponse.getUrl())
+                .size(fileResponse.getBytes())
+                .uploadedAt(now)
+                .build();
+
+        ids.add(id);
+        attachments.add(attachment);
+      } catch (IOException e) {
+        ids.forEach(id -> fileService.deleteFile(id.toString(), RESOURCE_TYPE_RAW));
+        throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
+      }
+    }
+
+    attachmentRepository.saveAll(attachments);
+  }
 }
