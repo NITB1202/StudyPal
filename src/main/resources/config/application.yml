@@ -12,5 +12,6 @@ team:
 chatbot:
   daily-quota-tokens: 15000
   avg-tokens-per-request: 500
+  char-per-token: 3
   max-file-size: 10MB
   max-total-size: 20MB

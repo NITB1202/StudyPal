@@ -13,6 +13,7 @@ import org.springframework.util.unit.DataSize;
 public class ChatbotProperties {
   private Long dailyQuotaTokens;
   private Long avgTokensPerRequest;
+  private Integer charPerToken;
   private DataSize maxFileSize;
   private DataSize maxTotalSize;
 }

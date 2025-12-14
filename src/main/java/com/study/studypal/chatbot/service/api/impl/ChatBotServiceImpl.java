@@ -1,5 +1,7 @@
 package com.study.studypal.chatbot.service.api.impl;
 
+import com.study.studypal.chatbot.dto.external.AIRequestDto;
+import com.study.studypal.chatbot.dto.external.AIResponseDto;
 import com.study.studypal.chatbot.dto.request.ChatRequestDto;
 import com.study.studypal.chatbot.dto.response.ChatMessageAttachmentResponseDto;
 import com.study.studypal.chatbot.dto.response.ChatMessageResponseDto;
@@ -10,6 +12,7 @@ import com.study.studypal.chatbot.dto.response.UserQuotaUsageResponseDto;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.ChatMessageAttachment;
 import com.study.studypal.chatbot.entity.UserQuota;
+import com.study.studypal.chatbot.mapper.ChatbotMapper;
 import com.study.studypal.chatbot.repository.ChatMessageRepository;
 import com.study.studypal.chatbot.service.api.ChatBotService;
 import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
@@ -36,6 +39,7 @@ public class ChatBotServiceImpl implements ChatBotService {
   private final UserQuotaService usageService;
   private final ChatMessageContextService contextService;
   private final ModelMapper modelMapper;
+  private final ChatbotMapper mapper;
 
   @Override
   @Transactional
@@ -48,13 +52,18 @@ public class ChatBotServiceImpl implements ChatBotService {
         attachmentService.validateAndSerializeAttachments(attachments);
     String normalizedPrompt = normalizePrompt(request.getPrompt());
 
-    usageService.validateTokenQuota(normalizedPrompt, context, attachmentContents);
+    AIRequestDto aiRequest = mapper.toAIRequestDto(normalizedPrompt, context, attachmentContents);
+    usageService.validateTokenQuota(userId, aiRequest);
 
-    //    updateQuotaUsage(userId);
-    //
+    long start = System.currentTimeMillis();
+    AIResponseDto aiResponse = sendRequest(aiRequest);
+    long duration = System.currentTimeMillis() - start;
+
     //    UUID messageId = saveMessage(request);
     //    saveMessageUsage();
     //    saveAttachments(messageId, attachments);
+    //
+    //    updateQuotaUsage(userId);
 
     return null;
   }
@@ -116,5 +125,13 @@ public class ChatBotServiceImpl implements ChatBotService {
 
   private String normalizePrompt(String prompt) {
     return FileUtils.normalizeText(prompt);
+  }
+
+  private AIResponseDto sendRequest(AIRequestDto request) {
+    return AIResponseDto.builder()
+        .reply("Mock reply")
+        .inputTokens(1000L)
+        .outputTokens(5000L)
+        .build();
   }
 }

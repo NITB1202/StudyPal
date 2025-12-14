@@ -1,6 +1,7 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
 import com.study.studypal.chatbot.config.ChatbotProperties;
+import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.entity.UserQuota;
 import com.study.studypal.chatbot.exception.UserQuotaErrorCode;
 import com.study.studypal.chatbot.repository.UserQuotaRepository;
@@ -10,10 +11,11 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -47,5 +49,32 @@ public class UserQuotaServiceImpl implements UserQuotaService {
   }
 
   @Override
-  public void validateTokenQuota(String prompt, String context, List<String> attachments) {}
+  public void validateTokenQuota(UUID userId, AIRequestDto request) {
+    UserQuota userQuota = getById(userId);
+    int estimatedTokens = estimateToken(request);
+
+    if (userQuota.getUsedQuota() + estimatedTokens > userQuota.getDailyQuota()) {
+      throw new BaseException(UserQuotaErrorCode.TOKEN_EXCEEDED);
+    }
+  }
+
+  private int estimateToken(AIRequestDto request) {
+    int chars = 0;
+
+    if (StringUtils.isNotBlank(request.getPrompt())) {
+      chars += request.getPrompt().length();
+    }
+
+    if (StringUtils.isNotBlank(request.getContext())) {
+      chars += request.getContext().length();
+    }
+
+    if (!CollectionUtils.isEmpty(request.getAttachments())) {
+      for (String attachment : request.getAttachments()) {
+        chars += attachment.length();
+      }
+    }
+
+    return chars / props.getCharPerToken();
+  }
 }
