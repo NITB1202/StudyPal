@@ -14,7 +14,8 @@ import com.study.studypal.chatbot.repository.ChatMessageRepository;
 import com.study.studypal.chatbot.service.api.ChatBotService;
 import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
 import com.study.studypal.chatbot.service.internal.ChatMessageContextService;
-import com.study.studypal.chatbot.service.internal.UserQuotaUsageService;
+import com.study.studypal.chatbot.service.internal.UserQuotaService;
+import com.study.studypal.common.util.FileUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ChatBotServiceImpl implements ChatBotService {
   private final ChatMessageRepository chatMessageRepository;
   private final ChatMessageAttachmentService attachmentService;
-  private final UserQuotaUsageService usageService;
+  private final UserQuotaService usageService;
   private final ChatMessageContextService contextService;
   private final ModelMapper modelMapper;
 
@@ -112,6 +113,6 @@ public class ChatBotServiceImpl implements ChatBotService {
   }
 
   private String normalizePrompt(String prompt) {
-    return "";
+    return FileUtils.normalizeText(prompt);
   }
 }
