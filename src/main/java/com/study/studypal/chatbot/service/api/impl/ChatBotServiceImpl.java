@@ -25,6 +25,7 @@ import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -37,6 +38,7 @@ public class ChatBotServiceImpl implements ChatBotService {
   private final ModelMapper modelMapper;
 
   @Override
+  @Transactional
   public ChatResponseDto sendMessage(
       UUID userId, ChatRequestDto request, List<MultipartFile> attachments) {
     String context =

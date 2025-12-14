@@ -1,27 +1,35 @@
 package com.study.studypal.common.util;
 
+import static com.study.studypal.common.util.Constants.DOCUMENT_CONTENT_TYPES;
+import static com.study.studypal.common.util.Constants.DOCUMENT_EXTENSIONS;
+
 import java.text.Normalizer;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils {
-  private FileUtils() {}
 
   public static boolean isDocument(MultipartFile file) {
-    String filename = file.getOriginalFilename();
-    if (filename == null) {
+    if (file == null || file.isEmpty()) {
       return false;
     }
 
-    String lowerCaseName = filename.toLowerCase();
-    return lowerCaseName.endsWith(".pdf")
-        || lowerCaseName.endsWith(".doc")
-        || lowerCaseName.endsWith(".docx")
-        || lowerCaseName.endsWith(".xls")
-        || lowerCaseName.endsWith(".xlsx")
-        || lowerCaseName.endsWith(".ppt")
-        || lowerCaseName.endsWith(".pptx")
-        || lowerCaseName.endsWith(".txt");
+    String filename = file.getOriginalFilename();
+    String contentType = file.getContentType();
+
+    if (filename == null || contentType == null) {
+      return false;
+    }
+
+    String lowerName = filename.toLowerCase();
+
+    boolean validExtension = DOCUMENT_EXTENSIONS.stream().anyMatch(lowerName::endsWith);
+    boolean validContentType = DOCUMENT_CONTENT_TYPES.contains(contentType);
+
+    return validExtension && validContentType;
   }
 
   public static boolean isImage(MultipartFile file) {
@@ -48,6 +56,6 @@ public class FileUtils {
   }
 
   public static String fixBrokenPdfLines(String text) {
-    return text.replaceAll("(?<![.?!:;])\\n(?!\\n)", " ");
+    return text.replaceAll("(?<![.?!:;])\\n(?!\\n|\\s*(?:[-•*]|\\d+\\.))", " ");
   }
 }

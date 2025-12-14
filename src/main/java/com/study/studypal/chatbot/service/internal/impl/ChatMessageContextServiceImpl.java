@@ -17,6 +17,7 @@ import com.study.studypal.plan.repository.TaskRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +38,9 @@ public class ChatMessageContextServiceImpl implements ChatMessageContextService 
   }
 
   @Override
+  @Transactional
   public String validateAndSerializeContext(UUID contextId, ContextType contextType) {
-    if (contextId == null) return null;
+    if (contextId == null) return "";
     if (contextType == null)
       throw new BaseException(ChatMessageContextErrorCode.CONTEXT_TYPE_REQUIRED);
 
