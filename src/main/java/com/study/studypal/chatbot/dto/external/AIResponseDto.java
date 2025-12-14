@@ -1,6 +1,5 @@
 package com.study.studypal.chatbot.dto.external;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,8 +17,4 @@ public class AIResponseDto {
   private Long inputTokens;
 
   private Long outputTokens;
-
-  private PlanOutput generatedPlan;
-
-  private List<TaskOutput> generatedTasksJson;
 }

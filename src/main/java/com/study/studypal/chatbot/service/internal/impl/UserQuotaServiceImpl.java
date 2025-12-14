@@ -2,8 +2,11 @@ package com.study.studypal.chatbot.service.internal.impl;
 
 import com.study.studypal.chatbot.config.ChatbotProperties;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
+import com.study.studypal.chatbot.entity.ChatMessage;
+import com.study.studypal.chatbot.entity.MessageUsage;
 import com.study.studypal.chatbot.entity.UserQuota;
 import com.study.studypal.chatbot.exception.UserQuotaErrorCode;
+import com.study.studypal.chatbot.repository.MessageUsageRepository;
 import com.study.studypal.chatbot.repository.UserQuotaRepository;
 import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.common.exception.BaseException;
@@ -21,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 @RequiredArgsConstructor
 public class UserQuotaServiceImpl implements UserQuotaService {
   private final UserQuotaRepository userQuotaRepository;
+  private final MessageUsageRepository messageUsageRepository;
   private final ChatbotProperties props;
   @PersistenceContext private final EntityManager entityManager;
 
@@ -56,6 +60,12 @@ public class UserQuotaServiceImpl implements UserQuotaService {
     if (userQuota.getUsedQuota() + estimatedTokens > userQuota.getDailyQuota()) {
       throw new BaseException(UserQuotaErrorCode.TOKEN_EXCEEDED);
     }
+  }
+
+  @Override
+  public void saveMessageUsage(ChatMessage message, long duration) {
+    MessageUsage messageUsage = MessageUsage.builder().build();
+    UUID userId = message.getUser().getId();
   }
 
   private int estimateToken(AIRequestDto request) {

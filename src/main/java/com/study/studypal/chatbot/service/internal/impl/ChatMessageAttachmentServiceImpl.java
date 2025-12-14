@@ -1,6 +1,7 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
 import com.study.studypal.chatbot.config.ChatbotProperties;
+import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.ChatMessageAttachment;
 import com.study.studypal.chatbot.exception.ChatMessageAttachmentErrorCode;
 import com.study.studypal.chatbot.repository.ChatMessageAttachmentRepository;
@@ -62,4 +63,7 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
 
     return result;
   }
+
+  @Override
+  public void saveAttachments(ChatMessage message, List<MultipartFile> files) {}
 }

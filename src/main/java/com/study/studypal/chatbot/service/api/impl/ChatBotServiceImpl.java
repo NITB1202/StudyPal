@@ -12,6 +12,7 @@ import com.study.studypal.chatbot.dto.response.UserQuotaUsageResponseDto;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.ChatMessageAttachment;
 import com.study.studypal.chatbot.entity.UserQuota;
+import com.study.studypal.chatbot.enums.Sender;
 import com.study.studypal.chatbot.mapper.ChatbotMapper;
 import com.study.studypal.chatbot.repository.ChatMessageRepository;
 import com.study.studypal.chatbot.service.api.ChatBotService;
@@ -19,6 +20,9 @@ import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
 import com.study.studypal.chatbot.service.internal.ChatMessageContextService;
 import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.common.util.FileUtils;
+import com.study.studypal.user.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +44,7 @@ public class ChatBotServiceImpl implements ChatBotService {
   private final ChatMessageContextService contextService;
   private final ModelMapper modelMapper;
   private final ChatbotMapper mapper;
+  @PersistenceContext private final EntityManager entityManager;
 
   @Override
   @Transactional
@@ -55,17 +60,17 @@ public class ChatBotServiceImpl implements ChatBotService {
     AIRequestDto aiRequest = mapper.toAIRequestDto(normalizedPrompt, context, attachmentContents);
     usageService.validateTokenQuota(userId, aiRequest);
 
+    ChatMessage message = saveUserMessage(userId, request);
+
     long start = System.currentTimeMillis();
     AIResponseDto aiResponse = sendRequest(aiRequest);
     long duration = System.currentTimeMillis() - start;
 
-    //    UUID messageId = saveMessage(request);
-    //    saveMessageUsage();
-    //    saveAttachments(messageId, attachments);
-    //
-    //    updateQuotaUsage(userId);
+    usageService.saveMessageUsage(message, duration);
+    attachmentService.saveAttachments(message, attachments);
 
-    return null;
+    ChatMessage reply = saveReply(userId, aiResponse);
+    return mapper.toChatResponseDto(reply);
   }
 
   @Override
@@ -133,5 +138,35 @@ public class ChatBotServiceImpl implements ChatBotService {
         .inputTokens(1000L)
         .outputTokens(5000L)
         .build();
+  }
+
+  private ChatMessage saveUserMessage(UUID userId, ChatRequestDto request) {
+    User user = entityManager.getReference(User.class, userId);
+
+    ChatMessage message =
+        ChatMessage.builder()
+            .user(user)
+            .sender(Sender.USER)
+            .message(request.getPrompt())
+            .contextId(request.getContextId())
+            .contextType(request.getContextType())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+    return chatMessageRepository.save(message);
+  }
+
+  private ChatMessage saveReply(UUID userId, AIResponseDto response) {
+    User user = entityManager.getReference(User.class, userId);
+
+    ChatMessage message =
+        ChatMessage.builder()
+            .user(user)
+            .sender(Sender.AI)
+            .message(response.getReply())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+    return chatMessageRepository.save(message);
   }
 }
