@@ -45,5 +45,5 @@ public class MessageUsage {
   private Long outputTokens;
 
   @Column(name = "latency_ms", nullable = false)
-  private Float latencyMs;
+  private Long latencyMs;
 }

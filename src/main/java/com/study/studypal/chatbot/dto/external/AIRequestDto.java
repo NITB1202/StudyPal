@@ -12,4 +12,6 @@ public class AIRequestDto {
   private String context;
 
   private List<String> attachments;
+
+  private Long maxOutputTokens;
 }

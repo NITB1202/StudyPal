@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS message_usages (
     id UUID PRIMARY KEY,
     input_tokens BIGINT NOT NULL,
     output_tokens BIGINT NOT NULL,
-    latency_ms FLOAT NOT NULL,
+    latency_ms BIGINT NOT NULL,
     CONSTRAINT fk_message_usages_chat_messages_message FOREIGN KEY (id)
         REFERENCES chat_messages(id) ON DELETE CASCADE
 );

@@ -2,6 +2,7 @@ package com.study.studypal.chatbot.service.internal.impl;
 
 import com.study.studypal.chatbot.config.ChatbotProperties;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
+import com.study.studypal.chatbot.dto.external.AIResponseDto;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.MessageUsage;
 import com.study.studypal.chatbot.entity.UserQuota;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 @Service
@@ -53,23 +55,48 @@ public class UserQuotaServiceImpl implements UserQuotaService {
   }
 
   @Override
-  public void validateTokenQuota(UUID userId, AIRequestDto request) {
+  @Transactional
+  public void validateAndSetMaxOutputTokens(UUID userId, AIRequestDto request) {
     UserQuota userQuota = getById(userId);
-    int estimatedTokens = estimateToken(request);
 
-    if (userQuota.getUsedQuota() + estimatedTokens > userQuota.getDailyQuota()) {
+    long estimatedInputTokens = estimateToken(request);
+    long totalTokensAfterRequest = userQuota.getUsedQuota() + estimatedInputTokens;
+
+    if (totalTokensAfterRequest > userQuota.getDailyQuota()) {
       throw new BaseException(UserQuotaErrorCode.TOKEN_EXCEEDED);
     }
+
+    long remainingTokens = userQuota.getDailyQuota() - totalTokensAfterRequest;
+    request.setMaxOutputTokens(remainingTokens);
   }
 
   @Override
-  public void saveMessageUsage(ChatMessage message, long duration) {
-    MessageUsage messageUsage = MessageUsage.builder().build();
+  @Transactional
+  public void saveMessageUsage(ChatMessage message, AIResponseDto response, long duration) {
+    long inputTokens = response.getInputTokens();
+    long outputTokens = response.getOutputTokens();
+
+    MessageUsage messageUsage =
+        MessageUsage.builder()
+            .message(message)
+            .inputTokens(inputTokens)
+            .outputTokens(outputTokens)
+            .latencyMs(duration)
+            .build();
+
+    messageUsageRepository.save(messageUsage);
+
     UUID userId = message.getUser().getId();
+    long totalTokens = inputTokens + outputTokens;
+
+    UserQuota userQuota = getById(userId);
+    userQuota.setUsedQuota(userQuota.getUsedQuota() + totalTokens);
+
+    userQuotaRepository.save(userQuota);
   }
 
-  private int estimateToken(AIRequestDto request) {
-    int chars = 0;
+  private long estimateToken(AIRequestDto request) {
+    long chars = 0;
 
     if (StringUtils.isNotBlank(request.getPrompt())) {
       chars += request.getPrompt().length();

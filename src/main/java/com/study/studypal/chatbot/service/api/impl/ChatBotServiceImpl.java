@@ -58,15 +58,15 @@ public class ChatBotServiceImpl implements ChatBotService {
     String normalizedPrompt = normalizePrompt(request.getPrompt());
 
     AIRequestDto aiRequest = mapper.toAIRequestDto(normalizedPrompt, context, attachmentContents);
-    usageService.validateTokenQuota(userId, aiRequest);
+    usageService.validateAndSetMaxOutputTokens(userId, aiRequest);
 
-    ChatMessage message = saveUserMessage(userId, request);
+    ChatMessage message = saveMessage(userId, request);
 
     long start = System.currentTimeMillis();
     AIResponseDto aiResponse = sendRequest(aiRequest);
     long duration = System.currentTimeMillis() - start;
 
-    usageService.saveMessageUsage(message, duration);
+    usageService.saveMessageUsage(message, aiResponse, duration);
     attachmentService.saveAttachments(message, attachments);
 
     ChatMessage reply = saveReply(userId, aiResponse);
@@ -140,7 +140,7 @@ public class ChatBotServiceImpl implements ChatBotService {
         .build();
   }
 
-  private ChatMessage saveUserMessage(UUID userId, ChatRequestDto request) {
+  private ChatMessage saveMessage(UUID userId, ChatRequestDto request) {
     User user = entityManager.getReference(User.class, userId);
 
     ChatMessage message =
