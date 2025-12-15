@@ -7,7 +7,6 @@ import com.study.studypal.chatbot.dto.response.ChatResponseDto;
 import com.study.studypal.chatbot.dto.response.ListChatMessageResponseDto;
 import com.study.studypal.chatbot.dto.response.UserQuotaUsageResponseDto;
 import com.study.studypal.chatbot.service.api.ChatBotService;
-import com.study.studypal.chatbot.service.api.UserQuotaUsageService;
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/chatbot")
 public class ChatbotController {
   private final ChatBotService chatBotService;
-  private final UserQuotaUsageService usageService;
 
   @PostMapping(value = "/messages", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Send a message to the chatbot.")
@@ -61,6 +59,6 @@ public class ChatbotController {
   @Operation(summary = "Get user quota usage.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<UserQuotaUsageResponseDto> getUsage(@AuthenticationPrincipal UUID userId) {
-    return ResponseEntity.ok(usageService.getUsage(userId));
+    return ResponseEntity.ok(chatBotService.getUsage(userId));
   }
 }
