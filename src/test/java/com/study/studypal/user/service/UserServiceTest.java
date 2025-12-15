@@ -6,27 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import com.study.studypal.common.dto.ActionResponseDto;
-import com.study.studypal.common.dto.FileResponse;
 import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.code.FileErrorCode;
-import com.study.studypal.common.factory.FileFactory;
 import com.study.studypal.common.service.FileService;
-import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.dto.response.ListUserResponseDto;
 import com.study.studypal.user.dto.response.UserDetailResponseDto;
@@ -38,7 +27,6 @@ import com.study.studypal.user.exception.UserErrorCode;
 import com.study.studypal.user.factory.UserFactory;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.user.service.api.impl.UserServiceImpl;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -48,11 +36,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
-import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -261,7 +247,7 @@ class UserServiceTest {
     when(modelMapper.map(user, UserResponseDto.class)).thenReturn(userDto);
 
     // Act
-    UserResponseDto result = userService.updateUser(userId, updateRequest);
+    UserResponseDto result = userService.updateUser(userId, updateRequest, null);
 
     // Assert
     assertNotNull(result);
@@ -284,107 +270,12 @@ class UserServiceTest {
 
     // Act & Assert
     BaseException ex =
-        assertThrows(BaseException.class, () -> userService.updateUser(userId, updateRequest));
+        assertThrows(
+            BaseException.class, () -> userService.updateUser(userId, updateRequest, null));
     assertEquals(UserErrorCode.USER_NOT_FOUND, ex.getErrorCode());
 
     verify(userRepository).findById(userId);
     verifyNoMoreInteractions(userRepository);
     verifyNoInteractions(modelMapper);
-  }
-
-  // uploadUserAvatar
-  @Test
-  void uploadUserAvatar_whenFileIsNotImage_shouldThrowInvalidImageFileException() {
-    MockMultipartFile mockFile = FileFactory.createRawFile();
-
-    try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
-      utilities.when(() -> FileUtils.isImage(any())).thenReturn(false);
-
-      BaseException ex =
-          assertThrows(BaseException.class, () -> userService.uploadUserAvatar(userId, mockFile));
-      assertEquals(FileErrorCode.INVALID_IMAGE_FILE, ex.getErrorCode());
-
-      utilities.verify(() -> FileUtils.isImage(any()), times(1));
-      verifyNoInteractions(fileService, userRepository);
-    }
-  }
-
-  @Test
-  void uploadUserAvatar_whenUserExistsAndFileValid_shouldUploadSuccessfully() throws IOException {
-    MockMultipartFile mockFile = FileFactory.createImageFile();
-    String newAvatarUrl = "http://avatar.url/image.png";
-
-    try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
-      utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
-
-      // Mock fileService uploadFile returns URL
-      FileResponse uploadResponse = mock(FileResponse.class);
-      when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);
-      when(fileService.uploadFile(anyString(), eq(userId.toString()), any(byte[].class)))
-          .thenReturn(uploadResponse);
-      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-      when(userRepository.save(any(User.class))).thenReturn(user);
-
-      // Act
-      ActionResponseDto response = userService.uploadUserAvatar(userId, mockFile);
-
-      // Assert
-      assertTrue(response.isSuccess());
-      assertEquals(newAvatarUrl, user.getAvatarUrl());
-
-      utilities.verify(() -> FileUtils.isImage(mockFile), times(1));
-      verify(fileService).uploadFile(anyString(), eq(userId.toString()), eq(mockFile.getBytes()));
-      verify(userRepository).findById(userId);
-      verify(userRepository).save(user);
-    }
-  }
-
-  @Test
-  void uploadUserAvatar_whenUserNotFound_shouldThrowUserNotFoundException() throws IOException {
-    MockMultipartFile mockFile = FileFactory.createImageFile();
-    String newAvatarUrl = "http://avatar.url/image.png";
-
-    try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
-      utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
-
-      FileResponse uploadResponse = mock(FileResponse.class);
-      when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);
-      when(fileService.uploadFile(anyString(), eq(userId.toString()), any(byte[].class)))
-          .thenReturn(uploadResponse);
-
-      when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-      BaseException ex =
-          assertThrows(BaseException.class, () -> userService.uploadUserAvatar(userId, mockFile));
-      assertEquals(UserErrorCode.USER_NOT_FOUND, ex.getErrorCode());
-
-      utilities.verify(() -> FileUtils.isImage(mockFile), times(1));
-      verify(fileService).uploadFile(anyString(), eq(userId.toString()), eq(mockFile.getBytes()));
-      verify(userRepository).findById(userId);
-      verify(userRepository, never()).save(any());
-    }
-  }
-
-  @Test
-  void uploadUserAvatar_whenFileBytesThrowIOException_shouldThrowInvalidFileContentException()
-      throws IOException {
-    MockMultipartFile mockFile = FileFactory.createRawFile();
-
-    try (MockedStatic<FileUtils> utilities = mockStatic(FileUtils.class)) {
-      utilities.when(() -> FileUtils.isImage(any())).thenReturn(true);
-
-      // Mock MultipartFile.getBytes() throws IOException
-      MockMultipartFile mockFileWithException = spy(mockFile);
-      doThrow(IOException.class).when(mockFileWithException).getBytes();
-
-      BaseException ex =
-          assertThrows(
-              BaseException.class,
-              () -> userService.uploadUserAvatar(userId, mockFileWithException));
-      assertEquals(FileErrorCode.INVALID_FILE_CONTENT, ex.getErrorCode());
-
-      utilities.verify(() -> FileUtils.isImage(mockFileWithException), times(1));
-      verifyNoInteractions(fileService, userRepository);
-    }
   }
 }
