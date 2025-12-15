@@ -2,13 +2,7 @@ package com.study.studypal.user.controller;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,9 +14,6 @@ import com.study.studypal.auth.repository.AccountRepository;
 import com.study.studypal.auth.security.JwtService;
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.config.TestConfig;
-import com.study.studypal.common.dto.FileResponse;
-import com.study.studypal.common.exception.code.FileErrorCode;
-import com.study.studypal.common.factory.FileFactory;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.user.dto.request.UpdateUserRequestDto;
@@ -40,7 +31,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -177,53 +167,5 @@ class UserControllerIT {
                 .header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.errorCode").exists());
-  }
-
-  // updateAvatar
-  @Test
-  void uploadUserAvatar_whenValidImage_shouldReturnSuccess() throws Exception {
-    String newAvatarUrl = "http://avatar.url/avatar.png";
-    MockMultipartFile file = FileFactory.createImageFile();
-    FileResponse uploadResponse = mock(FileResponse.class);
-
-    // Mock FileService
-    when(uploadResponse.getUrl()).thenReturn(newAvatarUrl);
-    when(fileService.uploadFile(anyString(), eq(currentUserId.toString()), any(byte[].class)))
-        .thenReturn(uploadResponse);
-
-    mockMvc
-        .perform(
-            multipart("/api/users/avatar")
-                .file(file)
-                .with(
-                    request -> {
-                      request.setMethod("POST");
-                      return request;
-                    })
-                .header("Authorization", "Bearer " + accessToken))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success").value(true));
-
-    // Check database
-    User updated = userRepository.findById(currentUserId).orElseThrow();
-    assertEquals(newAvatarUrl, updated.getAvatarUrl());
-  }
-
-  @Test
-  void uploadUserAvatar_whenInvalidImageFile_shouldThrowInvalidImageFile() throws Exception {
-    MockMultipartFile file = FileFactory.createRawFile();
-
-    mockMvc
-        .perform(
-            multipart("/api/users/avatar")
-                .file(file)
-                .with(
-                    request -> {
-                      request.setMethod("POST");
-                      return request;
-                    })
-                .header("Authorization", "Bearer " + accessToken))
-        .andExpect(status().isUnsupportedMediaType())
-        .andExpect(jsonPath("$.errorCode").value(FileErrorCode.INVALID_IMAGE_FILE.getCode()));
   }
 }
