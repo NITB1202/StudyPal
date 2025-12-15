@@ -76,6 +76,8 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
   @Override
   @Transactional
   public void saveAttachments(ChatMessage message, List<MultipartFile> files) {
+    if (CollectionUtils.isEmpty(files)) return;
+
     List<UUID> ids = new ArrayList<>();
     List<ChatMessageAttachment> attachments = new ArrayList<>();
 
