@@ -37,4 +37,6 @@ public interface TaskInternalService {
   void hardDeleteTasks(List<Task> tasks);
 
   void hardDeleteTasksBefore(LocalDateTime cutoffTime);
+
+  boolean hasRemainingTasksInTeam(UUID userId, UUID teamId);
 }

@@ -41,7 +41,11 @@ public enum TeamMembershipErrorCode implements ErrorCode {
       "TEAM_MEM_013",
       "The selected member already owns the maximum number of teams allowed."),
   PERMISSION_UPDATE_PLAN_DENIED(
-      HttpStatus.FORBIDDEN, "TEAM_MEM_014", "Only the owner or an admin can update team's plan.");
+      HttpStatus.FORBIDDEN, "TEAM_MEM_014", "Only the owner or an admin can update team's plan."),
+  CANNOT_LEAVE_WITH_REMAINING_TASKS(
+      HttpStatus.FORBIDDEN,
+      "TEAM_MEM_015",
+      "You must complete or reassign your tasks before leaving the team.");
 
   private final HttpStatus httpStatus;
   private final String code;

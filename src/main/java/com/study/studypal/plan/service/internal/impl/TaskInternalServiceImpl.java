@@ -222,6 +222,11 @@ public class TaskInternalServiceImpl implements TaskInternalService {
     taskRepository.deleteAll(tasks);
   }
 
+  @Override
+  public boolean hasRemainingTasksInTeam(UUID userId, UUID teamId) {
+    return taskRepository.existsRemainingTasksInTeam(userId, teamId);
+  }
+
   private void updateNewRootTask(Task newRootTask, List<Task> childTasks) {
     for (Task childTask : childTasks) {
       childTask.setParentTask(newRootTask);

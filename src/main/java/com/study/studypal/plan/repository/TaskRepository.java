@@ -440,4 +440,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       @Param("cursorCount") Long cursorCount,
       @Param("cursorUserId") UUID cursorUserId,
       Pageable pageable);
+
+  @Query(
+      """
+    SELECT COUNT(t) > 0
+    FROM Task t
+    JOIN t.plan p
+    WHERE t.deletedAt IS NULL
+      AND t.completedAt IS NULL
+      AND t.assignee.id = :userId
+      AND p.team.id = :teamId
+    """)
+  boolean existsRemainingTasksInTeam(UUID userId, UUID teamId);
 }
