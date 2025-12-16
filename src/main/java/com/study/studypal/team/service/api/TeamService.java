@@ -25,11 +25,10 @@ public interface TeamService {
   ListTeamResponseDto searchTeamsByName(
       UUID userId, TeamFilter filter, String keyword, LocalDateTime cursor, int size);
 
-  TeamResponseDto updateTeam(UUID userId, UUID teamId, UpdateTeamRequestDto request);
+  TeamResponseDto updateTeam(
+      UUID userId, UUID teamId, UpdateTeamRequestDto request, MultipartFile file);
 
   ActionResponseDto resetTeamCode(UUID userId, UUID teamId);
 
   ActionResponseDto deleteTeam(UUID teamId, UUID userId);
-
-  ActionResponseDto uploadTeamAvatar(UUID userId, UUID teamId, MultipartFile file);
 }
