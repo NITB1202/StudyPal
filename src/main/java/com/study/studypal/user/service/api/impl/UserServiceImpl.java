@@ -80,14 +80,16 @@ public class UserServiceImpl implements UserService {
             .findById(userId)
             .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
 
+    if (request != null) {
+      modelMapper.map(request, user);
+    }
+
     if (!ObjectUtils.isEmpty(file)) {
       String avatarUrl = uploadAvatar(userId, file);
       user.setAvatarUrl(avatarUrl);
     }
 
-    modelMapper.map(request, user);
     userRepository.save(user);
-
     return modelMapper.map(user, UserResponseDto.class);
   }
 

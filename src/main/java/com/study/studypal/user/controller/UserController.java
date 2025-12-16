@@ -67,7 +67,7 @@ public class UserController {
   @BadRequestApiResponse
   public ResponseEntity<UserResponseDto> updateUser(
       @AuthenticationPrincipal UUID userId,
-      @RequestPart("request") @Valid UpdateUserRequestDto request,
+      @RequestPart(value = "request", required = false) @Valid UpdateUserRequestDto request,
       @RequestPart(value = "file", required = false) MultipartFile file) {
     return ResponseEntity.ok(userService.updateUser(userId, request, file));
   }
