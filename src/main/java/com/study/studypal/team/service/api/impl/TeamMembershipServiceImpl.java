@@ -5,6 +5,7 @@ import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.CacheKeyUtils;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
+import com.study.studypal.plan.service.internal.TaskInternalService;
 import com.study.studypal.team.config.TeamProperties;
 import com.study.studypal.team.dto.membership.internal.DecodedCursor;
 import com.study.studypal.team.dto.membership.request.RemoveTeamMemberRequestDto;
@@ -44,6 +45,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
   private final TeamMembershipInternalService internalService;
   private final TeamInternalService teamService;
   private final TeamNotificationSettingInternalService teamNotificationSettingService;
+  private final TaskInternalService taskService;
   private final CacheManager cacheManager;
   private final ApplicationEventPublisher eventPublisher;
   private final TeamProperties props;
@@ -323,6 +325,10 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
             .findByUserIdAndTeamId(userId, teamId)
             .orElseThrow(
                 () -> new BaseException(TeamMembershipErrorCode.USER_MEMBERSHIP_NOT_FOUND));
+
+    if (taskService.hasRemainingTasksInTeam(userId, teamId)) {
+      throw new BaseException(TeamMembershipErrorCode.CANNOT_LEAVE_WITH_REMAINING_TASKS);
+    }
 
     teamUserRepository.delete(membership);
 

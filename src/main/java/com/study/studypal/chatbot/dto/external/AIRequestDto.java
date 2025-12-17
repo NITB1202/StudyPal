@@ -1,5 +1,6 @@
 package com.study.studypal.chatbot.dto.external;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,5 +14,6 @@ public class AIRequestDto {
 
   private List<String> attachments;
 
+  @JsonProperty("max_output_tokens")
   private Long maxOutputTokens;
 }

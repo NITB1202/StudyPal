@@ -3,7 +3,6 @@ package com.study.studypal.user.service.api.impl;
 import static com.study.studypal.user.constant.UserConstant.USER_AVATAR_FOLDER;
 
 import com.study.studypal.common.cache.CacheNames;
-import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
@@ -18,17 +17,18 @@ import com.study.studypal.user.entity.User;
 import com.study.studypal.user.exception.UserErrorCode;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.user.service.api.UserService;
-import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -72,43 +72,36 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
-  public UserResponseDto updateUser(UUID userId, UpdateUserRequestDto request) {
+  public UserResponseDto updateUser(UUID userId, UpdateUserRequestDto request, MultipartFile file) {
     User user =
         userRepository
             .findById(userId)
             .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
 
-    modelMapper.map(request, user);
-    userRepository.save(user);
+    if (request != null) {
+      modelMapper.map(request, user);
+    }
 
+    if (!ObjectUtils.isEmpty(file)) {
+      String avatarUrl = uploadAvatar(userId, file);
+      user.setAvatarUrl(avatarUrl);
+    }
+
+    userRepository.save(user);
     return modelMapper.map(user, UserResponseDto.class);
   }
 
-  @Override
-  @Transactional
-  @CacheEvict(value = CacheNames.USER_SUMMARY, key = "@keys.of(#userId)")
-  public ActionResponseDto uploadUserAvatar(UUID userId, MultipartFile file) {
+  private String uploadAvatar(UUID userId, MultipartFile file) {
     if (!FileUtils.isImage(file)) {
       throw new BaseException(FileErrorCode.INVALID_IMAGE_FILE);
     }
 
     try {
-      String avatarUrl =
-          fileService.uploadFile(USER_AVATAR_FOLDER, userId.toString(), file.getBytes()).getUrl();
-      User user =
-          userRepository
-              .findById(userId)
-              .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
-
-      user.setAvatarUrl(avatarUrl);
-      userRepository.save(user);
-
-      return ActionResponseDto.builder()
-          .success(true)
-          .message("Uploaded avatar successfully.")
-          .build();
-
+      return fileService
+          .uploadFile(USER_AVATAR_FOLDER, userId.toString(), file.getBytes())
+          .getUrl();
     } catch (IOException e) {
       throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
     }

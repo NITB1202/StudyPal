@@ -17,5 +17,7 @@ public class TeamResponseDto {
 
   private String name;
 
+  private String avatarUrl;
+
   private String description;
 }

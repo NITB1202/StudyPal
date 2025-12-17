@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -237,7 +238,8 @@ public class TeamServiceImpl implements TeamService {
   }
 
   @Override
-  public TeamResponseDto updateTeam(UUID userId, UUID teamId, UpdateTeamRequestDto request) {
+  public TeamResponseDto updateTeam(
+      UUID userId, UUID teamId, UpdateTeamRequestDto request, MultipartFile file) {
     Team team =
         teamRepository
             .findById(teamId)
@@ -245,16 +247,30 @@ public class TeamServiceImpl implements TeamService {
 
     teamMembershipService.validateUpdateTeamPermission(userId, teamId);
 
-    if (request.getName() != null) {
-      if (request.getName().equals(team.getName()))
-        throw new BaseException(TeamErrorCode.TEAM_NAME_UNCHANGED);
+    boolean nameChanged = false;
+    boolean avatarChanged = false;
 
-      if (teamRepository.existsByNameAndCreatorId(request.getName(), userId)) {
-        throw new BaseException(TeamErrorCode.DUPLICATE_TEAM_NAME);
+    if (request != null) {
+      if (request.getName() != null) {
+        if (request.getName().equals(team.getName()))
+          throw new BaseException(TeamErrorCode.TEAM_NAME_UNCHANGED);
+
+        if (teamRepository.existsByNameAndCreatorId(request.getName(), userId)) {
+          throw new BaseException(TeamErrorCode.DUPLICATE_TEAM_NAME);
+        }
+
+        nameChanged = true;
       }
+
+      modelMapper.map(request, team);
     }
 
-    modelMapper.map(request, team);
+    if (!ObjectUtils.isEmpty(file)) {
+      String avatarUrl = uploadAvatar(teamId, file);
+      team.setAvatarUrl(avatarUrl);
+      avatarChanged = true;
+    }
+
     teamRepository.save(team);
 
     TeamUpdatedEvent event =
@@ -263,7 +279,7 @@ public class TeamServiceImpl implements TeamService {
             .teamName(team.getName())
             .updatedBy(userId)
             .memberIds(teamMembershipService.getMemberIds(teamId))
-            .shouldEvictCache(request.getName() != null)
+            .shouldEvictCache(nameChanged || avatarChanged)
             .build();
 
     eventPublisher.publishEvent(event);
@@ -318,41 +334,15 @@ public class TeamServiceImpl implements TeamService {
     return ActionResponseDto.builder().success(true).message("The team has been deleted.").build();
   }
 
-  @Override
-  public ActionResponseDto uploadTeamAvatar(UUID userId, UUID teamId, MultipartFile file) {
+  private String uploadAvatar(UUID teamId, MultipartFile file) {
     if (!FileUtils.isImage(file)) {
       throw new BaseException(FileErrorCode.INVALID_IMAGE_FILE);
     }
 
-    teamMembershipService.validateUpdateTeamPermission(userId, teamId);
-
     try {
-      String avatarUrl =
-          fileService.uploadFile(TEAM_AVATAR_FOLDER, teamId.toString(), file.getBytes()).getUrl();
-      Team team =
-          teamRepository
-              .findById(teamId)
-              .orElseThrow(() -> new BaseException(TeamErrorCode.TEAM_NOT_FOUND));
-
-      team.setAvatarUrl(avatarUrl);
-      teamRepository.save(team);
-
-      TeamUpdatedEvent event =
-          TeamUpdatedEvent.builder()
-              .teamId(teamId)
-              .teamName(team.getName())
-              .updatedBy(userId)
-              .memberIds(teamMembershipService.getMemberIds(teamId))
-              .shouldEvictCache(true)
-              .build();
-
-      eventPublisher.publishEvent(event);
-
-      return ActionResponseDto.builder()
-          .success(true)
-          .message("Uploaded avatar successfully.")
-          .build();
-
+      return fileService
+          .uploadFile(TEAM_AVATAR_FOLDER, teamId.toString(), file.getBytes())
+          .getUrl();
     } catch (IOException e) {
       throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
     }

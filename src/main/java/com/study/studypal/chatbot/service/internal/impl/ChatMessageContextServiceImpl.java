@@ -1,8 +1,6 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.study.studypal.chatbot.dto.internal.PlanContext;
-import com.study.studypal.chatbot.dto.internal.TaskContext;
 import com.study.studypal.chatbot.enums.ContextType;
 import com.study.studypal.chatbot.exception.ChatMessageContextErrorCode;
 import com.study.studypal.chatbot.mapper.ChatMessageContextMapper;
@@ -14,6 +12,8 @@ import com.study.studypal.plan.exception.PlanErrorCode;
 import com.study.studypal.plan.exception.TaskErrorCode;
 import com.study.studypal.plan.repository.PlanRepository;
 import com.study.studypal.plan.repository.TaskRepository;
+import com.study.studypal.plan.service.internal.TaskValidationService;
+import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,8 @@ public class ChatMessageContextServiceImpl implements ChatMessageContextService 
   private final PlanRepository planRepository;
   private final ObjectMapper objectMapper;
   private final ChatMessageContextMapper mapper;
+  private final TeamMembershipInternalService memberService;
+  private final TaskValidationService validationService;
 
   @Override
   public String getContextCode(UUID contextId, ContextType contextType) {
@@ -39,15 +41,23 @@ public class ChatMessageContextServiceImpl implements ChatMessageContextService 
 
   @Override
   @Transactional
-  public String validateAndSerializeContext(UUID contextId, ContextType contextType) {
+  public String validateAndSerializeContext(UUID userId, UUID contextId, ContextType contextType) {
     if (contextId == null) return "";
     if (contextType == null)
       throw new BaseException(ChatMessageContextErrorCode.CONTEXT_TYPE_REQUIRED);
 
     Object context =
         switch (contextType) {
-          case PLAN -> getPlanContext(contextId);
-          case TASK -> getTaskContext(contextId);
+          case PLAN -> {
+            Plan plan = getPlanById(contextId);
+            validatePlanAccess(userId, plan);
+            yield mapper.toPlanContext(plan);
+          }
+          case TASK -> {
+            Task task = getTaskById(contextId);
+            validateTaskAccess(userId, task);
+            yield mapper.toTaskContext(task);
+          }
         };
 
     try {
@@ -69,13 +79,12 @@ public class ChatMessageContextServiceImpl implements ChatMessageContextService 
         .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
   }
 
-  private TaskContext getTaskContext(UUID taskId) {
-    Task task = getTaskById(taskId);
-    return mapper.toTaskContext(task);
+  private void validateTaskAccess(UUID userId, Task task) {
+    validationService.validateViewTaskPermission(userId, task);
   }
 
-  private PlanContext getPlanContext(UUID planId) {
-    Plan plan = getPlanById(planId);
-    return mapper.toPlanContext(plan);
+  private void validatePlanAccess(UUID userId, Plan plan) {
+    UUID teamId = plan.getTeam().getId();
+    memberService.validateUserBelongsToTeam(userId, teamId);
   }
 }

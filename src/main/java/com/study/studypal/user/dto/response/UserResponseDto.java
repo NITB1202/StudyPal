@@ -20,6 +20,8 @@ public class UserResponseDto {
 
   private String name;
 
+  private String avatarUrl;
+
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate dateOfBirth;
 

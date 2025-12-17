@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -99,7 +100,7 @@ public class TeamController {
     return ResponseEntity.ok(teamService.searchTeamsByName(userId, filter, keyword, cursor, size));
   }
 
-  @PatchMapping("/{teamId}")
+  @PatchMapping(value = "/{teamId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Update team's details.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
   @BadRequestApiResponse
@@ -108,8 +109,9 @@ public class TeamController {
   public ResponseEntity<TeamResponseDto> updateTeam(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID teamId,
-      @Valid @RequestBody UpdateTeamRequestDto request) {
-    return ResponseEntity.ok(teamService.updateTeam(userId, teamId, request));
+      @RequestPart(value = "request", required = false) @Valid UpdateTeamRequestDto request,
+      @RequestPart(value = "file", required = false) MultipartFile file) {
+    return ResponseEntity.ok(teamService.updateTeam(userId, teamId, request, file));
   }
 
   @PatchMapping("/{teamId}/code")
@@ -131,18 +133,5 @@ public class TeamController {
   public ResponseEntity<ActionResponseDto> deleteTeam(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID teamId) {
     return ResponseEntity.ok(teamService.deleteTeam(teamId, userId));
-  }
-
-  @PostMapping(value = "/{teamId}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(summary = "Upload team's avatar.")
-  @ApiResponse(responseCode = "200", description = "Upload successfully.")
-  @BadRequestApiResponse
-  @UnauthorizedApiResponse
-  @NotFoundApiResponse
-  public ResponseEntity<ActionResponseDto> uploadTeamAvatar(
-      @AuthenticationPrincipal UUID userId,
-      @PathVariable UUID teamId,
-      @RequestParam("file") MultipartFile file) {
-    return ResponseEntity.ok(teamService.uploadTeamAvatar(userId, teamId, file));
   }
 }
