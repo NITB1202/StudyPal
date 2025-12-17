@@ -7,7 +7,10 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum UserQuotaErrorCode implements ErrorCode {
   USER_QUOTA_NOT_FOUND(HttpStatus.NOT_FOUND, "QUOTA_001", "User quota not found."),
-  TOKEN_EXCEEDED(HttpStatus.BAD_REQUEST, "QUOTA_002", "Token quota exceeded."),
+  INSUFFICIENT_QUOTA(
+      HttpStatus.BAD_REQUEST,
+      "QUOTA_002",
+      "User has insufficient quota to perform this operation."),
   ;
 
   private final HttpStatus httpStatus;

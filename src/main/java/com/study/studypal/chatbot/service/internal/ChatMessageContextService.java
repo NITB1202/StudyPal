@@ -6,5 +6,5 @@ import java.util.UUID;
 public interface ChatMessageContextService {
   String getContextCode(UUID contextId, ContextType contextType);
 
-  String validateAndSerializeContext(UUID contextId, ContextType contextType);
+  String validateAndSerializeContext(UUID userId, UUID contextId, ContextType contextType);
 }

@@ -63,7 +63,7 @@ public class UserQuotaServiceImpl implements UserQuotaService {
     long totalTokensAfterRequest = userQuota.getUsedQuota() + estimatedInputTokens;
 
     if (totalTokensAfterRequest > userQuota.getDailyQuota()) {
-      throw new BaseException(UserQuotaErrorCode.TOKEN_EXCEEDED);
+      throw new BaseException(UserQuotaErrorCode.INSUFFICIENT_QUOTA);
     }
 
     long remainingTokens = userQuota.getDailyQuota() - totalTokensAfterRequest;

@@ -1,5 +1,7 @@
 package com.study.studypal.chatbot.service.api.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.study.studypal.chatbot.client.AIRestClient;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.dto.external.AIResponseDto;
 import com.study.studypal.chatbot.dto.request.ChatRequestDto;
@@ -27,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatBotServiceImpl implements ChatBotService {
@@ -44,6 +48,8 @@ public class ChatBotServiceImpl implements ChatBotService {
   private final ChatMessageContextService contextService;
   private final ModelMapper modelMapper;
   private final ChatbotMapper mapper;
+  private final AIRestClient aiRestClient;
+  private final ObjectMapper objectMapper;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
@@ -52,7 +58,7 @@ public class ChatBotServiceImpl implements ChatBotService {
       UUID userId, ChatRequestDto request, List<MultipartFile> attachments) {
     String context =
         contextService.validateAndSerializeContext(
-            request.getContextId(), request.getContextType());
+            userId, request.getContextId(), request.getContextType());
     List<String> attachmentContents =
         attachmentService.validateAndSerializeAttachments(attachments);
     String normalizedPrompt = normalizePrompt(request.getPrompt());
@@ -133,11 +139,7 @@ public class ChatBotServiceImpl implements ChatBotService {
   }
 
   private AIResponseDto sendRequest(AIRequestDto request) {
-    return AIResponseDto.builder()
-        .reply("Mock reply")
-        .inputTokens(1000L)
-        .outputTokens(5000L)
-        .build();
+    return aiRestClient.ask(request);
   }
 
   private ChatMessage saveMessage(UUID userId, ChatRequestDto request) {
