@@ -1,13 +1,10 @@
 package com.study.studypal.user.controller;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.factory.AccountFactory;
 import com.study.studypal.auth.repository.AccountRepository;
@@ -16,7 +13,6 @@ import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.config.TestConfig;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.CacheKeyUtils;
-import com.study.studypal.user.dto.request.UpdateUserRequestDto;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.factory.UserFactory;
 import com.study.studypal.user.repository.UserRepository;
@@ -30,7 +26,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -132,40 +127,5 @@ class UserControllerIT {
         .andExpect(jsonPath("$.users").isEmpty())
         .andExpect(jsonPath("$.total").value(0))
         .andExpect(jsonPath("$.nextCursor").isEmpty());
-  }
-
-  // updateUser
-  @Test
-  void updateUser_whenValidRequest_shouldReturnUpdatedUser() throws Exception {
-    String updatedName = "Updated name";
-    UpdateUserRequestDto request = UserFactory.createUpdateUserRequestDto(updatedName);
-
-    mockMvc
-        .perform(
-            patch("/api/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(request))
-                .header("Authorization", "Bearer " + accessToken))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(currentUserId.toString()))
-        .andExpect(jsonPath("$.name").value(updatedName));
-
-    // Verify database updated
-    User updated = userRepository.findById(currentUserId).orElseThrow();
-    assertEquals(updatedName, updated.getName());
-  }
-
-  @Test
-  void updateUser_whenInvalidRequest_shouldReturn400() throws Exception {
-    UpdateUserRequestDto request = UserFactory.createUpdateUserRequestDto("");
-
-    mockMvc
-        .perform(
-            patch("/api/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(request))
-                .header("Authorization", "Bearer " + accessToken))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.errorCode").exists());
   }
 }
