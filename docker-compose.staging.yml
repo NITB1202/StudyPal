@@ -40,6 +40,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       CLOUDINARY_URL: ${CLOUDINARY_URL}
       TIMEZONE: ${TIMEZONE}
+      AI_SERVICE_URL: ${AI_SERVICE_URL}
       JAVA_OPTS: "-Xms128m -Xmx512m"
     ports:
       - "8080:8080"
