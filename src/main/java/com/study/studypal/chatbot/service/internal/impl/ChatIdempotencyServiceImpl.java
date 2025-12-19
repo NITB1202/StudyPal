@@ -2,6 +2,7 @@ package com.study.studypal.chatbot.service.internal.impl;
 
 import com.study.studypal.chatbot.dto.internal.ChatIdempotencyResult;
 import com.study.studypal.chatbot.entity.ChatIdempotency;
+import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.enums.TransactionStatus;
 import com.study.studypal.chatbot.exception.ChatIdempotencyErrorCode;
 import com.study.studypal.chatbot.mapper.ChatbotMapper;
@@ -53,7 +54,7 @@ public class ChatIdempotencyServiceImpl implements ChatIdempotencyService {
   }
 
   @Override
-  public void markAsDone(UUID userId, String idempotencyKey) {
+  public void markAsDone(UUID userId, String idempotencyKey, ChatMessage response) {
     ChatIdempotency chatIdempotency =
         repository
             .findByUserIdAndIdempotencyKeyForUpdate(userId, idempotencyKey)
@@ -61,6 +62,8 @@ public class ChatIdempotencyServiceImpl implements ChatIdempotencyService {
                 () -> new BaseException(ChatIdempotencyErrorCode.CHAT_IDEMPOTENCY_NOT_FOUND));
 
     chatIdempotency.setTransactionStatus(TransactionStatus.DONE);
+    chatIdempotency.setResponseMessage(response);
+
     repository.save(chatIdempotency);
   }
 

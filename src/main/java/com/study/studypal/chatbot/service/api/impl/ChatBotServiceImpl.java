@@ -101,7 +101,7 @@ public class ChatBotServiceImpl implements ChatBotService {
       attachmentService.saveAttachments(message, attachments);
 
       ChatMessage reply = messageService.saveReply(userId, aiResponse, LocalDateTime.now());
-      idempotencyService.markAsDone(userId, idempotencyKey);
+      idempotencyService.markAsDone(userId, idempotencyKey, reply);
 
       return mapper.toChatResponseDto(reply);
     } catch (Exception e) {
