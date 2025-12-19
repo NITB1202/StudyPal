@@ -1,6 +1,7 @@
 package com.study.studypal.chatbot.enums;
 
-public enum TransactionStatus {
+public enum IdempotencyStatus {
+  ACQUIRED,
   PROCESSING,
   DONE,
   FAILED

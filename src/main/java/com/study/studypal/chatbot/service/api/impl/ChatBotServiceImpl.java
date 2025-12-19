@@ -1,10 +1,10 @@
 package com.study.studypal.chatbot.service.api.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.studypal.chatbot.client.AIRestClient;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.dto.external.AIResponseDto;
 import com.study.studypal.chatbot.dto.external.ExtractedFile;
+import com.study.studypal.chatbot.dto.internal.ChatIdempotencyResult;
 import com.study.studypal.chatbot.dto.request.ChatRequestDto;
 import com.study.studypal.chatbot.dto.response.ChatMessageAttachmentResponseDto;
 import com.study.studypal.chatbot.dto.response.ChatMessageResponseDto;
@@ -15,17 +15,16 @@ import com.study.studypal.chatbot.dto.response.UserQuotaUsageResponseDto;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.ChatMessageAttachment;
 import com.study.studypal.chatbot.entity.UserQuota;
-import com.study.studypal.chatbot.enums.Sender;
+import com.study.studypal.chatbot.exception.ChatIdempotencyErrorCode;
 import com.study.studypal.chatbot.mapper.ChatbotMapper;
-import com.study.studypal.chatbot.repository.ChatMessageRepository;
 import com.study.studypal.chatbot.service.api.ChatBotService;
+import com.study.studypal.chatbot.service.internal.ChatIdempotencyService;
 import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
 import com.study.studypal.chatbot.service.internal.ChatMessageContextService;
+import com.study.studypal.chatbot.service.internal.ChatMessageService;
 import com.study.studypal.chatbot.service.internal.UserQuotaService;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.FileUtils;
-import com.study.studypal.user.entity.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -33,66 +32,91 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatBotServiceImpl implements ChatBotService {
-  private final ChatMessageRepository chatMessageRepository;
+  private final ChatMessageService messageService;
   private final ChatMessageAttachmentService attachmentService;
   private final UserQuotaService usageService;
   private final ChatMessageContextService contextService;
   private final ModelMapper modelMapper;
   private final ChatbotMapper mapper;
   private final AIRestClient aiRestClient;
-  private final ObjectMapper objectMapper;
-  @PersistenceContext private final EntityManager entityManager;
+  private final ChatIdempotencyService idempotencyService;
 
   @Override
-  @Transactional
   public ChatResponseDto sendMessage(
       UUID userId, ChatRequestDto request, List<MultipartFile> attachments, String idempotencyKey) {
-    String context =
-        contextService.validateAndSerializeContext(
-            userId, request.getContextId(), request.getContextType());
-    List<ExtractedFile> extractedAttachments =
-        attachmentService.validateAndExtractAttachments(attachments);
-    String normalizedPrompt = normalizePrompt(request.getPrompt());
+    // Save user send time
+    LocalDateTime userSentAt = LocalDateTime.now();
 
-    AIRequestDto aiRequest = mapper.toAIRequestDto(normalizedPrompt, context, extractedAttachments);
-    usageService.validateAndSetMaxOutputTokens(userId, aiRequest);
+    // Try to acquire idempotency record
+    ChatIdempotencyResult acquireResult = idempotencyService.tryAcquire(userId, idempotencyKey);
 
-    ChatMessage message = saveMessage(userId, request);
+    if (acquireResult.isDone()) {
+      return acquireResult.getResponse();
+    }
 
-    long start = System.currentTimeMillis();
-    AIResponseDto aiResponse = sendRequest(aiRequest);
-    long duration = System.currentTimeMillis() - start;
+    if (acquireResult.isProcessing()) {
+      throw new BaseException(ChatIdempotencyErrorCode.CHAT_IDEMPOTENCY_REQUEST_IN_PROGRESS);
+    }
 
-    usageService.saveMessageUsage(message, aiResponse, duration);
-    attachmentService.saveAttachments(message, attachments);
+    // FAILED or ACQUIRED -> continue to prepare request
+    AIRequestDto aiRequest;
+    try {
+      String context =
+          contextService.validateAndSerializeContext(
+              userId, request.getContextId(), request.getContextType());
+      List<ExtractedFile> extractedAttachments =
+          attachmentService.validateAndExtractAttachments(attachments);
+      String normalizedPrompt = normalizePrompt(request.getPrompt());
 
-    ChatMessage reply = saveReply(userId, aiResponse);
-    return mapper.toChatResponseDto(reply);
+      aiRequest = mapper.toAIRequestDto(normalizedPrompt, context, extractedAttachments);
+      usageService.validateAndSetMaxOutputTokens(userId, aiRequest);
+    } catch (Exception e) {
+      idempotencyService.markAsFailed(userId, idempotencyKey);
+      throw e;
+    }
+
+    // Call AI service
+    AIResponseDto aiResponse;
+    long duration;
+    try {
+      long start = System.currentTimeMillis();
+      aiResponse = sendRequest(aiRequest);
+      duration = System.currentTimeMillis() - start;
+    } catch (Exception e) {
+      idempotencyService.markAsFailed(userId, idempotencyKey);
+      throw e;
+    }
+
+    // Persist result
+    try {
+      ChatMessage message = messageService.saveMessage(userId, request, userSentAt);
+      usageService.saveMessageUsage(message, aiResponse, duration);
+      attachmentService.saveAttachments(message, attachments);
+
+      ChatMessage reply = messageService.saveReply(userId, aiResponse, LocalDateTime.now());
+      idempotencyService.markAsDone(userId, idempotencyKey);
+
+      return mapper.toChatResponseDto(reply);
+    } catch (Exception e) {
+      idempotencyService.markAsFailed(userId, idempotencyKey);
+      throw e;
+    }
   }
 
   @Override
   public ListChatMessageResponseDto getMessages(UUID userId, LocalDateTime cursor, int size) {
-    Pageable pageable = PageRequest.of(0, size);
-
-    List<ChatMessage> chatMessages =
-        cursor == null
-            ? chatMessageRepository.findByUserId(userId, pageable)
-            : chatMessageRepository.findByUserIdWithCursor(userId, cursor, pageable);
-
+    List<ChatMessage> chatMessages = messageService.getMessages(userId, cursor, size);
     List<ChatMessageResponseDto> responseDto =
         chatMessages.stream().map(this::toResponseDto).toList();
 
-    long total = chatMessageRepository.countByUserId(userId);
+    long total = messageService.countMessages(userId);
 
     LocalDateTime nextCursor =
         chatMessages.size() == size
@@ -141,35 +165,5 @@ public class ChatBotServiceImpl implements ChatBotService {
 
   private AIResponseDto sendRequest(AIRequestDto request) {
     return aiRestClient.ask(request);
-  }
-
-  private ChatMessage saveMessage(UUID userId, ChatRequestDto request) {
-    User user = entityManager.getReference(User.class, userId);
-
-    ChatMessage message =
-        ChatMessage.builder()
-            .user(user)
-            .sender(Sender.USER)
-            .message(request.getPrompt())
-            .contextId(request.getContextId())
-            .contextType(request.getContextType())
-            .createdAt(LocalDateTime.now())
-            .build();
-
-    return chatMessageRepository.save(message);
-  }
-
-  private ChatMessage saveReply(UUID userId, AIResponseDto response) {
-    User user = entityManager.getReference(User.class, userId);
-
-    ChatMessage message =
-        ChatMessage.builder()
-            .user(user)
-            .sender(Sender.AI)
-            .message(response.getReply())
-            .createdAt(LocalDateTime.now())
-            .build();
-
-    return chatMessageRepository.save(message);
   }
 }
