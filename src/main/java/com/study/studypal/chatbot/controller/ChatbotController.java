@@ -1,6 +1,7 @@
 package com.study.studypal.chatbot.controller;
 
 import static com.study.studypal.common.util.Constants.DEFAULT_PAGE_SIZE;
+import static com.study.studypal.common.util.Constants.IDEMPOTENCY_KEY_HEADER;
 
 import com.study.studypal.chatbot.dto.request.ChatRequestDto;
 import com.study.studypal.chatbot.dto.response.ChatResponseDto;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -39,9 +41,10 @@ public class ChatbotController {
   @BadRequestApiResponse
   public ResponseEntity<ChatResponseDto> sendMessage(
       @AuthenticationPrincipal UUID userId,
+      @RequestHeader(IDEMPOTENCY_KEY_HEADER) String idempotencyKey,
       @RequestPart("request") @Valid ChatRequestDto request,
       @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-    return ResponseEntity.ok(chatBotService.sendMessage(userId, request, files));
+    return ResponseEntity.ok(chatBotService.sendMessage(userId, request, files, idempotencyKey));
   }
 
   @GetMapping("/messages")

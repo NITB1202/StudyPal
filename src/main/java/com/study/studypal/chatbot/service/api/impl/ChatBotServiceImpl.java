@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.studypal.chatbot.client.AIRestClient;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.dto.external.AIResponseDto;
+import com.study.studypal.chatbot.dto.external.ExtractedFile;
 import com.study.studypal.chatbot.dto.request.ChatRequestDto;
 import com.study.studypal.chatbot.dto.response.ChatMessageAttachmentResponseDto;
 import com.study.studypal.chatbot.dto.response.ChatMessageResponseDto;
@@ -55,15 +56,15 @@ public class ChatBotServiceImpl implements ChatBotService {
   @Override
   @Transactional
   public ChatResponseDto sendMessage(
-      UUID userId, ChatRequestDto request, List<MultipartFile> attachments) {
+      UUID userId, ChatRequestDto request, List<MultipartFile> attachments, String idempotencyKey) {
     String context =
         contextService.validateAndSerializeContext(
             userId, request.getContextId(), request.getContextType());
-    List<String> attachmentContents =
-        attachmentService.validateAndSerializeAttachments(attachments);
+    List<ExtractedFile> extractedAttachments =
+        attachmentService.validateAndExtractAttachments(attachments);
     String normalizedPrompt = normalizePrompt(request.getPrompt());
 
-    AIRequestDto aiRequest = mapper.toAIRequestDto(normalizedPrompt, context, attachmentContents);
+    AIRequestDto aiRequest = mapper.toAIRequestDto(normalizedPrompt, context, extractedAttachments);
     usageService.validateAndSetMaxOutputTokens(userId, aiRequest);
 
     ChatMessage message = saveMessage(userId, request);

@@ -1,6 +1,7 @@
 package com.study.studypal.chatbot.mapper;
 
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
+import com.study.studypal.chatbot.dto.external.ExtractedFile;
 import com.study.studypal.chatbot.dto.response.ChatResponseDto;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import java.util.List;
@@ -13,7 +14,8 @@ import org.springframework.stereotype.Component;
 public class ChatbotMapper {
   private final ModelMapper modelMapper;
 
-  public AIRequestDto toAIRequestDto(String prompt, String context, List<String> attachments) {
+  public AIRequestDto toAIRequestDto(
+      String prompt, String context, List<ExtractedFile> attachments) {
     AIRequestDto request = new AIRequestDto();
     request.setPrompt(prompt);
     request.setContext(context);

@@ -12,7 +12,7 @@ public class AIRequestDto {
 
   private String context;
 
-  private List<String> attachments;
+  private List<ExtractedFile> attachments;
 
   @JsonProperty("max_output_tokens")
   private Long maxOutputTokens;

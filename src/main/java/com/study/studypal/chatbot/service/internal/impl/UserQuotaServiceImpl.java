@@ -1,5 +1,9 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
+import com.knuddels.jtokkit.Encodings;
+import com.knuddels.jtokkit.api.Encoding;
+import com.knuddels.jtokkit.api.EncodingRegistry;
+import com.knuddels.jtokkit.api.EncodingType;
 import com.study.studypal.chatbot.config.ChatbotProperties;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.dto.external.AIResponseDto;
@@ -96,22 +100,25 @@ public class UserQuotaServiceImpl implements UserQuotaService {
   }
 
   private long estimateToken(AIRequestDto request) {
-    long chars = 0;
+    StringBuilder combined = new StringBuilder();
 
     if (StringUtils.isNotBlank(request.getPrompt())) {
-      chars += request.getPrompt().length();
+      combined.append(request.getPrompt()).append(" ");
     }
 
     if (StringUtils.isNotBlank(request.getContext())) {
-      chars += request.getContext().length();
+      combined.append(request.getContext()).append(" ");
     }
 
     if (!CollectionUtils.isEmpty(request.getAttachments())) {
-      for (String attachment : request.getAttachments()) {
-        chars += attachment.length();
-      }
+      request.getAttachments().stream()
+          .filter(a -> StringUtils.isNotBlank(a.getContent()))
+          .forEach(a -> combined.append(a.getContent()).append(" "));
     }
 
-    return chars / props.getCharPerToken();
+    EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
+    Encoding tokenizer = registry.getEncoding(EncodingType.CL100K_BASE);
+
+    return tokenizer.encode(combined.toString()).size();
   }
 }

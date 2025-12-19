@@ -4,6 +4,7 @@ import static com.study.studypal.chatbot.constant.ChatbotConstant.CHATBOT_FOLDER
 import static com.study.studypal.common.util.Constants.RESOURCE_TYPE_RAW;
 
 import com.study.studypal.chatbot.config.ChatbotProperties;
+import com.study.studypal.chatbot.dto.external.ExtractedFile;
 import com.study.studypal.chatbot.entity.ChatMessage;
 import com.study.studypal.chatbot.entity.ChatMessageAttachment;
 import com.study.studypal.chatbot.exception.ChatMessageAttachmentErrorCode;
@@ -41,11 +42,11 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
 
   @Override
   @Transactional
-  public List<String> validateAndSerializeAttachments(List<MultipartFile> files) {
+  public List<ExtractedFile> validateAndExtractAttachments(List<MultipartFile> files) {
     if (CollectionUtils.isEmpty(files)) return List.of();
 
     long totalFileSize = 0;
-    List<String> result = new ArrayList<>();
+    List<ExtractedFile> result = new ArrayList<>();
 
     for (MultipartFile file : files) {
       // Validate document type
@@ -66,8 +67,13 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
       }
 
       // Extract and normalize content
+      String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown";
       String content = extractor.extract(file);
-      result.add(content);
+
+      ExtractedFile extractedFile =
+          ExtractedFile.builder().fileName(fileName).content(content).build();
+
+      result.add(extractedFile);
     }
 
     return result;
