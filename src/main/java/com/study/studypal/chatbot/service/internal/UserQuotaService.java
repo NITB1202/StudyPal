@@ -14,4 +14,6 @@ public interface UserQuotaService {
   void validateAndSetMaxOutputTokens(UUID userId, AIRequestDto request);
 
   void saveMessageUsage(ChatMessage message, AIResponseDto response, long duration);
+
+  void resetDailyQuotaForAllUsers();
 }

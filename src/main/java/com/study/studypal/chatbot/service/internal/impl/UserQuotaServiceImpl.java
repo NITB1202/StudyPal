@@ -19,6 +19,7 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -97,6 +98,15 @@ public class UserQuotaServiceImpl implements UserQuotaService {
     userQuota.setUsedQuota(userQuota.getUsedQuota() + totalTokens);
 
     userQuotaRepository.save(userQuota);
+  }
+
+  @Override
+  public void resetDailyQuotaForAllUsers() {
+    List<UserQuota> quotas = userQuotaRepository.findAll();
+    for (UserQuota quota : quotas) {
+      quota.setUsedQuota(0L);
+    }
+    userQuotaRepository.saveAll(quotas);
   }
 
   private long estimateToken(AIRequestDto request) {
