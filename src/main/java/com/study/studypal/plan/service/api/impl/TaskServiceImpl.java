@@ -33,6 +33,7 @@ import com.study.studypal.plan.service.internal.TaskRecurrenceRuleInternalServic
 import com.study.studypal.plan.service.internal.TaskReminderInternalService;
 import com.study.studypal.plan.service.internal.TaskValidationService;
 import com.study.studypal.plan.util.TaskCursorUtils;
+import com.study.studypal.team.enums.TeamRole;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.transaction.Transactional;
@@ -302,7 +303,11 @@ public class TaskServiceImpl implements TaskService {
   }
 
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
+    UUID teamId = plan.getTeam().getId();
+    TeamRole role = memberService.getTeamRole(assignee.getId(), teamId);
+
     return TaskAdditionalDataResponseDto.builder()
+        .role(role)
         .planId(plan.getId())
         .planCode(plan.getPlanCode())
         .assigneeId(assignee.getId())
