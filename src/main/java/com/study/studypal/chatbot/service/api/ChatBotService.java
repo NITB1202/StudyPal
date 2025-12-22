@@ -10,7 +10,8 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ChatBotService {
-  ChatResponseDto sendMessage(UUID userId, ChatRequestDto request, List<MultipartFile> attachments);
+  ChatResponseDto sendMessage(
+      UUID userId, ChatRequestDto request, List<MultipartFile> attachments, String idempotencyKey);
 
   ListChatMessageResponseDto getMessages(UUID userId, LocalDateTime cursor, int size);
 

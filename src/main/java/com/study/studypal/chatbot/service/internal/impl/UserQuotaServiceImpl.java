@@ -1,5 +1,9 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
+import com.knuddels.jtokkit.Encodings;
+import com.knuddels.jtokkit.api.Encoding;
+import com.knuddels.jtokkit.api.EncodingRegistry;
+import com.knuddels.jtokkit.api.EncodingType;
 import com.study.studypal.chatbot.config.ChatbotProperties;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.dto.external.AIResponseDto;
@@ -15,6 +19,7 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -95,23 +100,35 @@ public class UserQuotaServiceImpl implements UserQuotaService {
     userQuotaRepository.save(userQuota);
   }
 
+  @Override
+  public void resetDailyQuotaForAllUsers() {
+    List<UserQuota> quotas = userQuotaRepository.findAll();
+    for (UserQuota quota : quotas) {
+      quota.setUsedQuota(0L);
+    }
+    userQuotaRepository.saveAll(quotas);
+  }
+
   private long estimateToken(AIRequestDto request) {
-    long chars = 0;
+    StringBuilder combined = new StringBuilder();
 
     if (StringUtils.isNotBlank(request.getPrompt())) {
-      chars += request.getPrompt().length();
+      combined.append(request.getPrompt()).append(" ");
     }
 
     if (StringUtils.isNotBlank(request.getContext())) {
-      chars += request.getContext().length();
+      combined.append(request.getContext()).append(" ");
     }
 
     if (!CollectionUtils.isEmpty(request.getAttachments())) {
-      for (String attachment : request.getAttachments()) {
-        chars += attachment.length();
-      }
+      request.getAttachments().stream()
+          .filter(a -> StringUtils.isNotBlank(a.getContent()))
+          .forEach(a -> combined.append(a.getContent()).append(" "));
     }
 
-    return chars / props.getCharPerToken();
+    EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
+    Encoding tokenizer = registry.getEncoding(EncodingType.CL100K_BASE);
+
+    return tokenizer.encode(combined.toString()).size();
   }
 }

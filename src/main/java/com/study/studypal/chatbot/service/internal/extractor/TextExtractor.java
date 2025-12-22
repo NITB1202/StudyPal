@@ -22,7 +22,8 @@ public class TextExtractor {
               try {
                 return extractor.extract(file);
               } catch (IOException e) {
-                throw new RuntimeException("Failed to extract document content", e);
+                throw new BaseException(
+                    ChatMessageAttachmentErrorCode.ATTACHMENT_EXTRACTION_FAILED, e);
               }
             })
         .orElseThrow(

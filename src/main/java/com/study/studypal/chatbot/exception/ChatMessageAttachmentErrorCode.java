@@ -14,6 +14,8 @@ public enum ChatMessageAttachmentErrorCode implements ErrorCode {
       HttpStatus.BAD_REQUEST, "ATTACH_002", "Attachment size exceeds the allowed limit."),
   ATTACHMENT_TOTAL_SIZE_EXCEEDED(
       HttpStatus.BAD_REQUEST, "ATTACH_003", "Total attachment size exceeds the allowed limit."),
+  ATTACHMENT_EXTRACTION_FAILED(
+      HttpStatus.BAD_REQUEST, "ATTACH_004", "Failed to extract document content: %s"),
   ;
   private final HttpStatus httpStatus;
   private final String code;

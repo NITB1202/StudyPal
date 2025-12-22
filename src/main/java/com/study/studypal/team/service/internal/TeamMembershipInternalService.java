@@ -26,6 +26,8 @@ public interface TeamMembershipInternalService {
 
   UserSummaryProfile getOwnerProfile(UUID teamId);
 
+  TeamRole getTeamRole(UUID userId, UUID teamId);
+
   long countMembers(UUID teamId);
 
   long countMembersByName(UUID teamId, String keyword);

@@ -104,6 +104,12 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   }
 
   @Override
+  public TeamRole getTeamRole(UUID userId, UUID teamId) {
+    TeamUser membership = getMemberShip(teamId, userId);
+    return membership.getRole();
+  }
+
+  @Override
   public long countMembers(UUID teamId) {
     return teamUserRepository.getTotalMembers(teamId);
   }

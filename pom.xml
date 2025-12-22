@@ -210,6 +210,13 @@
             <version>5.4.0</version>
         </dependency>
 
+        <!-- Estimate AI token -->
+        <dependency>
+            <groupId>com.knuddels</groupId>
+            <artifactId>jtokkit</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

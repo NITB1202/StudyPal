@@ -213,3 +213,18 @@ CREATE TABLE IF NOT EXISTS chat_message_attachments (
     CONSTRAINT fk_attachment_message FOREIGN KEY (message_id)
         REFERENCES chat_messages(id) ON DELETE CASCADE
 );
+
+CREATE TABLE chat_idempotency (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    idempotency_key VARCHAR(128) NOT NULL,
+    transaction_status VARCHAR(32) NOT NULL,
+    response_message_id UUID,
+    created_at TIMESTAMP NOT NULL,
+    CONSTRAINT uk_chat_idempotency_user_key
+        UNIQUE (user_id, idempotency_key),
+    CONSTRAINT fk_chat_idempotency_user FOREIGN KEY (user_id)
+        REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_chat_idempotency_response_message FOREIGN KEY (response_message_id)
+        REFERENCES chat_messages(id) ON DELETE CASCADE
+);

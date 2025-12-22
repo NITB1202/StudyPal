@@ -1,7 +1,9 @@
 quartz:
-  job-packages: com.study.studypal.team.job, com.study.studypal.notification.job, com.study.studypal.plan.job
+  job-packages: com.study.studypal.team.job, com.study.studypal.notification.job,
+    com.study.studypal.plan.job, com.study.studypal.chatbot.job
   jobs:
     invitation-clean-up: "0 0 0 * * ?"
     device-token-clean-up: " 0 0 0 * * ?"
     notification-clean-up: "0 0 0 * * ?"
     task-clean-up: "0 0 0 * * ?"
+    reset-daily-quota: "0 0 0 * * ?"
