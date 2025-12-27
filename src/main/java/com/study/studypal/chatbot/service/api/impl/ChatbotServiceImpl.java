@@ -22,6 +22,7 @@ import com.study.studypal.chatbot.service.internal.ChatIdempotencyService;
 import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
 import com.study.studypal.chatbot.service.internal.ChatMessageContextService;
 import com.study.studypal.chatbot.service.internal.ChatMessageService;
+import com.study.studypal.chatbot.service.internal.ChatbotPersistenceService;
 import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.FileUtils;
@@ -45,10 +46,11 @@ public class ChatbotServiceImpl implements ChatbotService {
   private final ChatMessageAttachmentService attachmentService;
   private final UserQuotaService usageService;
   private final ChatMessageContextService contextService;
+  private final ChatIdempotencyService idempotencyService;
+  private final ChatbotPersistenceService persistenceService;
   private final ModelMapper modelMapper;
   private final ChatbotMapper mapper;
   private final AIClient aiClient;
-  private final ChatIdempotencyService idempotencyService;
 
   @Override
   public Flux<ServerSentEvent<ChatResponseDto>> sendMessage(
@@ -116,13 +118,14 @@ public class ChatbotServiceImpl implements ChatbotService {
                     mapper.toAIResponseDto(
                         messageBuilder.toString(), inputTokens.get(), outputTokens.get());
 
-                ChatMessage message = messageService.saveMessage(userId, request, userSentAt);
-                usageService.saveMessageUsage(message, finalResponse, duration);
-                attachmentService.saveAttachments(message, attachments);
-
-                ChatMessage reply =
-                    messageService.saveReply(userId, finalResponse, LocalDateTime.now());
-                idempotencyService.markAsDone(userId, idempotencyKey, reply);
+                persistenceService.persistChatResult(
+                    userId,
+                    request,
+                    userSentAt,
+                    finalResponse,
+                    duration,
+                    attachments,
+                    idempotencyKey);
 
               } catch (Exception e) {
                 idempotencyService.markAsFailed(userId, idempotencyKey);
