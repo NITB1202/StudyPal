@@ -7,10 +7,12 @@ import com.study.studypal.chatbot.dto.response.UserQuotaUsageResponseDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
-public interface ChatBotService {
-  ChatResponseDto sendMessage(
+public interface ChatbotService {
+  Flux<ServerSentEvent<ChatResponseDto>> sendMessage(
       UUID userId, ChatRequestDto request, List<MultipartFile> attachments, String idempotencyKey);
 
   ListChatMessageResponseDto getMessages(UUID userId, LocalDateTime cursor, int size);

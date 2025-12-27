@@ -1,5 +1,10 @@
 package com.study.studypal.auth.security;
 
+import static com.study.studypal.auth.constant.AuthConstant.AUTH_PREFIX;
+import static com.study.studypal.auth.constant.AuthConstant.BEARER_PREFIX;
+import static com.study.studypal.auth.constant.AuthConstant.ROLE_PREFIX;
+import static com.study.studypal.common.util.Constants.AUTHORIZATION_HEADER;
+
 import com.study.studypal.auth.enums.AccountRole;
 import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.auth.exception.JwtAuthenticationException;
@@ -13,6 +18,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,50 +34,46 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final CacheManager cacheManager;
-  private final JwtAuthenticationEntryPoint authenticationEntryPoint;
-
-  private static final String AUTH_PREFIX = "/api/auth";
 
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      HttpServletRequest request,
+      @NotNull HttpServletResponse response,
+      @NotNull FilterChain filterChain)
       throws ServletException, IOException {
-    try {
-      String authHeader = request.getHeader("Authorization");
+    String authHeader = request.getHeader(AUTHORIZATION_HEADER);
 
-      if (authHeader != null && authHeader.startsWith("Bearer ")) {
-        String accessToken = authHeader.substring(7);
+    if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+      String accessToken = authHeader.substring(BEARER_PREFIX.length());
 
-        UUID userId = jwtService.extractId(accessToken);
-        AccountRole role = jwtService.extractAccountRole(accessToken);
+      UUID userId = jwtService.extractId(accessToken);
+      AccountRole role = jwtService.extractAccountRole(accessToken);
 
-        String path = request.getRequestURI();
-        if (!path.startsWith(AUTH_PREFIX)) {
-          String storedAccessToken =
-              cacheManager
-                  .getCache(CacheNames.ACCESS_TOKENS)
-                  .get(CacheKeyUtils.of(userId), String.class);
-
-          if (storedAccessToken == null) {
-            throw new JwtAuthenticationException(AuthErrorCode.INVALID_ACCESS_TOKEN);
-          }
-
-          if (!storedAccessToken.equals(accessToken)) {
-            throw new JwtAuthenticationException(AuthErrorCode.ACCOUNT_LOGGED_IN_ANOTHER_DEVICE);
-          }
+      String path = request.getRequestURI();
+      if (!path.startsWith(AUTH_PREFIX)) {
+        Cache cache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
+        if (cache == null) {
+          filterChain.doFilter(request, response);
+          return;
         }
 
-        UsernamePasswordAuthenticationToken auth =
-            new UsernamePasswordAuthenticationToken(
-                userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role.toString())));
+        String storedAccessToken = cache.get(CacheKeyUtils.of(userId), String.class);
+        if (storedAccessToken == null) {
+          throw new JwtAuthenticationException(AuthErrorCode.INVALID_ACCESS_TOKEN);
+        }
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        if (!storedAccessToken.equals(accessToken)) {
+          throw new JwtAuthenticationException(AuthErrorCode.ACCOUNT_LOGGED_IN_ANOTHER_DEVICE);
+        }
       }
 
-      filterChain.doFilter(request, response);
+      UsernamePasswordAuthenticationToken auth =
+          new UsernamePasswordAuthenticationToken(
+              userId, null, List.of(new SimpleGrantedAuthority(ROLE_PREFIX + role.toString())));
 
-    } catch (JwtAuthenticationException ex) {
-      authenticationEntryPoint.commence(request, response, ex);
+      SecurityContextHolder.getContext().setAuthentication(auth);
     }
+
+    filterChain.doFilter(request, response);
   }
 }

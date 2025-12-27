@@ -1,6 +1,14 @@
 package com.study.studypal.auth.controller;
 
-import com.study.studypal.auth.dto.request.*;
+import static com.study.studypal.auth.constant.AuthConstant.AUTH_PREFIX;
+
+import com.study.studypal.auth.dto.request.GenerateAccessTokenRequestDto;
+import com.study.studypal.auth.dto.request.LoginWithCredentialsRequestDto;
+import com.study.studypal.auth.dto.request.LoginWithProviderRequestDto;
+import com.study.studypal.auth.dto.request.RegisterWithCredentialsRequestDto;
+import com.study.studypal.auth.dto.request.ResetPasswordRequestDto;
+import com.study.studypal.auth.dto.request.SendVerificationCodeRequestDto;
+import com.study.studypal.auth.dto.request.VerifyCodeRequestDto;
 import com.study.studypal.auth.dto.response.GenerateAccessTokenResponseDto;
 import com.study.studypal.auth.dto.response.LoginResponseDto;
 import com.study.studypal.auth.service.AuthService;
@@ -15,12 +23,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
 @Validated
-@RequestMapping("/api/auth")
+@RequestMapping(AUTH_PREFIX)
 public class AuthController {
   private final AuthService authService;
 
