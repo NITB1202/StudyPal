@@ -34,6 +34,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final CacheManager cacheManager;
+  private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
   @Override
   protected void doFilterInternal(
@@ -41,39 +42,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NotNull HttpServletResponse response,
       @NotNull FilterChain filterChain)
       throws ServletException, IOException {
-    String authHeader = request.getHeader(AUTHORIZATION_HEADER);
 
-    if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
-      String accessToken = authHeader.substring(BEARER_PREFIX.length());
+    try {
+      String authHeader = request.getHeader(AUTHORIZATION_HEADER);
 
-      UUID userId = jwtService.extractId(accessToken);
-      AccountRole role = jwtService.extractAccountRole(accessToken);
+      if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+        String accessToken = authHeader.substring(BEARER_PREFIX.length());
 
-      String path = request.getRequestURI();
-      if (!path.startsWith(AUTH_PREFIX)) {
-        Cache cache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
-        if (cache == null) {
-          filterChain.doFilter(request, response);
-          return;
+        UUID userId = jwtService.extractId(accessToken);
+        AccountRole role = jwtService.extractAccountRole(accessToken);
+
+        if (!request.getRequestURI().startsWith(AUTH_PREFIX)) {
+          Cache cache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
+          if (cache == null) {
+            filterChain.doFilter(request, response);
+            return;
+          }
+
+          String storedAccessToken = cache.get(CacheKeyUtils.of(userId), String.class);
+
+          if (storedAccessToken == null) {
+            throw new JwtAuthenticationException(AuthErrorCode.INVALID_ACCESS_TOKEN);
+          }
+
+          if (!storedAccessToken.equals(accessToken)) {
+            throw new JwtAuthenticationException(AuthErrorCode.ACCOUNT_LOGGED_IN_ANOTHER_DEVICE);
+          }
         }
 
-        String storedAccessToken = cache.get(CacheKeyUtils.of(userId), String.class);
-        if (storedAccessToken == null) {
-          throw new JwtAuthenticationException(AuthErrorCode.INVALID_ACCESS_TOKEN);
-        }
+        UsernamePasswordAuthenticationToken auth =
+            new UsernamePasswordAuthenticationToken(
+                userId, null, List.of(new SimpleGrantedAuthority(ROLE_PREFIX + role.toString())));
 
-        if (!storedAccessToken.equals(accessToken)) {
-          throw new JwtAuthenticationException(AuthErrorCode.ACCOUNT_LOGGED_IN_ANOTHER_DEVICE);
-        }
+        SecurityContextHolder.getContext().setAuthentication(auth);
       }
 
-      UsernamePasswordAuthenticationToken auth =
-          new UsernamePasswordAuthenticationToken(
-              userId, null, List.of(new SimpleGrantedAuthority(ROLE_PREFIX + role.toString())));
-
-      SecurityContextHolder.getContext().setAuthentication(auth);
+      filterChain.doFilter(request, response);
+    } catch (JwtAuthenticationException ex) {
+      authenticationEntryPoint.commence(request, response, ex);
     }
-
-    filterChain.doFilter(request, response);
   }
 }
