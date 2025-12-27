@@ -3,6 +3,7 @@ package com.study.studypal.file.entity;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,18 +41,25 @@ public class File {
   @JoinColumn(name = "folder_id", nullable = false)
   private Folder folder;
 
-  @ManyToOne
-  @JoinColumn(name = "uploaded_by", nullable = false)
-  private User uploadedBy;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "created_by", nullable = false)
+  private User createdBy;
 
-  @Column(name = "uploaded_at", nullable = false)
-  private LocalDateTime uploadedAt;
+  @Column(name = "created_at", nullable = false)
+  private LocalDateTime createdAt;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "updated_by", nullable = false)
+  private User updatedBy;
+
+  @Column(name = "updated_at", nullable = false)
+  private LocalDateTime updatedAt;
+
+  @Column(name = "bytes", nullable = false)
+  private Long bytes;
 
   @Column(name = "url", nullable = false, length = 200)
   private String url;
-
-  @Column(name = "size", nullable = false)
-  private Long size;
 
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;

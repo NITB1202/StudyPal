@@ -243,15 +243,20 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS folders (
     id UUID PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
-    creator_id UUID NOT NULL,
+    created_by UUID NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    usage BIGINT NOT NULL,
+    updated_by UUID NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    bytes BIGINT NOT NULL,
+    document_count INT NOT NULL,
     team_id UUID,
     is_deleted BOOLEAN NOT NULL,
-    CONSTRAINT fk_folders_teams_team FOREIGN KEY (team_id)
-        REFERENCES teams(id) ON DELETE CASCADE,
-    CONSTRAINT fk_folders_users_creator FOREIGN KEY (creator_id)
-        REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_folders_users_created_by
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_folders_users_updated_by
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_folders_teams_team
+        FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS files (
@@ -259,16 +264,21 @@ CREATE TABLE IF NOT EXISTS files (
     name VARCHAR(200) NOT NULL,
     extension VARCHAR(20) NOT NULL,
     folder_id UUID NOT NULL,
-    uploaded_by UUID NOT NULL,
-    uploaded_at TIMESTAMP NOT NULL,
+    created_by UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_by UUID NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    bytes BIGINT NOT NULL,
     url VARCHAR(200) NOT NULL,
-    size BIGINT NOT NULL,
     deleted_at TIMESTAMP,
-    CONSTRAINT fk_files_folders_folder FOREIGN KEY (folder_id)
-        REFERENCES folders(id) ON DELETE CASCADE,
-    CONSTRAINT fk_files_users_uploaded_by FOREIGN KEY (uploaded_by)
-        REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_files_folders_folder
+        FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE CASCADE,
+    CONSTRAINT fk_files_users_created_by
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_files_users_updated_by
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE CASCADE
 );
+
 
 CREATE TABLE IF NOT EXISTS user_usages (
     id UUID PRIMARY KEY,
