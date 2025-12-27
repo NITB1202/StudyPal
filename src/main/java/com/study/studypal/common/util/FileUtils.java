@@ -40,16 +40,16 @@ public class FileUtils {
   public static String normalizeText(String text) {
     if (StringUtils.isBlank(text)) return "";
 
-    // 1. Unicode normalization
+    // Unicode normalization
     String normalized = Normalizer.normalize(text, Normalizer.Form.NFC);
 
-    // 2. Remove invisible/control characters (keep newline, tab)
+    // Remove invisible/control characters (keep newline, tab)
     normalized = normalized.replaceAll("[\\p{Cc}\\p{Cf}&&[^\n\t]]", "");
 
-    // 3. Normalize line endings
+    // Normalize line endings
     normalized = normalized.replaceAll("\\r\\n?", "\n");
 
-    // 4. Normalize whitespace
+    // Normalize whitespace
     normalized = normalized.replaceAll("[ \\t]+", " ").replaceAll("\\n{3,}", "\n\n");
 
     return normalized.trim();

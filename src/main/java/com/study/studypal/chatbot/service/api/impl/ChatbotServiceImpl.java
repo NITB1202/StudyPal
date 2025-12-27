@@ -1,6 +1,6 @@
 package com.study.studypal.chatbot.service.api.impl;
 
-import com.study.studypal.chatbot.client.AIRestClient;
+import com.study.studypal.chatbot.client.AIClient;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.dto.external.AIResponseDto;
 import com.study.studypal.chatbot.dto.external.ExtractedFile;
@@ -17,7 +17,7 @@ import com.study.studypal.chatbot.entity.ChatMessageAttachment;
 import com.study.studypal.chatbot.entity.UserQuota;
 import com.study.studypal.chatbot.exception.ChatIdempotencyErrorCode;
 import com.study.studypal.chatbot.mapper.ChatbotMapper;
-import com.study.studypal.chatbot.service.api.ChatBotService;
+import com.study.studypal.chatbot.service.api.ChatbotService;
 import com.study.studypal.chatbot.service.internal.ChatIdempotencyService;
 import com.study.studypal.chatbot.service.internal.ChatMessageAttachmentService;
 import com.study.studypal.chatbot.service.internal.ChatMessageContextService;
@@ -27,29 +27,31 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.util.FileUtils;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChatBotServiceImpl implements ChatBotService {
+public class ChatbotServiceImpl implements ChatbotService {
   private final ChatMessageService messageService;
   private final ChatMessageAttachmentService attachmentService;
   private final UserQuotaService usageService;
   private final ChatMessageContextService contextService;
   private final ModelMapper modelMapper;
   private final ChatbotMapper mapper;
-  private final AIRestClient aiRestClient;
+  private final AIClient aiClient;
   private final ChatIdempotencyService idempotencyService;
 
   @Override
-  public ChatResponseDto sendMessage(
+  public Flux<ServerSentEvent<ChatResponseDto>> sendMessage(
       UUID userId, ChatRequestDto request, List<MultipartFile> attachments, String idempotencyKey) {
     // Save user send time
     LocalDateTime userSentAt = LocalDateTime.now();
@@ -58,7 +60,9 @@ public class ChatBotServiceImpl implements ChatBotService {
     ChatIdempotencyResult acquireResult = idempotencyService.tryAcquire(userId, idempotencyKey);
 
     if (acquireResult.isDone()) {
-      return acquireResult.getResponse();
+      ServerSentEvent<ChatResponseDto> sse =
+          ServerSentEvent.builder(acquireResult.getResponse()).build();
+      return Flux.just(sse);
     }
 
     if (acquireResult.isProcessing()) {
@@ -83,31 +87,48 @@ public class ChatBotServiceImpl implements ChatBotService {
     }
 
     // Call AI service
-    AIResponseDto aiResponse;
-    long duration;
-    try {
-      long start = System.currentTimeMillis();
-      aiResponse = sendRequest(aiRequest);
-      duration = System.currentTimeMillis() - start;
-    } catch (Exception e) {
-      idempotencyService.markAsFailed(userId, idempotencyKey);
-      throw e;
-    }
+    long start = System.currentTimeMillis();
+    StringBuilder messageBuilder = new StringBuilder();
+    AtomicLong inputTokens = new AtomicLong(0);
+    AtomicLong outputTokens = new AtomicLong(0);
 
-    // Persist result
-    try {
-      ChatMessage message = messageService.saveMessage(userId, request, userSentAt);
-      usageService.saveMessageUsage(message, aiResponse, duration);
-      attachmentService.saveAttachments(message, attachments);
+    return sendRequest(aiRequest)
+        .doOnNext(
+            sse -> {
+              AIResponseDto chunk = sse.data();
+              if (chunk != null) {
+                messageBuilder.append(chunk.getReply());
+                inputTokens.set(chunk.getInputTokens());
+                outputTokens.set(chunk.getOutputTokens());
+              }
+            })
+        .map(ServerSentEvent::data)
+        .filter(Objects::nonNull)
+        .map(chunk -> ServerSentEvent.builder(mapper.toChatResponseDto(chunk)).build())
 
-      ChatMessage reply = messageService.saveReply(userId, aiResponse, LocalDateTime.now());
-      idempotencyService.markAsDone(userId, idempotencyKey, reply);
+        // When the stream complete -> persist result
+        .doOnComplete(
+            () -> {
+              long duration = System.currentTimeMillis() - start;
 
-      return mapper.toChatResponseDto(reply);
-    } catch (Exception e) {
-      idempotencyService.markAsFailed(userId, idempotencyKey);
-      throw e;
-    }
+              try {
+                AIResponseDto finalResponse =
+                    mapper.toAIResponseDto(
+                        messageBuilder.toString(), inputTokens.get(), outputTokens.get());
+
+                ChatMessage message = messageService.saveMessage(userId, request, userSentAt);
+                usageService.saveMessageUsage(message, finalResponse, duration);
+                attachmentService.saveAttachments(message, attachments);
+
+                ChatMessage reply =
+                    messageService.saveReply(userId, finalResponse, LocalDateTime.now());
+                idempotencyService.markAsDone(userId, idempotencyKey, reply);
+
+              } catch (Exception e) {
+                idempotencyService.markAsFailed(userId, idempotencyKey);
+              }
+            })
+        .doOnError(err -> idempotencyService.markAsFailed(userId, idempotencyKey));
   }
 
   @Override
@@ -163,7 +184,7 @@ public class ChatBotServiceImpl implements ChatBotService {
     return FileUtils.normalizeText(prompt);
   }
 
-  private AIResponseDto sendRequest(AIRequestDto request) {
-    return aiRestClient.ask(request);
+  private Flux<ServerSentEvent<AIResponseDto>> sendRequest(AIRequestDto request) {
+    return aiClient.ask(request);
   }
 }

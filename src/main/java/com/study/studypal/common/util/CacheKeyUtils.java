@@ -2,11 +2,12 @@ package com.study.studypal.common.util;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /** Utility class for generating consistent cache keys. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CacheKeyUtils {
-  private CacheKeyUtils() {}
-
   /**
    * Generate a cache key from any number of parts (null-safe).
    *
