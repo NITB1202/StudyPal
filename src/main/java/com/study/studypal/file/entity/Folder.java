@@ -53,4 +53,7 @@ public class Folder {
 
   @OneToMany(mappedBy = "folder", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<File> files;
+
+  @Column(name = "is_deleted", nullable = false)
+  private Boolean isDeleted;
 }

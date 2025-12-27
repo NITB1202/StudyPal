@@ -247,6 +247,7 @@ CREATE TABLE IF NOT EXISTS folders (
     created_at TIMESTAMP NOT NULL,
     usage BIGINT NOT NULL,
     team_id UUID,
+    is_deleted BOOLEAN NOT NULL,
     CONSTRAINT fk_folders_teams_team FOREIGN KEY (team_id)
         REFERENCES teams(id) ON DELETE CASCADE,
     CONSTRAINT fk_folders_users_creator FOREIGN KEY (creator_id)
@@ -262,6 +263,7 @@ CREATE TABLE IF NOT EXISTS files (
     uploaded_at TIMESTAMP NOT NULL,
     url VARCHAR(200) NOT NULL,
     size BIGINT NOT NULL,
+    deleted_at TIMESTAMP,
     CONSTRAINT fk_files_folders_folder FOREIGN KEY (folder_id)
         REFERENCES folders(id) ON DELETE CASCADE,
     CONSTRAINT fk_files_users_uploaded_by FOREIGN KEY (uploaded_by)

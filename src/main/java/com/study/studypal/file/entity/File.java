@@ -52,4 +52,7 @@ public class File {
 
   @Column(name = "size", nullable = false)
   private Long size;
+
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
 }
