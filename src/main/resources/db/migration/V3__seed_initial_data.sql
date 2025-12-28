@@ -142,3 +142,14 @@ VALUES
     '041c77e0-ae77-4005-b745-ea12dca9bec6', '2024-12-01 00:00:00', 0, 0, FALSE, '111e8400-e29b-41d4-a716-446655440001'),
     ('3e2d98f7-db71-4c2b-8276-839fa6a62cf6', 'default', '9f5d79f2-83a2-411d-bb66-caeb640a62b0', '2024-07-08 00:00:00',
     '9f5d79f2-83a2-411d-bb66-caeb640a62b0', '2024-07-08 00:00:00', 0, 0, FALSE, '555e8400-e29b-41d4-a716-446655440006');
+
+INSERT INTO user_usages (id, usage_used, usage_limit)
+VALUES
+    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 0, 2147483648),
+    ('618c10ee-923f-4323-b32b-086caa534b46', 0, 2147483648),
+    ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 0, 2147483648);
+
+INSERT INTO team_usages (id, usage_used, usage_limit)
+VALUES
+    ('111e8400-e29b-41d4-a716-446655440001', 0, 2147483648),
+    ('555e8400-e29b-41d4-a716-446655440006', 0, 2147483648);
