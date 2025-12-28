@@ -2,6 +2,7 @@ package com.study.studypal.file.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.file.dto.folder.request.CreateFolderRequestDto;
+import com.study.studypal.file.dto.folder.request.UpdateFolderRequestDto;
 import com.study.studypal.file.dto.folder.response.FolderDetailResponseDto;
 import com.study.studypal.file.dto.folder.response.FolderResponseDto;
 import com.study.studypal.file.dto.folder.response.ListFolderResponseDto;
@@ -15,7 +16,7 @@ public interface FolderService {
 
   ListFolderResponseDto getFolders(UUID userId, UUID teamId, LocalDateTime cursor, int size);
 
-  ActionResponseDto updateFolderName(UUID userId, UUID folderId, String name);
+  ActionResponseDto updateFolderName(UUID userId, UUID folderId, UpdateFolderRequestDto request);
 
   ActionResponseDto deleteFolder(UUID userId, UUID folderId);
 }

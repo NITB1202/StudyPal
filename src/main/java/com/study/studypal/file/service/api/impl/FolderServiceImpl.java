@@ -3,6 +3,7 @@ package com.study.studypal.file.service.api.impl;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.file.dto.folder.request.CreateFolderRequestDto;
+import com.study.studypal.file.dto.folder.request.UpdateFolderRequestDto;
 import com.study.studypal.file.dto.folder.response.FolderDetailResponseDto;
 import com.study.studypal.file.dto.folder.response.FolderResponseDto;
 import com.study.studypal.file.dto.folder.response.ListFolderResponseDto;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageRequest;
@@ -110,7 +112,8 @@ public class FolderServiceImpl implements FolderService {
   }
 
   @Override
-  public ActionResponseDto updateFolderName(UUID userId, UUID folderId, String name) {
+  public ActionResponseDto updateFolderName(
+      UUID userId, UUID folderId, UpdateFolderRequestDto request) {
     Folder folder =
         folderRepository
             .findByIdForUpdate(folderId)
@@ -118,13 +121,16 @@ public class FolderServiceImpl implements FolderService {
 
     validationService.validateUpdateFolderPermission(userId, folder);
 
-    UUID teamId = folder.getTeam() != null ? folder.getTeam().getId() : null;
-    validationService.validateFolderName(userId, teamId, name);
+    String name = request.getName();
+    if (StringUtils.isNotBlank(name) && !name.equals(folder.getName())) {
+      UUID teamId = folder.getTeam() != null ? folder.getTeam().getId() : null;
+      validationService.validateFolderName(userId, teamId, name);
 
-    folder.setName(name);
-    trackingUpdate(userId, folder);
+      folder.setName(name);
+      trackingUpdate(userId, folder);
 
-    folderRepository.save(folder);
+      folderRepository.save(folder);
+    }
 
     return ActionResponseDto.builder().success(true).message("Update successfully.").build();
   }

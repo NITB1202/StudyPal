@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FolderRepository extends JpaRepository<Folder, UUID> {
-  boolean existsByNameAndCreatedByAndTeamIdIsNull(String name, UUID createdBy);
+  boolean existsByNameAndCreatedBy_IdAndTeamIdIsNull(String name, UUID createdBy);
 
   boolean existsByNameAndTeamId(String name, UUID teamId);
 
