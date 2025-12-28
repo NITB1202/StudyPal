@@ -86,6 +86,7 @@ public class TaskController {
   @Operation(summary = "Update a personal task.")
   @ApiResponse(responseCode = "200", description = "Update successfully.")
   @UnauthorizedApiResponse
+  @BadRequestApiResponse
   @NotFoundApiResponse
   public ResponseEntity<UpdateTaskResponseDto> updateTask(
       @AuthenticationPrincipal UUID userId,

@@ -16,6 +16,8 @@ public interface TeamMembershipInternalService {
 
   void validateUpdatePlanPermission(UUID userId, UUID teamId);
 
+  void validateUpdateFolderPermission(UUID userId, UUID teamId);
+
   void validateUserBelongsToTeam(UUID userId, UUID teamId);
 
   TeamUser getMemberShip(UUID teamId, UUID userId);
