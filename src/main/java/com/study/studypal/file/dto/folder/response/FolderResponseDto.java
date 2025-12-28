@@ -17,5 +17,5 @@ public class FolderResponseDto {
 
   private String name;
 
-  private Integer documentCount;
+  private Integer fileCount;
 }

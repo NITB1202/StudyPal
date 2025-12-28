@@ -248,7 +248,7 @@ CREATE TABLE IF NOT EXISTS folders (
     updated_by UUID NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     bytes BIGINT NOT NULL,
-    document_count INT NOT NULL,
+    file_count INT NOT NULL,
     team_id UUID,
     is_deleted BOOLEAN NOT NULL,
     CONSTRAINT fk_folders_users_created_by

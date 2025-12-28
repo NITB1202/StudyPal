@@ -55,7 +55,7 @@ public class FolderServiceImpl implements FolderService {
             .updatedBy(user)
             .updatedAt(now)
             .bytes(0L)
-            .documentCount(0)
+            .fileCount(0)
             .isDeleted(false)
             .team(team)
             .build();
