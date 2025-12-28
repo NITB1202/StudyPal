@@ -58,13 +58,13 @@ public class Folder {
   @Column(name = "document_count", nullable = false)
   private Integer documentCount;
 
+  @Column(name = "is_deleted", nullable = false)
+  private Boolean isDeleted;
+
   @ManyToOne
   @JoinColumn(name = "team_id")
   private Team team;
 
   @OneToMany(mappedBy = "folder", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<File> files;
-
-  @Column(name = "is_deleted", nullable = false)
-  private Boolean isDeleted;
 }

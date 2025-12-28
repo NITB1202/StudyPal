@@ -1,4 +1,4 @@
-package com.study.studypal.file.service;
+package com.study.studypal.file.service.api;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.file.dto.folder.request.CreateFolderRequestDto;

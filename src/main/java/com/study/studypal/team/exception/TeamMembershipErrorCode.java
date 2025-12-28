@@ -45,7 +45,10 @@ public enum TeamMembershipErrorCode implements ErrorCode {
   CANNOT_LEAVE_WITH_REMAINING_TASKS(
       HttpStatus.FORBIDDEN,
       "TEAM_MEM_015",
-      "You must complete or reassign your tasks before leaving the team.");
+      "You must complete or reassign your tasks before leaving the team."),
+  PERMISSION_UPDATE_FOLDER_DENIED(
+      HttpStatus.FORBIDDEN, "TEAM_MEM_016", "Only the owner or an admin can update team's folder."),
+  ;
 
   private final HttpStatus httpStatus;
   private final String code;
