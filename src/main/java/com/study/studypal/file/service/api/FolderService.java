@@ -6,6 +6,7 @@ import com.study.studypal.file.dto.folder.request.UpdateFolderRequestDto;
 import com.study.studypal.file.dto.folder.response.FolderDetailResponseDto;
 import com.study.studypal.file.dto.folder.response.FolderResponseDto;
 import com.study.studypal.file.dto.folder.response.ListFolderResponseDto;
+import com.study.studypal.file.dto.usage.UsageResponseDto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,4 +20,8 @@ public interface FolderService {
   ActionResponseDto updateFolder(UUID userId, UUID folderId, UpdateFolderRequestDto request);
 
   ActionResponseDto deleteFolder(UUID userId, UUID folderId);
+
+  UsageResponseDto getUserUsage(UUID userId);
+
+  UsageResponseDto getTeamUsage(UUID userId, UUID teamId);
 }

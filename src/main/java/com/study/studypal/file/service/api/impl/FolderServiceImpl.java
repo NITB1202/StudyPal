@@ -7,11 +7,15 @@ import com.study.studypal.file.dto.folder.request.UpdateFolderRequestDto;
 import com.study.studypal.file.dto.folder.response.FolderDetailResponseDto;
 import com.study.studypal.file.dto.folder.response.FolderResponseDto;
 import com.study.studypal.file.dto.folder.response.ListFolderResponseDto;
+import com.study.studypal.file.dto.usage.UsageResponseDto;
 import com.study.studypal.file.entity.Folder;
+import com.study.studypal.file.entity.TeamUsage;
+import com.study.studypal.file.entity.UserUsage;
 import com.study.studypal.file.exception.FolderErrorCode;
 import com.study.studypal.file.repository.FolderRepository;
 import com.study.studypal.file.service.api.FolderService;
 import com.study.studypal.file.service.internal.FolderValidationService;
+import com.study.studypal.file.service.internal.UsageService;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
@@ -35,6 +39,7 @@ public class FolderServiceImpl implements FolderService {
   private final FolderRepository folderRepository;
   private final TeamMembershipInternalService memberService;
   private final FolderValidationService validationService;
+  private final UsageService usageService;
   private final ModelMapper modelMapper;
   @PersistenceContext private final EntityManager entityManager;
 
@@ -55,7 +60,7 @@ public class FolderServiceImpl implements FolderService {
             .updatedBy(user)
             .updatedAt(now)
             .bytes(0L)
-            .documentCount(0)
+            .fileCount(0)
             .isDeleted(false)
             .team(team)
             .build();
@@ -156,6 +161,19 @@ public class FolderServiceImpl implements FolderService {
     folderRepository.save(folder);
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
+  }
+
+  @Override
+  public UsageResponseDto getUserUsage(UUID userId) {
+    UserUsage userUsage = usageService.getUserUsage(userId);
+    return modelMapper.map(userUsage, UsageResponseDto.class);
+  }
+
+  @Override
+  public UsageResponseDto getTeamUsage(UUID userId, UUID teamId) {
+    memberService.validateUserBelongsToTeam(userId, teamId);
+    TeamUsage teamUsage = usageService.getTeamUsage(teamId);
+    return modelMapper.map(teamUsage, UsageResponseDto.class);
   }
 
   private List<Folder> getPersonalFolders(UUID userId, LocalDateTime cursor, Pageable pageable) {

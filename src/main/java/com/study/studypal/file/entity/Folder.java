@@ -55,8 +55,8 @@ public class Folder {
   @Column(name = "bytes", nullable = false)
   private Long bytes;
 
-  @Column(name = "document_count", nullable = false)
-  private Integer documentCount;
+  @Column(name = "file_count", nullable = false)
+  private Integer fileCount;
 
   @Column(name = "is_deleted", nullable = false)
   private Boolean isDeleted;

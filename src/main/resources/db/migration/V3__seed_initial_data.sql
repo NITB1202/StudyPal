@@ -136,9 +136,20 @@ INSERT INTO task_recurrence_rules (id, task_id, recurrence_start_date, recurrenc
 VALUES
     ('235e15d2-a8c0-47d8-b5f3-a39ca3439902', '62184f26-1d7b-4d4a-a506-24140fb999f8', '2025-12-19', '2025-12-19', 'DAILY');
 
-INSERT INTO folders (id, name, created_by, created_at, updated_by, updated_at, bytes, document_count, is_deleted, team_id)
+INSERT INTO folders (id, name, created_by, created_at, updated_by, updated_at, bytes, file_count, is_deleted, team_id)
 VALUES
     ('a32027a2-5041-46fe-a8df-6c067ef5d52c', 'default', '041c77e0-ae77-4005-b745-ea12dca9bec6', '2024-12-01 00:00:00',
     '041c77e0-ae77-4005-b745-ea12dca9bec6', '2024-12-01 00:00:00', 0, 0, FALSE, '111e8400-e29b-41d4-a716-446655440001'),
     ('3e2d98f7-db71-4c2b-8276-839fa6a62cf6', 'default', '9f5d79f2-83a2-411d-bb66-caeb640a62b0', '2024-07-08 00:00:00',
     '9f5d79f2-83a2-411d-bb66-caeb640a62b0', '2024-07-08 00:00:00', 0, 0, FALSE, '555e8400-e29b-41d4-a716-446655440006');
+
+INSERT INTO user_usages (id, usage_used, usage_limit)
+VALUES
+    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 0, 2147483648),
+    ('618c10ee-923f-4323-b32b-086caa534b46', 0, 2147483648),
+    ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 0, 2147483648);
+
+INSERT INTO team_usages (id, usage_used, usage_limit)
+VALUES
+    ('111e8400-e29b-41d4-a716-446655440001', 0, 2147483648),
+    ('555e8400-e29b-41d4-a716-446655440006', 0, 2147483648);

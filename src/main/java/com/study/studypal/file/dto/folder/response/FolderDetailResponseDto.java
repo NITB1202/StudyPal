@@ -31,5 +31,5 @@ public class FolderDetailResponseDto {
 
   private Long bytes;
 
-  private Integer documentCount;
+  private Integer fileCount;
 }
