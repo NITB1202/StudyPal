@@ -14,4 +14,6 @@ public interface PlanInternalService {
   void softDeletePlan(Plan plan);
 
   void recoverPlan(Plan plan);
+
+  void purgeEmptySoftDeletedPlans();
 }

@@ -70,6 +70,11 @@ public class PlanInternalServiceImpl implements PlanInternalService {
   }
 
   @Override
+  public void purgeEmptySoftDeletedPlans() {
+    planRepository.hardDeleteDeletedPlansWithoutTasks();
+  }
+
+  @Override
   public Set<UUID> getPlanRelatedMemberIds(UUID planId) {
     Plan plan =
         planRepository
