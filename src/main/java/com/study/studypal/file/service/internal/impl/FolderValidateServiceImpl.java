@@ -53,6 +53,13 @@ public class FolderValidateServiceImpl implements FolderValidationService {
     }
   }
 
+  @Override
+  public void validateFolderNotDeleted(Folder folder) {
+    if (Boolean.TRUE.equals(folder.getIsDeleted())) {
+      throw new BaseException(FolderErrorCode.FOLDER_ALREADY_DELETED);
+    }
+  }
+
   private void validateTeamFolderName(UUID teamId, String name) {
     if (folderRepository.existsByNameAndTeamId(name, teamId)) {
       throw new BaseException(FolderErrorCode.FOLDER_ALREADY_EXISTS);
@@ -60,7 +67,7 @@ public class FolderValidateServiceImpl implements FolderValidationService {
   }
 
   private void validatePersonalFolderName(UUID userId, String name) {
-    if (folderRepository.existsByNameAndCreatedByAndTeamIdIsNull(name, userId)) {
+    if (folderRepository.existsByNameAndCreatedBy_IdAndTeamIdIsNull(name, userId)) {
       throw new BaseException(FolderErrorCode.FOLDER_ALREADY_EXISTS);
     }
   }

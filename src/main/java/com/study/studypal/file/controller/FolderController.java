@@ -48,6 +48,7 @@ public class FolderController {
   }
 
   @GetMapping("/{folderId}")
+  @Operation(summary = "Get folder's details")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   @UnauthorizedApiResponse
   @NotFoundApiResponse
@@ -79,7 +80,7 @@ public class FolderController {
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID folderId,
       @Valid @RequestBody UpdateFolderRequestDto request) {
-    return ResponseEntity.ok(folderService.updateFolderName(userId, folderId, request));
+    return ResponseEntity.ok(folderService.updateFolder(userId, folderId, request));
   }
 
   @DeleteMapping("/{folderId}")

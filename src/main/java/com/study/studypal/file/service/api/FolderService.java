@@ -16,7 +16,7 @@ public interface FolderService {
 
   ListFolderResponseDto getFolders(UUID userId, UUID teamId, LocalDateTime cursor, int size);
 
-  ActionResponseDto updateFolderName(UUID userId, UUID folderId, UpdateFolderRequestDto request);
+  ActionResponseDto updateFolder(UUID userId, UUID folderId, UpdateFolderRequestDto request);
 
   ActionResponseDto deleteFolder(UUID userId, UUID folderId);
 }

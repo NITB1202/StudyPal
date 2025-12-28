@@ -11,4 +11,6 @@ public interface FolderValidationService {
   void validateViewFolderPermission(UUID userId, Folder folder);
 
   void validateUpdateFolderPermission(UUID userId, Folder folder);
+
+  void validateFolderNotDeleted(Folder folder);
 }

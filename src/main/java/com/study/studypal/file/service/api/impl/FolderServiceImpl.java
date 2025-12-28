@@ -17,6 +17,7 @@ import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -70,6 +71,7 @@ public class FolderServiceImpl implements FolderService {
             .findById(folderId)
             .orElseThrow(() -> new BaseException(FolderErrorCode.FOLDER_NOT_FOUND));
 
+    validationService.validateFolderNotDeleted(folder);
     validationService.validateViewFolderPermission(userId, folder);
 
     FolderDetailResponseDto responseDto = modelMapper.map(folder, FolderDetailResponseDto.class);
@@ -90,8 +92,8 @@ public class FolderServiceImpl implements FolderService {
 
     List<Folder> folders =
         teamId != null
-            ? getTeamDeletedTasks(teamId, cursor, pageable)
-            : getPersonalDeletedTasks(userId, cursor, pageable);
+            ? getTeamFolders(teamId, cursor, pageable)
+            : getPersonalFolders(userId, cursor, pageable);
 
     List<FolderResponseDto> foldersDTO =
         modelMapper.map(folders, new TypeToken<List<FolderResponseDto>>() {}.getType());
@@ -112,13 +114,15 @@ public class FolderServiceImpl implements FolderService {
   }
 
   @Override
-  public ActionResponseDto updateFolderName(
+  @Transactional
+  public ActionResponseDto updateFolder(
       UUID userId, UUID folderId, UpdateFolderRequestDto request) {
     Folder folder =
         folderRepository
             .findByIdForUpdate(folderId)
             .orElseThrow(() -> new BaseException(FolderErrorCode.FOLDER_NOT_FOUND));
 
+    validationService.validateFolderNotDeleted(folder);
     validationService.validateUpdateFolderPermission(userId, folder);
 
     String name = request.getName();
@@ -136,12 +140,14 @@ public class FolderServiceImpl implements FolderService {
   }
 
   @Override
+  @Transactional
   public ActionResponseDto deleteFolder(UUID userId, UUID folderId) {
     Folder folder =
         folderRepository
             .findByIdForUpdate(folderId)
             .orElseThrow(() -> new BaseException(FolderErrorCode.FOLDER_NOT_FOUND));
 
+    validationService.validateFolderNotDeleted(folder);
     validationService.validateUpdateFolderPermission(userId, folder);
 
     folder.setIsDeleted(true);
@@ -152,14 +158,13 @@ public class FolderServiceImpl implements FolderService {
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
-  private List<Folder> getPersonalDeletedTasks(
-      UUID userId, LocalDateTime cursor, Pageable pageable) {
+  private List<Folder> getPersonalFolders(UUID userId, LocalDateTime cursor, Pageable pageable) {
     return cursor == null
         ? folderRepository.getPersonalFolders(userId, pageable)
         : folderRepository.getPersonalFoldersWithCursor(userId, cursor, pageable);
   }
 
-  private List<Folder> getTeamDeletedTasks(UUID teamId, LocalDateTime cursor, Pageable pageable) {
+  private List<Folder> getTeamFolders(UUID teamId, LocalDateTime cursor, Pageable pageable) {
     return cursor == null
         ? folderRepository.getTeamFolders(teamId, pageable)
         : folderRepository.getTeamFoldersWithCursor(teamId, cursor, pageable);

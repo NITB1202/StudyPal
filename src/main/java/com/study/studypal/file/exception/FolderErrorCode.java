@@ -10,6 +10,7 @@ public enum FolderErrorCode implements ErrorCode {
   FOLDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER_002", "Folder not found."),
   PERMISSION_FOLDER_OWNER_DENIED(
       HttpStatus.FORBIDDEN, "FOLDER_003", "You are not the owner of this folder."),
+  FOLDER_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "FOLDER_004", "Folder is already deleted."),
   ;
   private final HttpStatus httpStatus;
   private final String code;
