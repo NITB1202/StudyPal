@@ -1,11 +1,14 @@
 package com.study.studypal.file.repository;
 
 import com.study.studypal.file.entity.File;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -149,4 +152,8 @@ public interface FileRepository extends JpaRepository<File, UUID> {
     AND f.deletedAt IS NOT NULL
     """)
   long countPersonalDeletedFiles(@Param("userId") UUID userId);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT f FROM File f WHERE f.id = :id")
+  Optional<File> findByIdForUpdate(UUID id);
 }

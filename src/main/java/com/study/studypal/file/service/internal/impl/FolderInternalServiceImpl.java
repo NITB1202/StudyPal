@@ -64,7 +64,16 @@ public class FolderInternalServiceImpl implements FolderInternalService {
   @Override
   public void increaseFile(UUID userId, Folder folder, File file) {
     folder.setFileCount(folder.getFileCount() + 1);
-    folder.setBytes(file.getBytes());
+    folder.setBytes(folder.getBytes() + file.getBytes());
+    updateAuditFields(userId, folder);
+
+    folderRepository.save(folder);
+  }
+
+  @Override
+  public void decreaseFile(UUID userId, Folder folder, File file) {
+    folder.setFileCount(folder.getFileCount() - 1);
+    folder.setBytes(folder.getBytes() - file.getBytes());
     updateAuditFields(userId, folder);
 
     folderRepository.save(folder);

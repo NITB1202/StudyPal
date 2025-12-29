@@ -17,7 +17,6 @@ import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -72,33 +71,54 @@ public class UsageServiceImpl implements UsageService {
   }
 
   @Override
-  public void validateUsage(Folder folder, MultipartFile file) {
+  public void validateUsage(Folder folder, long fileSize) {
     if (folder.getTeam() != null) {
-      validateTeamUsage(folder.getTeam().getId(), file);
+      validateTeamUsage(folder.getTeam().getId(), fileSize);
     } else {
-      validateUserUsage(folder.getCreatedBy().getId(), file);
+      validateUserUsage(folder.getCreatedBy().getId(), fileSize);
     }
   }
 
-  private void validateTeamUsage(UUID teamId, MultipartFile file) {
+  @Override
+  public void updateUsage(Folder folder, long fileSize) {
+    if (folder.getTeam() != null) {
+      updateTeamUsage(folder, fileSize);
+    } else {
+      updateUserUsage(folder, fileSize);
+    }
+  }
+
+  private void validateTeamUsage(UUID teamId, long fileSize) {
     TeamUsage teamUsage =
         teamUsageRepository
             .findById(teamId)
             .orElseThrow(() -> new BaseException(UsageErrorCode.USAGE_NOT_FOUND));
 
-    if (teamUsage.getUsageUsed() + file.getSize() > teamUsage.getUsageLimit()) {
+    if (teamUsage.getUsageUsed() + fileSize > teamUsage.getUsageLimit()) {
       throw new BaseException(UsageErrorCode.INSUFFICIENT_STORAGE_QUOTA);
     }
   }
 
-  private void validateUserUsage(UUID userId, MultipartFile file) {
+  private void validateUserUsage(UUID userId, long fileSize) {
     UserUsage userUsage =
         userUsageRepository
             .findById(userId)
             .orElseThrow(() -> new BaseException(UsageErrorCode.USAGE_NOT_FOUND));
 
-    if (userUsage.getUsageUsed() + file.getSize() > userUsage.getUsageLimit()) {
+    if (userUsage.getUsageUsed() + fileSize > userUsage.getUsageLimit()) {
       throw new BaseException(UsageErrorCode.INSUFFICIENT_STORAGE_QUOTA);
     }
+  }
+
+  private void updateTeamUsage(Folder folder, long fileSize) {
+    TeamUsage teamUsage = getTeamUsage(folder.getTeam().getId());
+    teamUsage.setUsageUsed(teamUsage.getUsageUsed() + fileSize);
+    teamUsageRepository.save(teamUsage);
+  }
+
+  private void updateUserUsage(Folder folder, long fileSize) {
+    UserUsage userUsage = getUserUsage(folder.getCreatedBy().getId());
+    userUsage.setUsageUsed(userUsage.getUsageUsed() + fileSize);
+    userUsageRepository.save(userUsage);
   }
 }

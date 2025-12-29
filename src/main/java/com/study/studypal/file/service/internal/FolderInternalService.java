@@ -12,4 +12,6 @@ public interface FolderInternalService {
   void updateAuditFields(UUID userId, Folder folder);
 
   void increaseFile(UUID userId, Folder folder, File file);
+
+  void decreaseFile(UUID userId, Folder folder, File file);
 }
