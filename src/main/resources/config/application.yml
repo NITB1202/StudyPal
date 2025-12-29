@@ -7,7 +7,7 @@ plan:
 
 team:
   invitation-cutoff-days: 7
-  max-owned-teams: 5
+  max-owned-teams: 3
 
 chatbot:
   daily-quota-tokens: 15000
@@ -15,3 +15,7 @@ chatbot:
   char-per-token: 3
   max-file-size: 10MB
   max-total-size: 20MB
+
+file:
+  user-usage-limit: 2147483648
+  team-usage-limit: 3221225472

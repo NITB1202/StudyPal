@@ -12,6 +12,7 @@ import com.study.studypal.common.service.CodeService;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.file.service.internal.FolderInternalService;
+import com.study.studypal.file.service.internal.UsageService;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.team.config.TeamProperties;
@@ -70,6 +71,7 @@ public class TeamServiceImpl implements TeamService {
   private final FileService fileService;
   private final TaskCounterService taskCounterService;
   private final FolderInternalService folderService;
+  private final UsageService usageService;
   private final ModelMapper modelMapper;
   private final ApplicationEventPublisher eventPublisher;
   private final TeamProperties props;
@@ -104,10 +106,14 @@ public class TeamServiceImpl implements TeamService {
                 .build();
 
         teamRepository.save(team);
-        teamMembershipService.createMembership(team.getId(), userId, TeamRole.OWNER);
-        teamNotificationSettingService.createSettings(userId, team.getId());
-        taskCounterService.createTeamTaskCounter(team.getId());
-        folderService.createTeamDefaultFolder(userId, team.getId());
+
+        UUID teamId = team.getId();
+
+        teamMembershipService.createMembership(teamId, userId, TeamRole.OWNER);
+        teamNotificationSettingService.createSettings(userId, teamId);
+        taskCounterService.createTeamTaskCounter(teamId);
+        usageService.createTeamUsage(teamId);
+        folderService.createTeamDefaultFolder(userId, teamId);
 
         return modelMapper.map(team, TeamResponseDto.class);
       } catch (DataIntegrityViolationException e) {
