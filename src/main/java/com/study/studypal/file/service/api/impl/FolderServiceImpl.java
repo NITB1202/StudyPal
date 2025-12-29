@@ -14,6 +14,7 @@ import com.study.studypal.file.entity.UserUsage;
 import com.study.studypal.file.exception.FolderErrorCode;
 import com.study.studypal.file.repository.FolderRepository;
 import com.study.studypal.file.service.api.FolderService;
+import com.study.studypal.file.service.internal.FileInternalService;
 import com.study.studypal.file.service.internal.FolderValidationService;
 import com.study.studypal.file.service.internal.UsageService;
 import com.study.studypal.team.entity.Team;
@@ -40,6 +41,7 @@ public class FolderServiceImpl implements FolderService {
   private final TeamMembershipInternalService memberService;
   private final FolderValidationService validationService;
   private final UsageService usageService;
+  private final FileInternalService fileService;
   private final ModelMapper modelMapper;
   @PersistenceContext private final EntityManager entityManager;
 
@@ -154,6 +156,8 @@ public class FolderServiceImpl implements FolderService {
 
     validationService.validateFolderNotDeleted(folder);
     validationService.validateUpdateFolderPermission(userId, folder);
+
+    fileService.softDeleteFilesInFolder(folderId);
 
     folder.setIsDeleted(true);
     trackingUpdate(userId, folder);
