@@ -9,6 +9,7 @@ import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.file.dto.file.request.UpdateFileRequestDto;
+import com.study.studypal.file.dto.file.response.DeletedFileResponseDto;
 import com.study.studypal.file.dto.file.response.FileDetailResponseDto;
 import com.study.studypal.file.dto.file.response.FileResponseDto;
 import com.study.studypal.file.dto.file.response.ListDeletedFileResponseDto;
@@ -21,16 +22,21 @@ import com.study.studypal.file.service.api.UserFileService;
 import com.study.studypal.file.service.internal.FileValidationService;
 import com.study.studypal.file.service.internal.FolderInternalService;
 import com.study.studypal.file.service.internal.UsageService;
+import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +48,7 @@ public class UserFileServiceImpl implements UserFileService {
   private final FolderInternalService folderService;
   private final FileValidationService validationService;
   private final UsageService usageService;
+  private final TeamMembershipInternalService memberService;
   private final ModelMapper modelMapper;
   @PersistenceContext private final EntityManager entityManager;
 
@@ -111,22 +118,90 @@ public class UserFileServiceImpl implements UserFileService {
 
   @Override
   public ListFileResponseDto getFiles(UUID userId, UUID folderId, LocalDateTime cursor, int size) {
+    Folder folder = folderService.getById(folderId);
+    validationService.validateViewFolderPermission(userId, folder);
 
-    return null;
+    Pageable pageable = PageRequest.of(0, size);
+    List<File> files =
+        cursor == null
+            ? fileRepository.getFiles(folderId, pageable)
+            : fileRepository.getFilesWithCursor(folderId, cursor, pageable);
+
+    List<FileResponseDto> filesDTO =
+        modelMapper.map(files, new TypeToken<List<FileResponseDto>>() {}.getType());
+
+    long total = fileRepository.countFiles(folderId);
+
+    LocalDateTime nextCursor =
+        files.size() == size ? files.get(files.size() - 1).getUpdatedAt() : null;
+
+    return ListFileResponseDto.builder()
+        .files(filesDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
   }
 
   @Override
   public ListDeletedFileResponseDto getDeletedFiles(
       UUID userId, UUID teamId, LocalDateTime cursor, int size) {
-    // membership if teamId != null
+    Pageable pageable = PageRequest.of(0, size);
 
-    return null;
+    if (teamId != null) {
+      memberService.validateUserBelongsToTeam(userId, teamId);
+    }
+
+    List<File> files =
+        teamId != null
+            ? getTeamDeletedFiles(teamId, cursor, pageable)
+            : getPersonalDeletedFiles(userId, cursor, pageable);
+
+    List<DeletedFileResponseDto> filesDTO =
+        modelMapper.map(files, new TypeToken<List<DeletedFileResponseDto>>() {}.getType());
+
+    long total =
+        teamId != null
+            ? fileRepository.countTeamDeletedFiles(teamId)
+            : fileRepository.countPersonalDeletedFiles(userId);
+
+    LocalDateTime nextCursor =
+        files.size() == size ? files.get(files.size() - 1).getUpdatedAt() : null;
+
+    return ListDeletedFileResponseDto.builder()
+        .files(filesDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
   }
 
   @Override
   public ListFileResponseDto searchFilesByName(
       UUID userId, UUID folderId, String keyword, LocalDateTime cursor, int size) {
-    return null;
+    Folder folder = folderService.getById(folderId);
+    validationService.validateViewFolderPermission(userId, folder);
+
+    Pageable pageable = PageRequest.of(0, size);
+    String handledKeyword = keyword.toLowerCase().trim();
+
+    List<File> files =
+        cursor == null
+            ? fileRepository.searchFilesByName(folderId, handledKeyword, pageable)
+            : fileRepository.searchFilesByNameWithCursor(
+                folderId, handledKeyword, cursor, pageable);
+
+    List<FileResponseDto> filesDTO =
+        modelMapper.map(files, new TypeToken<List<FileResponseDto>>() {}.getType());
+
+    long total = fileRepository.countByName(folderId, handledKeyword);
+
+    LocalDateTime nextCursor =
+        files.size() == size ? files.get(files.size() - 1).getUpdatedAt() : null;
+
+    return ListFileResponseDto.builder()
+        .files(filesDTO)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
   }
 
   @Override
@@ -148,5 +223,17 @@ public class UserFileServiceImpl implements UserFileService {
   @Override
   public ActionResponseDto restoreFile(UUID userId, UUID fileId) {
     return null;
+  }
+
+  private List<File> getTeamDeletedFiles(UUID teamId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? fileRepository.getTeamDeletedFiles(teamId, pageable)
+        : fileRepository.getTeamDeletedFilesWithCursor(teamId, cursor, pageable);
+  }
+
+  private List<File> getPersonalDeletedFiles(UUID userId, LocalDateTime cursor, Pageable pageable) {
+    return cursor == null
+        ? fileRepository.getPersonalDeletedFiles(userId, pageable)
+        : fileRepository.getPersonalDeletedFilesWithCursor(userId, cursor, pageable);
   }
 }

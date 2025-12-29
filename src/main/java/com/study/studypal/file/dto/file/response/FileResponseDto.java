@@ -19,6 +19,8 @@ public class FileResponseDto {
 
   private String name;
 
+  private String extension;
+
   private String url;
 
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
