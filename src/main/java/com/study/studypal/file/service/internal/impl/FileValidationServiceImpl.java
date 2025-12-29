@@ -6,7 +6,6 @@ import com.study.studypal.file.config.FileProperties;
 import com.study.studypal.file.entity.Folder;
 import com.study.studypal.file.exception.UserFileErrorCode;
 import com.study.studypal.file.service.internal.FileValidationService;
-import com.study.studypal.file.service.internal.FolderInternalService;
 import com.study.studypal.file.service.internal.FolderValidationService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class FileValidationServiceImpl implements FileValidationService {
-  private final FolderInternalService folderService;
   private final FolderValidationService folderValidationService;
   private final FileProperties properties;
 
@@ -29,12 +27,6 @@ public class FileValidationServiceImpl implements FileValidationService {
     if (file.getSize() > properties.getMaxSize().toBytes()) {
       throw new BaseException(UserFileErrorCode.FILE_SIZE_EXCEEDED);
     }
-  }
-
-  @Override
-  public void validateViewFolderPermission(UUID userId, UUID folderId) {
-    Folder folder = folderService.getById(folderId);
-    folderValidationService.validateViewFolderPermission(userId, folder);
   }
 
   @Override

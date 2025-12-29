@@ -10,6 +10,7 @@ import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
 import com.study.studypal.file.dto.file.request.UpdateFileRequestDto;
 import com.study.studypal.file.dto.file.response.FileDetailResponseDto;
+import com.study.studypal.file.dto.file.response.FileResponseDto;
 import com.study.studypal.file.dto.file.response.ListDeletedFileResponseDto;
 import com.study.studypal.file.dto.file.response.ListFileResponseDto;
 import com.study.studypal.file.entity.File;
@@ -46,7 +47,7 @@ public class UserFileServiceImpl implements UserFileService {
 
   @Override
   @Transactional
-  public ActionResponseDto uploadFile(UUID userId, UUID folderId, String name, MultipartFile file) {
+  public FileResponseDto uploadFile(UUID userId, UUID folderId, String name, MultipartFile file) {
     try {
       Folder folder = folderService.getById(folderId);
 
@@ -54,13 +55,17 @@ public class UserFileServiceImpl implements UserFileService {
       validationService.validateViewFolderPermission(userId, folder);
       usageService.validateUsage(folder, file);
 
+      String fileName = StringUtils.isNotBlank(name) ? name : FileUtils.extractFileName(file);
+      String extension = FileUtils.extractFileExtension(file);
+
+      if (fileRepository.existsByFolderIdAndNameAndExtension(folderId, fileName, extension)) {
+        throw new BaseException(UserFileErrorCode.FILE_ALREADY_EXISTS);
+      }
+
       UUID fileId = UUID.randomUUID();
       String systemFolderPath = String.format("%s/%s", FILE_FOLDER, folderId);
       FileResponse fileResponse =
           fileService.uploadFile(systemFolderPath, fileId.toString(), file.getBytes());
-
-      String fileName = StringUtils.isNotBlank(name) ? name : FileUtils.extractFileName(file);
-      String extension = FileUtils.extractFileExtension(file);
 
       LocalDateTime now = LocalDateTime.now();
       User user = entityManager.getReference(User.class, userId);
@@ -80,7 +85,9 @@ public class UserFileServiceImpl implements UserFileService {
               .build();
 
       fileRepository.save(fileEntity);
-      return ActionResponseDto.builder().success(true).message("Upload successfully.").build();
+      folderService.increaseFile(userId, folder, fileEntity);
+
+      return modelMapper.map(fileEntity, FileResponseDto.class);
     } catch (IOException ex) {
       throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
     }
@@ -123,7 +130,7 @@ public class UserFileServiceImpl implements UserFileService {
   }
 
   @Override
-  public ActionResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request) {
+  public FileResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request) {
     // admin < or owner
     return null;
   }

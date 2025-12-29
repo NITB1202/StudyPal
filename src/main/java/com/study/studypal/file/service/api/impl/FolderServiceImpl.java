@@ -15,6 +15,7 @@ import com.study.studypal.file.exception.FolderErrorCode;
 import com.study.studypal.file.repository.FolderRepository;
 import com.study.studypal.file.service.api.FolderService;
 import com.study.studypal.file.service.internal.FileInternalService;
+import com.study.studypal.file.service.internal.FolderInternalService;
 import com.study.studypal.file.service.internal.FolderValidationService;
 import com.study.studypal.file.service.internal.UsageService;
 import com.study.studypal.team.entity.Team;
@@ -42,6 +43,7 @@ public class FolderServiceImpl implements FolderService {
   private final FolderValidationService validationService;
   private final UsageService usageService;
   private final FileInternalService fileService;
+  private final FolderInternalService internalService;
   private final ModelMapper modelMapper;
   @PersistenceContext private final EntityManager entityManager;
 
@@ -138,7 +140,7 @@ public class FolderServiceImpl implements FolderService {
       validationService.validateFolderName(userId, teamId, name);
 
       folder.setName(name);
-      trackingUpdate(userId, folder);
+      internalService.updateAuditFields(userId, folder);
 
       folderRepository.save(folder);
     }
@@ -160,7 +162,7 @@ public class FolderServiceImpl implements FolderService {
     fileService.softDeleteFilesInFolder(folderId);
 
     folder.setIsDeleted(true);
-    trackingUpdate(userId, folder);
+    internalService.updateAuditFields(userId, folder);
 
     folderRepository.save(folder);
 
@@ -190,11 +192,5 @@ public class FolderServiceImpl implements FolderService {
     return cursor == null
         ? folderRepository.getTeamFolders(teamId, pageable)
         : folderRepository.getTeamFoldersWithCursor(teamId, cursor, pageable);
-  }
-
-  private void trackingUpdate(UUID userId, Folder folder) {
-    User user = entityManager.getReference(User.class, userId);
-    folder.setUpdatedBy(user);
-    folder.setUpdatedAt(LocalDateTime.now());
   }
 }

@@ -13,6 +13,7 @@ public enum UserFileErrorCode implements ErrorCode {
   FILE_SIZE_EXCEEDED(
       HttpStatus.BAD_REQUEST, "USER_FILE_002", "File size exceeds the maximum allowed limit."),
   FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_FILE_003", "File not found."),
+  FILE_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER_FILE_004", "File already exists."),
   ;
 
   private final HttpStatus httpStatus;

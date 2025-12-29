@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FileRepository extends JpaRepository<File, UUID> {
   List<File> findAllByFolderIdAndDeletedAtIsNull(UUID folderId);
+
+  boolean existsByFolderIdAndNameAndExtension(UUID folderId, String name, String extension);
 }

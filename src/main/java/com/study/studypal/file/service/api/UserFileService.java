@@ -3,6 +3,7 @@ package com.study.studypal.file.service.api;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.file.dto.file.request.UpdateFileRequestDto;
 import com.study.studypal.file.dto.file.response.FileDetailResponseDto;
+import com.study.studypal.file.dto.file.response.FileResponseDto;
 import com.study.studypal.file.dto.file.response.ListDeletedFileResponseDto;
 import com.study.studypal.file.dto.file.response.ListFileResponseDto;
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserFileService {
-  ActionResponseDto uploadFile(UUID userId, UUID folderId, String name, MultipartFile file);
+  FileResponseDto uploadFile(UUID userId, UUID folderId, String name, MultipartFile file);
 
   FileDetailResponseDto getFileDetail(UUID userId, UUID fileId);
 
@@ -22,7 +23,7 @@ public interface UserFileService {
   ListFileResponseDto searchFilesByName(
       UUID userId, UUID folderId, String keyword, LocalDateTime cursor, int size);
 
-  ActionResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request);
+  FileResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request);
 
   ActionResponseDto moveFile(UUID userId, UUID fileId, UUID newFolderId);
 
