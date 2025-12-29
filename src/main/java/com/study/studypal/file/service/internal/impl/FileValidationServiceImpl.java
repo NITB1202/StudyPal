@@ -55,6 +55,13 @@ public class FileValidationServiceImpl implements FileValidationService {
   }
 
   @Override
+  public void validateFileDeleted(File file) {
+    if (file.getDeletedAt() == null) {
+      throw new BaseException(UserFileErrorCode.FILE_NOT_DELETED);
+    }
+  }
+
+  @Override
   public void validateUpdateFilePermission(UUID userId, File file) {
     UUID creatorId = file.getCreatedBy().getId();
     if (creatorId.equals(userId)) return;

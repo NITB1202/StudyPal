@@ -266,13 +266,41 @@ public class UserFileServiceImpl implements UserFileService {
   }
 
   @Override
+  @Transactional
   public ActionResponseDto deleteFile(UUID userId, UUID fileId) {
-    return null;
+    File file =
+        fileRepository
+            .findByIdForUpdate(fileId)
+            .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
+
+    validationService.validateFileNotDeleted(file);
+    validationService.validateUpdateFilePermission(userId, file);
+
+    file.setDeletedAt(LocalDateTime.now());
+    fileRepository.save(file);
+
+    folderService.decreaseFile(userId, file.getFolder(), file);
+
+    return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
   @Override
-  public ActionResponseDto restoreFile(UUID userId, UUID fileId) {
-    return null;
+  @Transactional
+  public ActionResponseDto recoverFile(UUID userId, UUID fileId) {
+    File file =
+        fileRepository
+            .findByIdForUpdate(fileId)
+            .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
+
+    validationService.validateFileDeleted(file);
+    validationService.validateUpdateFilePermission(userId, file);
+
+    file.setDeletedAt(null);
+    fileRepository.save(file);
+
+    folderService.increaseFile(userId, file.getFolder(), file);
+
+    return ActionResponseDto.builder().success(true).message("Restore successfully.").build();
   }
 
   private List<File> getTeamDeletedFiles(UUID teamId, LocalDateTime cursor, Pageable pageable) {

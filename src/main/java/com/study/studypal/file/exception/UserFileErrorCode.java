@@ -19,6 +19,7 @@ public enum UserFileErrorCode implements ErrorCode {
   PERMISSION_MOVE_FILE_DENIED(
       HttpStatus.FORBIDDEN, "USER_FILE_006", "Cannot move file to the target folder."),
   FILE_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "USER_FILE_007", "File is already deleted."),
+  FILE_NOT_DELETED(HttpStatus.BAD_REQUEST, "USER_FILE_008", "File is not deleted yet."),
   ;
 
   private final HttpStatus httpStatus;

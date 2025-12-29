@@ -23,6 +23,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -128,5 +129,24 @@ public class FileController {
       @PathVariable UUID fileId,
       @RequestParam UUID newFolderId) {
     return ResponseEntity.ok(fileService.moveFile(userId, fileId, newFolderId));
+  }
+
+  @DeleteMapping("/api/files/{fileId}")
+  @Operation(summary = "Delete a file.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> deleteFile(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID fileId) {
+    return ResponseEntity.ok(fileService.deleteFile(userId, fileId));
+  }
+
+  @PatchMapping("/api/files/{fileId}/recover")
+  @Operation(summary = "Recover a file.")
+  @ApiResponse(responseCode = "200", description = "Recover successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> recoverFile(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID fileId) {
+    return ResponseEntity.ok(fileService.recoverFile(userId, fileId));
   }
 }
