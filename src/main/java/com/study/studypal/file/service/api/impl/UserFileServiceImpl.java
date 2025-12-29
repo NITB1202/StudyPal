@@ -213,6 +213,7 @@ public class UserFileServiceImpl implements UserFileService {
             .findByIdForUpdate(fileId)
             .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
 
+    validationService.validateFileNotDeleted(file);
     validationService.validateUpdateFilePermission(userId, file);
 
     String name = request.getName();
@@ -237,6 +238,7 @@ public class UserFileServiceImpl implements UserFileService {
             .findByIdForUpdate(fileId)
             .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
 
+    validationService.validateFileNotDeleted(file);
     validationService.validateUpdateFilePermission(userId, file);
 
     Folder currentFolder = file.getFolder();
