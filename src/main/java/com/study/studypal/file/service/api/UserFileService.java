@@ -23,7 +23,7 @@ public interface UserFileService {
   ListFileResponseDto searchFilesByName(
       UUID userId, UUID folderId, String keyword, LocalDateTime cursor, int size);
 
-  FileResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request);
+  ActionResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request);
 
   ActionResponseDto moveFile(UUID userId, UUID fileId, UUID newFolderId);
 

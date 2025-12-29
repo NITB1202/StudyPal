@@ -30,6 +30,7 @@ import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -60,14 +61,12 @@ public class UserFileServiceImpl implements UserFileService {
 
       validationService.validateFile(file);
       validationService.validateViewFolderPermission(userId, folder);
-      usageService.validateUsage(folder, file);
+      usageService.validateUsage(folder, file.getSize());
 
       String fileName = StringUtils.isNotBlank(name) ? name : FileUtils.extractFileName(file);
       String extension = FileUtils.extractFileExtension(file);
 
-      if (fileRepository.existsByFolderIdAndNameAndExtension(folderId, fileName, extension)) {
-        throw new BaseException(UserFileErrorCode.FILE_ALREADY_EXISTS);
-      }
+      validationService.validateFileName(folderId, fileName, extension);
 
       UUID fileId = UUID.randomUUID();
       String systemFolderPath = String.format("%s/%s", FILE_FOLDER, folderId);
@@ -92,7 +91,9 @@ public class UserFileServiceImpl implements UserFileService {
               .build();
 
       fileRepository.save(fileEntity);
+
       folderService.increaseFile(userId, folder, fileEntity);
+      usageService.updateUsage(folder, file.getSize());
 
       return modelMapper.map(fileEntity, FileResponseDto.class);
     } catch (IOException ex) {
@@ -205,14 +206,63 @@ public class UserFileServiceImpl implements UserFileService {
   }
 
   @Override
-  public FileResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request) {
-    // admin < or owner
-    return null;
+  @Transactional
+  public ActionResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request) {
+    File file =
+        fileRepository
+            .findByIdForUpdate(fileId)
+            .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
+
+    validationService.validateFileNotDeleted(file);
+    validationService.validateUpdateFilePermission(userId, file);
+
+    String name = request.getName();
+    if (StringUtils.isNotBlank(name) && !name.equals(file.getName())) {
+      UUID folderId = file.getFolder().getId();
+      validationService.validateFileName(folderId, name, file.getExtension());
+
+      file.setName(name);
+      updateAuditFields(userId, file);
+
+      fileRepository.save(file);
+    }
+
+    return ActionResponseDto.builder().success(true).message("Update successfully.").build();
   }
 
   @Override
+  @Transactional
   public ActionResponseDto moveFile(UUID userId, UUID fileId, UUID newFolderId) {
-    return null;
+    File file =
+        fileRepository
+            .findByIdForUpdate(fileId)
+            .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
+
+    validationService.validateFileNotDeleted(file);
+    validationService.validateUpdateFilePermission(userId, file);
+
+    Folder currentFolder = file.getFolder();
+    UUID currentFolderId = currentFolder.getId();
+
+    if (!currentFolderId.equals(newFolderId)) {
+      Folder newFolder = folderService.getById(newFolderId);
+
+      if (!Objects.equals(currentFolder.getTeam(), newFolder.getTeam())) {
+        throw new BaseException(UserFileErrorCode.PERMISSION_MOVE_FILE_DENIED);
+      }
+
+      usageService.validateUsage(newFolder, file.getBytes());
+
+      file.setFolder(newFolder);
+      updateAuditFields(userId, file);
+
+      folderService.decreaseFile(userId, currentFolder, file);
+      folderService.increaseFile(userId, newFolder, file);
+
+      fileRepository.save(file);
+    }
+
+    return ActionResponseDto.builder().success(true).message("Move successfully.").build();
   }
 
   @Override
@@ -235,5 +285,11 @@ public class UserFileServiceImpl implements UserFileService {
     return cursor == null
         ? fileRepository.getPersonalDeletedFiles(userId, pageable)
         : fileRepository.getPersonalDeletedFilesWithCursor(userId, cursor, pageable);
+  }
+
+  private void updateAuditFields(UUID userId, File file) {
+    User user = entityManager.getReference(User.class, userId);
+    file.setUpdatedBy(user);
+    file.setUpdatedAt(LocalDateTime.now());
   }
 }
