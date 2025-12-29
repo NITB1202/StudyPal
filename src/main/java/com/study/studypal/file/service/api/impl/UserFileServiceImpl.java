@@ -14,6 +14,7 @@ import com.study.studypal.file.dto.file.response.ListDeletedFileResponseDto;
 import com.study.studypal.file.dto.file.response.ListFileResponseDto;
 import com.study.studypal.file.entity.File;
 import com.study.studypal.file.entity.Folder;
+import com.study.studypal.file.exception.UserFileErrorCode;
 import com.study.studypal.file.repository.FileRepository;
 import com.study.studypal.file.service.api.UserFileService;
 import com.study.studypal.file.service.internal.FileValidationService;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,6 +41,7 @@ public class UserFileServiceImpl implements UserFileService {
   private final FolderInternalService folderService;
   private final FileValidationService validationService;
   private final UsageService usageService;
+  private final ModelMapper modelMapper;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
@@ -85,8 +88,18 @@ public class UserFileServiceImpl implements UserFileService {
 
   @Override
   public FileDetailResponseDto getFileDetail(UUID userId, UUID fileId) {
-    // member of team or owner
-    return null;
+    File file =
+        fileRepository
+            .findById(fileId)
+            .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
+
+    validationService.validateViewFolderPermission(userId, file.getFolder());
+
+    FileDetailResponseDto response = modelMapper.map(file, FileDetailResponseDto.class);
+    response.setCreatedBy(file.getCreatedBy().getName());
+    response.setUpdatedBy(file.getUpdatedBy().getName());
+
+    return response;
   }
 
   @Override

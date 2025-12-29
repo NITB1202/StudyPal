@@ -12,7 +12,9 @@ public enum UserFileErrorCode implements ErrorCode {
       "Unsupported file type. Allowed types: documents, image."),
   FILE_SIZE_EXCEEDED(
       HttpStatus.BAD_REQUEST, "USER_FILE_002", "File size exceeds the maximum allowed limit."),
+  FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_FILE_003", "File not found."),
   ;
+
   private final HttpStatus httpStatus;
   private final String code;
   private final String message;
