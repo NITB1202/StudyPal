@@ -90,7 +90,7 @@ public interface FileRepository extends JpaRepository<File, UUID> {
 
   @Query(
       """
-    SELECT COUNT(f)
+    SELECT f
     FROM File f
     WHERE f.folder.team.id = :teamId
     AND f.deletedAt IS NOT NULL
@@ -100,7 +100,7 @@ public interface FileRepository extends JpaRepository<File, UUID> {
 
   @Query(
       """
-    SELECT COUNT(f)
+    SELECT f
     FROM File f
     WHERE f.folder.team.id = :teamId
     AND f.deletedAt IS NOT NULL

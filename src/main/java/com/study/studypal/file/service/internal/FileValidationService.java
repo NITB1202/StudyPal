@@ -12,6 +12,8 @@ public interface FileValidationService {
 
   void validateFileNotDeleted(File file);
 
+  void validateFileDeleted(File file);
+
   void validateViewFolderPermission(UUID userId, Folder folder);
 
   void validateUpdateFilePermission(UUID userId, File file);

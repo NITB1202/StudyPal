@@ -29,5 +29,5 @@ public interface UserFileService {
 
   ActionResponseDto deleteFile(UUID userId, UUID fileId);
 
-  ActionResponseDto restoreFile(UUID userId, UUID fileId);
+  ActionResponseDto recoverFile(UUID userId, UUID fileId);
 }
