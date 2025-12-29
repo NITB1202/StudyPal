@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -129,4 +130,12 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
       @Param("keyword") String keyword,
       @Param("fromDate") LocalDateTime fromDate,
       @Param("toDate") LocalDateTime toDate);
+
+  @Modifying
+  @Query("""
+    DELETE FROM Plan p
+    WHERE p.isDeleted = TRUE
+    AND p.tasks IS EMPTY
+    """)
+  void hardDeleteDeletedPlansWithoutTasks();
 }

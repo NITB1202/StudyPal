@@ -11,6 +11,7 @@ import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
+  @Transactional
   public void createMembership(UUID teamId, UUID userId, TeamRole role) {
     Team team = entityManager.getReference(Team.class, teamId);
     User user = entityManager.getReference(User.class, userId);

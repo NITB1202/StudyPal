@@ -2,7 +2,10 @@ package com.study.studypal.file.service.internal.impl;
 
 import static com.study.studypal.file.constant.FileConstant.DEFAULT_FOLDER_NAME;
 
+import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.file.entity.File;
 import com.study.studypal.file.entity.Folder;
+import com.study.studypal.file.exception.FolderErrorCode;
 import com.study.studypal.file.repository.FolderRepository;
 import com.study.studypal.file.service.internal.FolderInternalService;
 import com.study.studypal.team.entity.Team;
@@ -40,6 +43,29 @@ public class FolderInternalServiceImpl implements FolderInternalService {
             .isDeleted(false)
             .team(team)
             .build();
+
+    folderRepository.save(folder);
+  }
+
+  @Override
+  public Folder getById(UUID id) {
+    return folderRepository
+        .findById(id)
+        .orElseThrow(() -> new BaseException(FolderErrorCode.FOLDER_NOT_FOUND));
+  }
+
+  @Override
+  public void updateAuditFields(UUID userId, Folder folder) {
+    User user = entityManager.getReference(User.class, userId);
+    folder.setUpdatedBy(user);
+    folder.setUpdatedAt(LocalDateTime.now());
+  }
+
+  @Override
+  public void increaseFile(UUID userId, Folder folder, File file) {
+    folder.setFileCount(folder.getFileCount() + 1);
+    folder.setBytes(file.getBytes());
+    updateAuditFields(userId, folder);
 
     folderRepository.save(folder);
   }

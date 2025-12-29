@@ -2,6 +2,7 @@ package com.study.studypal.user.service.internal.impl;
 
 import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.file.service.internal.UsageService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
 import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
@@ -23,6 +24,7 @@ public class UserInternalServiceImpl implements UserInternalService {
   private final ModelMapper modelMapper;
   private final TaskCounterService taskCounterService;
   private final UserQuotaService quotaUsageService;
+  private final UsageService usageService;
 
   @Override
   public UUID createDefaultProfile(String name) {
@@ -30,6 +32,7 @@ public class UserInternalServiceImpl implements UserInternalService {
     UUID userId = userRepository.save(user).getId();
     taskCounterService.createUserTaskCounter(userId);
     quotaUsageService.initializeUsage(userId);
+    usageService.createUserUsage(userId);
     return userId;
   }
 
@@ -39,6 +42,7 @@ public class UserInternalServiceImpl implements UserInternalService {
     UUID userId = userRepository.save(user).getId();
     taskCounterService.createUserTaskCounter(userId);
     quotaUsageService.initializeUsage(userId);
+    usageService.createUserUsage(userId);
     return userId;
   }
 
