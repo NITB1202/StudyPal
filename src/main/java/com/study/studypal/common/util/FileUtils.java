@@ -2,6 +2,8 @@ package com.study.studypal.common.util;
 
 import static com.study.studypal.common.util.Constants.DOCUMENT_CONTENT_TYPES;
 import static com.study.studypal.common.util.Constants.DOCUMENT_EXTENSIONS;
+import static com.study.studypal.common.util.Constants.UNKNOW_FILE_EXTENSION;
+import static com.study.studypal.common.util.Constants.UNKNOW_FILE_NAME;
 
 import java.text.Normalizer;
 import lombok.AccessLevel;
@@ -57,5 +59,43 @@ public class FileUtils {
 
   public static String fixBrokenPdfLines(String text) {
     return text.replaceAll("(?<![.?!:;])\\n(?!\\n|\\s*(?:[-•*]|\\d+\\.))", " ");
+  }
+
+  public static String extractFileName(MultipartFile file) {
+    if (file == null || file.getOriginalFilename() == null) {
+      return UNKNOW_FILE_NAME;
+    }
+
+    String originalName = file.getOriginalFilename().trim();
+    originalName =
+        originalName
+            .substring(originalName.lastIndexOf('/') + 1)
+            .substring(originalName.lastIndexOf('\\') + 1);
+
+    int dotIndex = originalName.lastIndexOf('.');
+    if (dotIndex <= 0) {
+      return originalName;
+    }
+
+    return originalName.substring(0, dotIndex);
+  }
+
+  public static String extractFileExtension(MultipartFile file) {
+    if (file == null || file.getOriginalFilename() == null) {
+      return UNKNOW_FILE_EXTENSION;
+    }
+
+    String originalName = file.getOriginalFilename().trim();
+    originalName =
+        originalName
+            .substring(originalName.lastIndexOf('/') + 1)
+            .substring(originalName.lastIndexOf('\\') + 1);
+
+    int dotIndex = originalName.lastIndexOf('.');
+    if (dotIndex <= 0 || dotIndex == originalName.length() - 1) {
+      return UNKNOW_FILE_EXTENSION;
+    }
+
+    return originalName.substring(dotIndex + 1).toLowerCase();
   }
 }

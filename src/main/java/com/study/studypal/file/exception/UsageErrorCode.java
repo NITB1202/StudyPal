@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum UsageErrorCode implements ErrorCode {
   USAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "USAGE_001", "Storage usage not found."),
+  INSUFFICIENT_STORAGE_QUOTA(
+      HttpStatus.BAD_REQUEST, "USAGE_002", "Insufficient storage quota to upload this file."),
   ;
 
   private final HttpStatus httpStatus;

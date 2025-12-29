@@ -19,3 +19,4 @@ chatbot:
 file:
   user-usage-limit: 2147483648
   team-usage-limit: 3221225472
+  max-size: 200MB

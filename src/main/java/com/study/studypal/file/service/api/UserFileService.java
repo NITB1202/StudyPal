@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
-public interface FileService {
+public interface UserFileService {
   ActionResponseDto uploadFile(UUID userId, UUID folderId, String name, MultipartFile file);
 
   FileDetailResponseDto getFileDetail(UUID userId, UUID fileId);
@@ -20,7 +20,7 @@ public interface FileService {
       UUID userId, UUID teamId, LocalDateTime cursor, int size);
 
   ListFileResponseDto searchFilesByName(
-      UUID folderId, String keyword, LocalDateTime cursor, int size);
+      UUID userId, UUID folderId, String keyword, LocalDateTime cursor, int size);
 
   ActionResponseDto updateFile(UUID userId, UUID fileId, UpdateFileRequestDto request);
 

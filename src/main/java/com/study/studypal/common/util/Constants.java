@@ -31,4 +31,7 @@ public final class Constants {
   public static final String RESOURCE_TYPE_RAW = "raw";
   public static final List<String> VALID_RESOURCE_TYPES =
       List.of(RESOURCE_TYPE_IMAGE, RESOURCE_TYPE_VIDEO, RESOURCE_TYPE_RAW);
+
+  public static final String UNKNOW_FILE_NAME = "unknow";
+  public static final String UNKNOW_FILE_EXTENSION = "";
 }
