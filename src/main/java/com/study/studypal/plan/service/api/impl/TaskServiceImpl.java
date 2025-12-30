@@ -301,34 +301,6 @@ public class TaskServiceImpl implements TaskService {
     return ActionResponseDto.builder().success(true).message("Recover successfully.").build();
   }
 
-  @Override
-  @Transactional
-  public ActionResponseDto permanentlyDeleteTask(UUID userId, UUID taskId, ApplyScope applyScope) {
-    Task task =
-        taskRepository
-            .findById(taskId)
-            .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
-
-    validationService.validatePersonalTask(task);
-    validationService.validateTaskOwnership(userId, task);
-    validationService.validateTaskDeleted(task);
-
-    if (ruleService.isRootOrClonedTask(task)) permanentlyDeleteClonedTask(task, applyScope);
-    else permanentlyDeletePersonalTask(task);
-
-    return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
-  }
-
-  private void permanentlyDeleteClonedTask(Task task, ApplyScope applyScope) {
-    ruleService.deleteRecurrenceRule(task);
-    List<Task> tasks = getClonedTasks(task, applyScope);
-    taskRepository.deleteAll(tasks);
-  }
-
-  private void permanentlyDeletePersonalTask(Task task) {
-    taskRepository.delete(task);
-  }
-
   private TaskAdditionalDataResponseDto buildTaskAdditionalData(Plan plan, User assignee) {
     UUID teamId = plan.getTeam().getId();
     TeamRole role = memberService.getTeamRole(assignee.getId(), teamId);

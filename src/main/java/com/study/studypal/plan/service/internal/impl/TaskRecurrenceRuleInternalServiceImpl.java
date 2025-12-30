@@ -44,17 +44,4 @@ public class TaskRecurrenceRuleInternalServiceImpl implements TaskRecurrenceRule
     rule.setTask(newTask);
     ruleRepository.save(rule);
   }
-
-  @Override
-  public void deleteRecurrenceRule(Task task) {
-    Task rootTask = task.getParentTask() != null ? task.getParentTask() : task;
-
-    TaskRecurrenceRule rule =
-        ruleRepository
-            .findByTaskId(rootTask.getId())
-            .orElseThrow(
-                () -> new BaseException(TaskRecurrenceRuleErrorCode.RECURRENCE_RULE_NOT_FOUND));
-
-    ruleRepository.delete(rule);
-  }
 }

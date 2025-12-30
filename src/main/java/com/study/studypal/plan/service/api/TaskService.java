@@ -38,6 +38,4 @@ public interface TaskService {
   ActionResponseDto deleteTask(UUID userId, UUID taskId, ApplyScope applyScope);
 
   ActionResponseDto recoverTask(UUID userId, UUID taskId, ApplyScope applyScope);
-
-  ActionResponseDto permanentlyDeleteTask(UUID userId, UUID taskId, ApplyScope applyScope);
 }
