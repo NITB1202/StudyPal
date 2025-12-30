@@ -11,4 +11,6 @@ public interface TaskRecurrenceRuleInternalService {
   boolean isRootTask(Task task);
 
   void updateRootTask(Task oldTask, Task newTask);
+
+  void deleteRecurrenceRule(Task task);
 }

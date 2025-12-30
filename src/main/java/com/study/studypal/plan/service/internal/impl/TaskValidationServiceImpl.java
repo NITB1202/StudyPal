@@ -56,6 +56,16 @@ public class TaskValidationServiceImpl implements TaskValidationService {
   }
 
   @Override
+  public void validateTaskDeleted(Task task) {
+    if (task.getDeletedAt() == null) throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+  }
+
+  @Override
+  public void validateTaskNotDeleted(Task task) {
+    if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+  }
+
+  @Override
   public void validateUpdateTaskPermission(UUID userId, Task task) {
     Plan plan = task.getPlan();
     if (plan != null) validateUpdateTaskPermission(userId, plan);

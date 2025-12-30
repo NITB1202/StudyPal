@@ -82,8 +82,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     FROM Task t
     WHERE t.parentTask.id = :taskId
     AND t.deletedAt IS NULL
-    AND t.dueDate >= CURRENT_TIMESTAMP
-    ORDER BY t.dueDate ASC
     """)
   List<Task> findAllActiveChildTasks(UUID taskId);
 

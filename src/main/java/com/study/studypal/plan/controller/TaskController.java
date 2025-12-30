@@ -151,4 +151,16 @@ public class TaskController {
       @AuthenticationPrincipal UUID userId, @Valid @RequestBody SearchTasksRequestDto request) {
     return ResponseEntity.ok(taskService.searchTasks(userId, request));
   }
+
+  @DeleteMapping("/{taskId}/permanent")
+  @Operation(summary = "Permanently delete a personal task.")
+  @ApiResponse(responseCode = "200", description = "Delete successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> permanentlyDeleteTask(
+      @AuthenticationPrincipal UUID userId,
+      @PathVariable UUID taskId,
+      @RequestParam(required = false) ApplyScope applyScope) {
+    return ResponseEntity.ok(taskService.permanentlyDeleteTask(userId, taskId, applyScope));
+  }
 }
