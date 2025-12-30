@@ -85,8 +85,12 @@ public class FolderInternalServiceImpl implements FolderInternalService {
   }
 
   @Override
-  @Transactional
-  public void hardDeleteFolder(Folder folder) {
-    folderRepository.delete(folder);
+  public void purgeIfSoftDeletedAndEmpty(UUID folderId) {
+    folderRepository.hardDeleteIfEmptyAndSoftDeleted(folderId);
+  }
+
+  @Override
+  public void purgeEmptySoftDeletedFolders() {
+    folderRepository.hardDeleteDeletedFoldersWithoutFiles();
   }
 }

@@ -317,6 +317,8 @@ public class UserFileServiceImpl implements UserFileService {
             .findByIdForUpdate(fileId)
             .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
 
+    UUID folderId = file.getFolder().getId();
+
     validationService.validateFileDeleted(file);
     validationService.validateUpdateFilePermission(userId, file);
 
@@ -325,12 +327,8 @@ public class UserFileServiceImpl implements UserFileService {
 
     usageService.decreaseUsage(file.getFolder(), file.getBytes());
 
-    Folder folder = file.getFolder();
-    if (folder.getIsDeleted().equals(Boolean.TRUE)) {
-      folderService.hardDeleteFolder(folder);
-    }
-
     fileRepository.delete(file);
+    folderService.purgeIfSoftDeletedAndEmpty(folderId);
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }

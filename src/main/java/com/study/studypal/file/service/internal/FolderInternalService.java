@@ -17,5 +17,7 @@ public interface FolderInternalService {
 
   void recoverFolder(Folder folder);
 
-  void hardDeleteFolder(Folder folder);
+  void purgeIfSoftDeletedAndEmpty(UUID folderId);
+
+  void purgeEmptySoftDeletedFolders();
 }

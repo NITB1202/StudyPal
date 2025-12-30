@@ -14,4 +14,5 @@ public class FileProperties {
   private Long userUsageLimit;
   private Long teamUsageLimit;
   private DataSize maxSize;
+  private Integer fileCutoffDays;
 }
