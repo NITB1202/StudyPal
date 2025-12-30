@@ -298,7 +298,9 @@ public class UserFileServiceImpl implements UserFileService {
     file.setDeletedAt(null);
     fileRepository.save(file);
 
-    folderService.increaseFile(userId, file.getFolder(), file);
+    Folder folder = file.getFolder();
+    folderService.recoverFolder(folder);
+    folderService.increaseFile(userId, folder, file);
 
     return ActionResponseDto.builder().success(true).message("Restore successfully.").build();
   }
