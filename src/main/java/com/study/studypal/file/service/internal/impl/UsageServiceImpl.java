@@ -80,11 +80,20 @@ public class UsageServiceImpl implements UsageService {
   }
 
   @Override
-  public void updateUsage(Folder folder, long fileSize) {
+  public void increaseUsage(Folder folder, long fileSize) {
     if (folder.getTeam() != null) {
-      updateTeamUsage(folder, fileSize);
+      increaseTeamUsage(folder, fileSize);
     } else {
-      updateUserUsage(folder, fileSize);
+      increaseUserUsage(folder, fileSize);
+    }
+  }
+
+  @Override
+  public void decreaseUsage(Folder folder, long fileSize) {
+    if (folder.getTeam() != null) {
+      decreaseTeamUsage(folder, fileSize);
+    } else {
+      decreaseUserUsage(folder, fileSize);
     }
   }
 
@@ -110,15 +119,27 @@ public class UsageServiceImpl implements UsageService {
     }
   }
 
-  private void updateTeamUsage(Folder folder, long fileSize) {
+  private void increaseTeamUsage(Folder folder, long fileSize) {
     TeamUsage teamUsage = getTeamUsage(folder.getTeam().getId());
     teamUsage.setUsageUsed(teamUsage.getUsageUsed() + fileSize);
     teamUsageRepository.save(teamUsage);
   }
 
-  private void updateUserUsage(Folder folder, long fileSize) {
+  private void increaseUserUsage(Folder folder, long fileSize) {
     UserUsage userUsage = getUserUsage(folder.getCreatedBy().getId());
     userUsage.setUsageUsed(userUsage.getUsageUsed() + fileSize);
+    userUsageRepository.save(userUsage);
+  }
+
+  private void decreaseTeamUsage(Folder folder, long fileSize) {
+    TeamUsage teamUsage = getTeamUsage(folder.getTeam().getId());
+    teamUsage.setUsageUsed(teamUsage.getUsageUsed() - fileSize);
+    teamUsageRepository.save(teamUsage);
+  }
+
+  private void decreaseUserUsage(Folder folder, long fileSize) {
+    UserUsage userUsage = getUserUsage(folder.getCreatedBy().getId());
+    userUsage.setUsageUsed(userUsage.getUsageUsed() - fileSize);
     userUsageRepository.save(userUsage);
   }
 }

@@ -78,4 +78,19 @@ public class FolderInternalServiceImpl implements FolderInternalService {
 
     folderRepository.save(folder);
   }
+
+  @Override
+  public void recoverFolder(Folder folder) {
+    folder.setIsDeleted(false);
+  }
+
+  @Override
+  public void purgeIfSoftDeletedAndEmpty(UUID folderId) {
+    folderRepository.hardDeleteIfEmptyAndSoftDeleted(folderId);
+  }
+
+  @Override
+  public void purgeEmptySoftDeletedFolders() {
+    folderRepository.hardDeleteDeletedFoldersWithoutFiles();
+  }
 }

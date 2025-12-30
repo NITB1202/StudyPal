@@ -16,4 +16,8 @@ public interface TaskValidationService {
   void validateTeamTask(Task task);
 
   void validateUpdateTaskRequest(Task task, UpdateTaskInfo info);
+
+  void validateTaskDeleted(Task task);
+
+  void validateTaskNotDeleted(Task task);
 }

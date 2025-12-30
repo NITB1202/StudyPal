@@ -156,4 +156,6 @@ public interface FileRepository extends JpaRepository<File, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT f FROM File f WHERE f.id = :id")
   Optional<File> findByIdForUpdate(UUID id);
+
+  void deleteAllByDeletedAtBefore(LocalDateTime time);
 }

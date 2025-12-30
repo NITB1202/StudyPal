@@ -227,6 +227,7 @@ public class TaskServiceImpl implements TaskService {
 
     validationService.validatePersonalTask(task);
     validationService.validateTaskOwnership(userId, task);
+    validationService.validateTaskNotDeleted(task);
 
     UpdateTaskInfo updateTaskInfo = modelMapper.map(request, UpdateTaskInfo.class);
     validationService.validateUpdateTaskRequest(task, updateTaskInfo);
@@ -244,7 +245,7 @@ public class TaskServiceImpl implements TaskService {
             .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-    if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+    validationService.validateTaskNotDeleted(task);
 
     if (task.getCompletedAt() != null)
       throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
@@ -275,8 +276,7 @@ public class TaskServiceImpl implements TaskService {
 
     validationService.validatePersonalTask(task);
     validationService.validateTaskOwnership(userId, task);
-
-    if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+    validationService.validateTaskNotDeleted(task);
 
     if (ruleService.isRootOrClonedTask(task)) deleteClonedTask(task, applyScope);
     else deletePersonalTask(task);
@@ -293,8 +293,7 @@ public class TaskServiceImpl implements TaskService {
 
     validationService.validatePersonalTask(task);
     validationService.validateTaskOwnership(userId, task);
-
-    if (task.getDeletedAt() == null) throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+    validationService.validateTaskDeleted(task);
 
     if (ruleService.isRootOrClonedTask(task)) recoverClonedTask(task, applyScope);
     else recoverPersonalTask(task);

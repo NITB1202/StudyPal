@@ -14,4 +14,10 @@ public interface FolderInternalService {
   void increaseFile(UUID userId, Folder folder, File file);
 
   void decreaseFile(UUID userId, Folder folder, File file);
+
+  void recoverFolder(Folder folder);
+
+  void purgeIfSoftDeletedAndEmpty(UUID folderId);
+
+  void purgeEmptySoftDeletedFolders();
 }

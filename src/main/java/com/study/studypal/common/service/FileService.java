@@ -5,7 +5,9 @@ import com.study.studypal.common.dto.FileResponse;
 public interface FileService {
   FileResponse uploadFile(String folderPath, String publicId, byte[] bytes);
 
-  void moveFile(String publicId, String newFolder);
+  void moveFile(String publicId, String newFolderPath, String resourceType);
 
   void deleteFile(String publicId, String resourceType);
+
+  String getResourceType(String fileExtension);
 }
