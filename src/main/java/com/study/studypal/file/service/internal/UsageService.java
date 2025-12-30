@@ -16,5 +16,7 @@ public interface UsageService {
 
   void validateUsage(Folder folder, long fileSize);
 
-  void updateUsage(Folder folder, long fileSize);
+  void increaseUsage(Folder folder, long fileSize);
+
+  void decreaseUsage(Folder folder, long fileSize);
 }

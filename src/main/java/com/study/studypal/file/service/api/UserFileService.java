@@ -30,4 +30,6 @@ public interface UserFileService {
   ActionResponseDto deleteFile(UUID userId, UUID fileId);
 
   ActionResponseDto recoverFile(UUID userId, UUID fileId);
+
+  ActionResponseDto permanentlyDeleteFile(UUID userId, UUID fileId);
 }

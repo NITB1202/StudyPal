@@ -83,4 +83,10 @@ public class FolderInternalServiceImpl implements FolderInternalService {
   public void recoverFolder(Folder folder) {
     folder.setIsDeleted(false);
   }
+
+  @Override
+  @Transactional
+  public void hardDeleteFolder(Folder folder) {
+    folderRepository.delete(folder);
+  }
 }

@@ -93,7 +93,7 @@ public class UserFileServiceImpl implements UserFileService {
       fileRepository.save(fileEntity);
 
       folderService.increaseFile(userId, folder, fileEntity);
-      usageService.updateUsage(folder, file.getSize());
+      usageService.increaseUsage(folder, file.getSize());
 
       return modelMapper.map(fileEntity, FileResponseDto.class);
     } catch (IOException ex) {
@@ -253,6 +253,10 @@ public class UserFileServiceImpl implements UserFileService {
 
       usageService.validateUsage(newFolder, file.getBytes());
 
+      String newFolderPath = String.format("%s/%s", FILE_FOLDER, newFolderId);
+      String resourceType = fileService.getResourceType(file.getExtension());
+      fileService.moveFile(fileId.toString(), newFolderPath, resourceType);
+
       file.setFolder(newFolder);
       updateAuditFields(userId, file);
 
@@ -303,6 +307,32 @@ public class UserFileServiceImpl implements UserFileService {
     folderService.increaseFile(userId, folder, file);
 
     return ActionResponseDto.builder().success(true).message("Restore successfully.").build();
+  }
+
+  @Override
+  @Transactional
+  public ActionResponseDto permanentlyDeleteFile(UUID userId, UUID fileId) {
+    File file =
+        fileRepository
+            .findByIdForUpdate(fileId)
+            .orElseThrow(() -> new BaseException(UserFileErrorCode.FILE_NOT_FOUND));
+
+    validationService.validateFileDeleted(file);
+    validationService.validateUpdateFilePermission(userId, file);
+
+    String resourceType = fileService.getResourceType(file.getExtension());
+    fileService.deleteFile(fileId.toString(), resourceType);
+
+    usageService.decreaseUsage(file.getFolder(), file.getBytes());
+
+    Folder folder = file.getFolder();
+    if (folder.getIsDeleted().equals(Boolean.TRUE)) {
+      folderService.hardDeleteFolder(folder);
+    }
+
+    fileRepository.delete(file);
+
+    return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
   private List<File> getTeamDeletedFiles(UUID teamId, LocalDateTime cursor, Pageable pageable) {

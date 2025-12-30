@@ -2,8 +2,10 @@ package com.study.studypal.common.util;
 
 import static com.study.studypal.common.util.Constants.DOCUMENT_CONTENT_TYPES;
 import static com.study.studypal.common.util.Constants.DOCUMENT_EXTENSIONS;
+import static com.study.studypal.common.util.Constants.IMAGE_EXTENSIONS;
 import static com.study.studypal.common.util.Constants.UNKNOW_FILE_EXTENSION;
 import static com.study.studypal.common.util.Constants.UNKNOW_FILE_NAME;
+import static com.study.studypal.common.util.Constants.VIDEO_EXTENSIONS;
 
 import java.text.Normalizer;
 import lombok.AccessLevel;
@@ -97,5 +99,13 @@ public class FileUtils {
     }
 
     return originalName.substring(dotIndex + 1).toLowerCase();
+  }
+
+  public static boolean isImage(String fileExtension) {
+    return IMAGE_EXTENSIONS.contains(fileExtension);
+  }
+
+  public static boolean isVideo(String fileExtension) {
+    return VIDEO_EXTENSIONS.contains(fileExtension);
   }
 }

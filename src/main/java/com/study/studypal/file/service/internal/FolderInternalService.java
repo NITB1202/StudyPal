@@ -16,4 +16,6 @@ public interface FolderInternalService {
   void decreaseFile(UUID userId, Folder folder, File file);
 
   void recoverFolder(Folder folder);
+
+  void hardDeleteFolder(Folder folder);
 }

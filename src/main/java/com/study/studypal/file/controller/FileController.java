@@ -133,6 +133,7 @@ public class FileController {
 
   @DeleteMapping("/api/files/{fileId}")
   @Operation(summary = "Delete a file.")
+  @ApiResponse(responseCode = "200", description = "Delete successfully.")
   @UnauthorizedApiResponse
   @NotFoundApiResponse
   public ResponseEntity<ActionResponseDto> deleteFile(
@@ -148,5 +149,15 @@ public class FileController {
   public ResponseEntity<ActionResponseDto> recoverFile(
       @AuthenticationPrincipal UUID userId, @PathVariable UUID fileId) {
     return ResponseEntity.ok(fileService.recoverFile(userId, fileId));
+  }
+
+  @DeleteMapping("/api/files/{fileId}/permanent")
+  @Operation(summary = "Permanently delete a file.")
+  @ApiResponse(responseCode = "200", description = "Delete successfully.")
+  @UnauthorizedApiResponse
+  @NotFoundApiResponse
+  public ResponseEntity<ActionResponseDto> permanentlyDeleteFile(
+      @AuthenticationPrincipal UUID userId, @PathVariable UUID fileId) {
+    return ResponseEntity.ok(fileService.permanentlyDeleteFile(userId, fileId));
   }
 }

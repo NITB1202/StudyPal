@@ -26,6 +26,11 @@ public final class Constants {
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "application/vnd.openxmlformats-officedocument.presentationml.presentation");
 
+  public static final Set<String> IMAGE_EXTENSIONS =
+      Set.of("jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg");
+  public static final Set<String> VIDEO_EXTENSIONS =
+      Set.of("mp4", "avi", "mov", "mkv", "wmv", "flv", "webm");
+
   public static final String RESOURCE_TYPE_IMAGE = "image";
   public static final String RESOURCE_TYPE_VIDEO = "video";
   public static final String RESOURCE_TYPE_RAW = "raw";
