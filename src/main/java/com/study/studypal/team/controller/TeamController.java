@@ -22,7 +22,6 @@ import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -94,8 +93,7 @@ public class TeamController {
       @AuthenticationPrincipal UUID userId,
       @RequestParam TeamFilter filter,
       @RequestParam(required = false) String keyword,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
     return ResponseEntity.ok(teamService.searchTeamsByName(userId, filter, keyword, cursor, size));
   }

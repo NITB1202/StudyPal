@@ -229,17 +229,6 @@ CREATE TABLE chat_idempotency (
         REFERENCES chat_messages(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
-    id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
-    start_time TIMESTAMP NOT NULL,
-    expected_end_time TIMESTAMP NOT NULL,
-    real_end_time TIMESTAMP,
-    status VARCHAR(10),
-    CONSTRAINT fk_sessions_users_user FOREIGN KEY (user_id)
-        REFERENCES users(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS folders (
     id UUID PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
@@ -279,7 +268,6 @@ CREATE TABLE IF NOT EXISTS files (
         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
-
 CREATE TABLE IF NOT EXISTS user_usages (
     id UUID PRIMARY KEY,
     usage_used BIGINT NOT NULL,
@@ -294,4 +282,14 @@ CREATE TABLE IF NOT EXISTS team_usages (
     usage_limit BIGINT NOT NULL,
     CONSTRAINT fk_team_usages_teams_team FOREIGN KEY (id)
         REFERENCES teams(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    studied_at TIMESTAMP NOT NULL,
+    duration_in_seconds BIGINT NOT NULL,
+    elapsed_time_in_seconds BIGINT NOT NULL,
+    CONSTRAINT fk_sessions_users_user FOREIGN KEY (user_id)
+        REFERENCES users(id) ON DELETE CASCADE
 );

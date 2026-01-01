@@ -148,7 +148,7 @@ public class PlanServiceImpl implements PlanService {
   @Override
   public ListPlanResponseDto searchPlans(UUID userId, UUID teamId, SearchPlanRequestDto request) {
     if (!request.getFromDate().isBefore(request.getToDate())) {
-      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     memberService.validateUserBelongsToTeam(userId, teamId);

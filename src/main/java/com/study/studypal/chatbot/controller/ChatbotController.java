@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
@@ -57,8 +56,7 @@ public class ChatbotController {
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<ListChatMessageResponseDto> getMessages(
       @AuthenticationPrincipal UUID userId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
     return ResponseEntity.ok(chatbotService.getMessages(userId, cursor, size));
   }

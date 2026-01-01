@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -63,8 +62,7 @@ public class FolderController {
   public ResponseEntity<ListFolderResponseDto> getFolders(
       @AuthenticationPrincipal UUID userId,
       @RequestParam(required = false) UUID teamId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = "10") int size) {
     return ResponseEntity.ok(folderService.getFolders(userId, teamId, cursor, size));
   }

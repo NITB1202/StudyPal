@@ -170,7 +170,7 @@ public class TaskServiceImpl implements TaskService {
   @Override
   public ListTaskResponseDto searchTasks(UUID userId, SearchTasksRequestDto request) {
     if (!request.getFromDate().isBefore(request.getToDate())) {
-      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     Pageable pageable = PageRequest.of(0, request.getSize());

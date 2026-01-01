@@ -32,7 +32,7 @@ public class TaskStatisticServiceImpl implements TaskStatisticService {
   public TaskDetailStatisticsResponseDto getTaskDetailStatistics(
       UUID userId, UUID teamId, GetTaskDetailStatisticsRequestDto request) {
     if (!request.getFromDate().isBefore(request.getToDate())) {
-      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     memberService.validateUserBelongsToTeam(userId, teamId);
@@ -78,7 +78,7 @@ public class TaskStatisticServiceImpl implements TaskStatisticService {
     LocalDateTime toDate = request.getToDate();
 
     if (!fromDate.isBefore(toDate)) {
-      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     memberService.validateUserBelongsToTeam(userId, teamId);

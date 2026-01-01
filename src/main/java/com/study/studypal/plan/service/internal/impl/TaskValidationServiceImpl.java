@@ -52,7 +52,7 @@ public class TaskValidationServiceImpl implements TaskValidationService {
         info.getStartDate() != null ? info.getStartDate() : task.getStartDate();
     LocalDateTime dueDate = info.getDueDate() != null ? info.getDueDate() : task.getDueDate();
 
-    if (dueDate.isBefore(startDate)) throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+    if (dueDate.isBefore(startDate)) throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
   }
 
   @Override

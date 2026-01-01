@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -90,8 +89,7 @@ public class PlanController {
   public ResponseEntity<ListPlanHistoryResponseDto> getPlanHistory(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID planId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = "10") int size) {
     return ResponseEntity.ok(historyService.getPlanHistory(userId, planId, cursor, size));
   }
