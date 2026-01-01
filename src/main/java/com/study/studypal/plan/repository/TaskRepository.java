@@ -308,23 +308,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   @Query(
       """
-    SELECT COUNT(t)
-    FROM Task t
-    JOIN t.plan p
-    WHERE p.team.id = :teamId
-    AND t.deletedAt IS NULL
-    AND t.dueDate >= :fromDate
-    AND t.startDate <= :toDate
-    AND t.assignee.id = :userId
-    """)
-  long countCompletedTasksInRange(
-      @Param("teamId") UUID teamId,
-      @Param("userId") UUID userId,
-      @Param("fromDate") LocalDateTime fromDate,
-      @Param("toDate") LocalDateTime toDate);
-
-  @Query(
-      """
     SELECT new com.study.studypal.plan.dto.statistic.response.TaskStatisticsResponseDto(
         u.id,
         u.name,
@@ -450,4 +433,19 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       AND p.team.id = :teamId
     """)
   boolean existsRemainingTasksInTeam(UUID userId, UUID teamId);
+
+  @Query(
+      """
+    SELECT t
+    FROM Task t
+    WHERE t.assignee.id = :userId
+    AND t.plan IS NULL
+    AND t.deletedAt IS NULL
+    AND t.dueDate >= :fromDate
+    AND t.startDate <= :toDate
+    """)
+  List<Task> findAllByUserIdInRange(
+      @Param("userId") UUID userId,
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate);
 }

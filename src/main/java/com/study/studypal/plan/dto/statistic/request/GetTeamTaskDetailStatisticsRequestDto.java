@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GetTaskDetailStatisticsRequestDto {
+public class GetTeamTaskDetailStatisticsRequestDto {
   @NotNull(message = "From date is required")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime fromDate;
