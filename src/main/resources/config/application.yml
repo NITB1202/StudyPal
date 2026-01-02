@@ -21,3 +21,9 @@ file:
   team-usage-limit: 3221225472
   max-size: 200MB
   file-cutoff-days: 30
+
+session:
+  default-focus-time-in-seconds: 2700
+  default-break-time-in-seconds: 900
+  default-total-time-in-seconds: 3600
+  default-enable-bg-music: false

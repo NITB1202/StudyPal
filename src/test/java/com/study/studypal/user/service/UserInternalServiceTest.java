@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.file.service.internal.UsageService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
+import com.study.studypal.session.service.SessionSettingInternalService;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.repository.UserRepository;
 import com.study.studypal.user.service.internal.impl.UserInternalServiceImpl;
@@ -24,6 +25,7 @@ class UserInternalServiceTest {
   @Mock private TaskCounterService taskCounterService;
   @Mock private UserQuotaService quotaUsageService;
   @Mock private UsageService usageService;
+  @Mock private SessionSettingInternalService sessionService;
 
   @InjectMocks private UserInternalServiceImpl userInternalService;
 
