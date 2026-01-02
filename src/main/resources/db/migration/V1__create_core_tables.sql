@@ -296,13 +296,12 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE TABLE IF NOT EXISTS session_settings (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL UNIQUE,
-    focus_time TIME NOT NULL,
-    break_time TIME NOT NULL,
-    total_time TIME NOT NULL,
-    bg_music_name VARCHAR(255),
-    bg_music_url VARCHAR(255),
-    CONSTRAINT fk_user FOREIGN KEY (user_id)
+    focus_time_in_seconds BIGINT NOT NULL,
+    break_time_in_seconds BIGINT NOT NULL,
+    total_time_in_seconds BIGINT NOT NULL,
+    enable_bg_music BOOLEAN NOT NULL,
+    CONSTRAINT fk_session_settings_users_user FOREIGN KEY (id)
         REFERENCES users(id) ON DELETE CASCADE
 );
+
 

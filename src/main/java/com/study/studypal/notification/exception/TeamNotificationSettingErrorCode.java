@@ -6,10 +6,13 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum TeamNotificationSettingErrorCode implements ErrorCode {
-  SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "SET_001", "Team notification settings not found."),
+  SETTING_NOT_FOUND(
+      HttpStatus.NOT_FOUND,
+      "TEAM_NOTIFICATION_SETTING_001",
+      "Team notification settings not found."),
   PERMISSION_UPDATE_SETTING_DENIED(
       HttpStatus.FORBIDDEN,
-      "SET_002",
+      "TEAM_NOTIFICATION_SETTING_002",
       "You cannot update someone else's team notification settings."),
   ;
 

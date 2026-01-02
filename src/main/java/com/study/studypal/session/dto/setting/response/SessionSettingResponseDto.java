@@ -1,22 +1,16 @@
 package com.study.studypal.session.dto.setting.response;
 
-import java.time.LocalTime;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class SessionSettingResponseDto {
-  private UUID id;
+  private Long focusTimeInSeconds;
 
-  private LocalTime focusTime;
+  private Long breakTimeInSeconds;
 
-  private LocalTime breakTime;
+  private Long totalTimeInSeconds;
 
-  private LocalTime totalTime;
-
-  private String bgMusicName;
-
-  private String bgMusicUrl;
+  private Boolean enableBgMusic;
 }

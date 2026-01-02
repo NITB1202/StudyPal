@@ -8,9 +8,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.time.LocalTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,23 +33,21 @@ public class SessionSetting {
   @Column(name = "id", nullable = false)
   private UUID id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  @MapsId
+  @JoinColumn(name = "id")
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
-  @Column(name = "focus_time", nullable = false)
-  private LocalTime focusTime;
+  @Column(name = "focus_time_in_seconds", nullable = false)
+  private Long focusTimeInSeconds;
 
-  @Column(name = "break_time", nullable = false)
-  private LocalTime breakTime;
+  @Column(name = "break_time_in_seconds", nullable = false)
+  private Long breakTimeInSeconds;
 
-  @Column(name = "total_time", nullable = false)
-  private LocalTime totalTime;
+  @Column(name = "total_time_in_seconds", nullable = false)
+  private Long totalTimeInSeconds;
 
-  @Column(name = "bg_music_name")
-  private String bgMusicName;
-
-  @Column(name = "bg_music_url")
-  private String bgMusicUrl;
+  @Column(name = "enable_bg_music", nullable = false)
+  private Boolean enableBgMusic;
 }

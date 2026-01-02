@@ -154,8 +154,8 @@ VALUES
     ('111e8400-e29b-41d4-a716-446655440001', 0, 3221225472),
     ('555e8400-e29b-41d4-a716-446655440006', 0, 3221225472);
 
-INSERT INTO session_settings (id, user_id, focus_time, break_time, total_time,)
+INSERT INTO session_settings (id, focus_time_in_seconds, break_time_in_seconds, total_time_in_seconds, enable_bg_music)
 VALUES
-    ('dace4c44-e222-43cc-8617-d81e72d6dc16', '041c77e0-ae77-4005-b745-ea12dca9bec6', '00:45:00', '00:15:00', '02:00:00'),
-    ('641f638b-71b2-4b74-bc83-0e1209a15ee5', '618c10ee-923f-4323-b32b-086caa534b46', '00:45:00', '00:15:00', '02:00:00'),
-    ('bb268c6e-8733-4701-a4dc-88d868a4c4d7', '9f5d79f2-83a2-411d-bb66-caeb640a62b0', '00:45:00', '00:15:00', '02:00:00');
+    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 2700, 900, 3600, TRUE),
+    ('618c10ee-923f-4323-b32b-086caa534b46', 2700, 900, 3600, TRUE),
+    ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 2700, 900, 3600, TRUE);
