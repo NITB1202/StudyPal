@@ -4,6 +4,7 @@ import com.study.studypal.chatbot.service.internal.UserQuotaService;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.file.service.internal.UsageService;
 import com.study.studypal.plan.service.internal.TaskCounterService;
+import com.study.studypal.session.service.SessionSettingInternalService;
 import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.entity.User;
 import com.study.studypal.user.enums.Gender;
@@ -25,14 +26,18 @@ public class UserInternalServiceImpl implements UserInternalService {
   private final TaskCounterService taskCounterService;
   private final UserQuotaService quotaUsageService;
   private final UsageService usageService;
+  private final SessionSettingInternalService sessionService;
 
   @Override
   public UUID createDefaultProfile(String name) {
     User user = User.builder().name(name).gender(Gender.UNSPECIFIED).build();
     UUID userId = userRepository.save(user).getId();
+
     taskCounterService.createUserTaskCounter(userId);
     quotaUsageService.initializeUsage(userId);
     usageService.createUserUsage(userId);
+    sessionService.createDefaultSetting(userId);
+
     return userId;
   }
 
@@ -40,9 +45,12 @@ public class UserInternalServiceImpl implements UserInternalService {
   public UUID createProfile(String name, String avatarUrl) {
     User user = User.builder().name(name).gender(Gender.UNSPECIFIED).avatarUrl(avatarUrl).build();
     UUID userId = userRepository.save(user).getId();
+
     taskCounterService.createUserTaskCounter(userId);
     quotaUsageService.initializeUsage(userId);
     usageService.createUserUsage(userId);
+    sessionService.createDefaultSetting(userId);
+
     return userId;
   }
 
