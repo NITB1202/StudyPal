@@ -1,4 +1,4 @@
-package com.study.studypal.session.dto.response;
+package com.study.studypal.session.dto.session.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

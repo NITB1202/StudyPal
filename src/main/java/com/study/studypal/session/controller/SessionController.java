@@ -1,9 +1,9 @@
 package com.study.studypal.session.controller;
 
 import com.study.studypal.common.exception.annotation.BadRequestApiResponse;
-import com.study.studypal.session.dto.request.SaveSessionRequestDto;
-import com.study.studypal.session.dto.response.SessionResponseDto;
-import com.study.studypal.session.dto.response.SessionStatisticsResponseDto;
+import com.study.studypal.session.dto.session.request.SaveSessionRequestDto;
+import com.study.studypal.session.dto.session.response.SessionResponseDto;
+import com.study.studypal.session.dto.session.response.SessionStatisticsResponseDto;
 import com.study.studypal.session.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

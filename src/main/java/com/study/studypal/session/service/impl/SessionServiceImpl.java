@@ -2,9 +2,9 @@ package com.study.studypal.session.service.impl;
 
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.CommonErrorCode;
-import com.study.studypal.session.dto.request.SaveSessionRequestDto;
-import com.study.studypal.session.dto.response.SessionResponseDto;
-import com.study.studypal.session.dto.response.SessionStatisticsResponseDto;
+import com.study.studypal.session.dto.session.request.SaveSessionRequestDto;
+import com.study.studypal.session.dto.session.response.SessionResponseDto;
+import com.study.studypal.session.dto.session.response.SessionStatisticsResponseDto;
 import com.study.studypal.session.entity.Session;
 import com.study.studypal.session.repository.SessionRepository;
 import com.study.studypal.session.service.SessionService;

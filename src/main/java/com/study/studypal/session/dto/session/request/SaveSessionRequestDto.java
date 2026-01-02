@@ -1,4 +1,4 @@
-package com.study.studypal.session.dto.request;
+package com.study.studypal.session.dto.session.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;

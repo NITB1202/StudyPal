@@ -1,8 +1,8 @@
 package com.study.studypal.session.service;
 
-import com.study.studypal.session.dto.request.SaveSessionRequestDto;
-import com.study.studypal.session.dto.response.SessionResponseDto;
-import com.study.studypal.session.dto.response.SessionStatisticsResponseDto;
+import com.study.studypal.session.dto.session.request.SaveSessionRequestDto;
+import com.study.studypal.session.dto.session.response.SessionResponseDto;
+import com.study.studypal.session.dto.session.response.SessionStatisticsResponseDto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
