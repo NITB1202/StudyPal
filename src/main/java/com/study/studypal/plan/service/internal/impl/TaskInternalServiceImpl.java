@@ -66,7 +66,7 @@ public class TaskInternalServiceImpl implements TaskInternalService {
   @Override
   public Task createTask(UUID assigneeId, Pair<UUID, UUID> planInfo, CreateTaskInfo taskInfo) {
     if (taskInfo.getDueDate().isBefore(taskInfo.getStartDate())) {
-      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     UUID planId = planInfo.getLeft();

@@ -2,7 +2,7 @@ package com.study.studypal.plan.service.api.impl;
 
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.CommonErrorCode;
-import com.study.studypal.plan.dto.statistic.request.GetTaskDetailStatisticsRequestDto;
+import com.study.studypal.plan.dto.statistic.request.GetTeamTaskDetailStatisticsRequestDto;
 import com.study.studypal.plan.dto.statistic.request.SearchMemberTaskStatisticsRequestDto;
 import com.study.studypal.plan.dto.statistic.response.ListTaskStatisticsResponseDto;
 import com.study.studypal.plan.dto.statistic.response.TaskDetailStatisticsResponseDto;
@@ -29,10 +29,10 @@ public class TaskStatisticServiceImpl implements TaskStatisticService {
   private final TeamMembershipInternalService memberService;
 
   @Override
-  public TaskDetailStatisticsResponseDto getTaskDetailStatistics(
-      UUID userId, UUID teamId, GetTaskDetailStatisticsRequestDto request) {
+  public TaskDetailStatisticsResponseDto getTeamTaskDetailStatistics(
+      UUID userId, UUID teamId, GetTeamTaskDetailStatisticsRequestDto request) {
     if (!request.getFromDate().isBefore(request.getToDate())) {
-      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     memberService.validateUserBelongsToTeam(userId, teamId);
@@ -44,41 +44,17 @@ public class TaskStatisticServiceImpl implements TaskStatisticService {
             : taskRepository.findAllByTeamIdAndUserIdInRange(
                 teamId, request.getMemberId(), request.getFromDate(), request.getToDate());
 
-    long unfinished = 0;
-    long low = 0;
-    long medium = 0;
-    long high = 0;
-
-    for (Task task : tasks) {
-      if (task.getCompletedAt() == null) {
-        unfinished++;
-        continue;
-      }
-
-      switch (task.getPriority()) {
-        case HIGH -> high++;
-        case MEDIUM -> medium++;
-        case LOW -> low++;
-      }
-    }
-
-    return TaskDetailStatisticsResponseDto.builder()
-        .total(tasks.size())
-        .unfinished(unfinished)
-        .high(high)
-        .medium(medium)
-        .low(low)
-        .build();
+    return buildTaskDetailStatistics(tasks);
   }
 
   @Override
-  public ListTaskStatisticsResponseDto searchTaskStatistics(
+  public ListTaskStatisticsResponseDto searchMemberTaskStatistics(
       UUID userId, UUID teamId, SearchMemberTaskStatisticsRequestDto request) {
     LocalDateTime fromDate = request.getFromDate();
     LocalDateTime toDate = request.getToDate();
 
     if (!fromDate.isBefore(toDate)) {
-      throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     memberService.validateUserBelongsToTeam(userId, teamId);
@@ -118,6 +94,17 @@ public class TaskStatisticServiceImpl implements TaskStatisticService {
         .build();
   }
 
+  @Override
+  public TaskDetailStatisticsResponseDto getTaskDetailStatistics(
+      UUID userId, LocalDateTime fromDate, LocalDateTime toDate) {
+    if (!fromDate.isBefore(toDate)) {
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
+    }
+
+    List<Task> tasks = taskRepository.findAllByUserIdInRange(userId, fromDate, toDate);
+    return buildTaskDetailStatistics(tasks);
+  }
+
   private List<TaskStatisticsResponseDto> searchTaskStatistics(
       UUID teamId,
       LocalDateTime fromDate,
@@ -147,5 +134,33 @@ public class TaskStatisticServiceImpl implements TaskStatisticService {
         ? taskRepository.getTaskStatisticsWithCursor(
             teamId, fromDate, toDate, cursor.completedTaskCount(), cursor.userId(), pageable)
         : taskRepository.getTaskStatistics(teamId, fromDate, toDate, pageable);
+  }
+
+  private TaskDetailStatisticsResponseDto buildTaskDetailStatistics(List<Task> tasks) {
+    long unfinished = 0;
+    long low = 0;
+    long medium = 0;
+    long high = 0;
+
+    for (Task task : tasks) {
+      if (task.getCompletedAt() == null) {
+        unfinished++;
+        continue;
+      }
+
+      switch (task.getPriority()) {
+        case HIGH -> high++;
+        case MEDIUM -> medium++;
+        case LOW -> low++;
+      }
+    }
+
+    return TaskDetailStatisticsResponseDto.builder()
+        .total(tasks.size())
+        .unfinished(unfinished)
+        .high(high)
+        .medium(medium)
+        .low(low)
+        .build();
   }
 }

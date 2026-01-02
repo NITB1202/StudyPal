@@ -12,7 +12,7 @@ public enum CommonErrorCode implements ErrorCode {
   CURSOR_DECODE_FAILED(HttpStatus.BAD_REQUEST, "COMMON_005", "Failed to decode cursor: %s"),
   FIELD_BLANK(HttpStatus.BAD_REQUEST, "COMMON_006", "%s is blank."),
   FIELD_NULL(HttpStatus.BAD_REQUEST, "COMMON_007", "%s is null."),
-  INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "COMMON_008", "Invalid date range."),
+  INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST, "COMMON_008", "Invalid time range."),
   ;
 
   private final HttpStatus httpStatus;

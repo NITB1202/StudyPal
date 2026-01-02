@@ -123,7 +123,7 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
 
     if (endDate == null) throw new BaseException(CommonErrorCode.FIELD_NULL, "End date");
 
-    if (startDate.isAfter(endDate)) throw new BaseException(CommonErrorCode.INVALID_DATE_RANGE);
+    if (startDate.isAfter(endDate)) throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
 
     if (!startDate.isAfter(taskDueDate))
       throw new BaseException(TaskRecurrenceRuleErrorCode.START_DATE_AFTER_DUE_DATE);

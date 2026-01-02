@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -125,8 +124,7 @@ public class TaskController {
   public ResponseEntity<ListDeletedTaskResponseDto> getDeletedTasks(
       @AuthenticationPrincipal UUID userId,
       @RequestParam(required = false) UUID teamId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
     return ResponseEntity.ok(taskService.getDeletedTasks(userId, teamId, cursor, size));
   }

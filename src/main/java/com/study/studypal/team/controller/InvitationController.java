@@ -16,7 +16,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,8 +47,7 @@ public class InvitationController {
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<ListInvitationResponseDto> getInvitations(
       @AuthenticationPrincipal UUID userId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
     return ResponseEntity.ok(invitationService.getInvitations(userId, cursor, size));
   }

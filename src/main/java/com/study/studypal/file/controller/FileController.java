@@ -19,7 +19,6 @@ import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -72,8 +71,7 @@ public class FileController {
   public ResponseEntity<ListFileResponseDto> getFiles(
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID folderId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
     return ResponseEntity.ok(fileService.getFiles(userId, folderId, cursor, size));
   }
@@ -86,8 +84,7 @@ public class FileController {
       @AuthenticationPrincipal UUID userId,
       @PathVariable UUID folderId,
       @RequestParam String keyword,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
     return ResponseEntity.ok(
         fileService.searchFilesByName(userId, folderId, keyword, cursor, size));
@@ -100,8 +97,7 @@ public class FileController {
   public ResponseEntity<ListDeletedFileResponseDto> getDeletedFiles(
       @AuthenticationPrincipal UUID userId,
       @RequestParam(required = false) UUID teamId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-          LocalDateTime cursor,
+      @RequestParam(required = false) LocalDateTime cursor,
       @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) @Positive int size) {
     return ResponseEntity.ok(fileService.getDeletedFiles(userId, teamId, cursor, size));
   }

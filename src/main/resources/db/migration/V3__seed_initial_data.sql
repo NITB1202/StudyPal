@@ -153,3 +153,9 @@ INSERT INTO team_usages (id, usage_used, usage_limit)
 VALUES
     ('111e8400-e29b-41d4-a716-446655440001', 0, 3221225472),
     ('555e8400-e29b-41d4-a716-446655440006', 0, 3221225472);
+
+INSERT INTO session_settings (id, focus_time_in_seconds, break_time_in_seconds, total_time_in_seconds, enable_bg_music)
+VALUES
+    ('041c77e0-ae77-4005-b745-ea12dca9bec6', 2700, 900, 3600, TRUE),
+    ('618c10ee-923f-4323-b32b-086caa534b46', 2700, 900, 3600, TRUE),
+    ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 2700, 900, 3600, TRUE);
