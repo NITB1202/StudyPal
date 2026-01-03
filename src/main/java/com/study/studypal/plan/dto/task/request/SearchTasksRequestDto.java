@@ -14,11 +14,9 @@ public class SearchTasksRequestDto {
   @NotBlank(message = "Key word is required")
   private String keyword;
 
-  @NotNull(message = "From date is required")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime fromDate;
 
-  @NotNull(message = "To date is required")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime toDate;
 

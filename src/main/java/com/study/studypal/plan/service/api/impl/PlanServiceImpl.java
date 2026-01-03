@@ -40,6 +40,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -147,7 +148,10 @@ public class PlanServiceImpl implements PlanService {
 
   @Override
   public ListPlanResponseDto searchPlans(UUID userId, UUID teamId, SearchPlanRequestDto request) {
-    if (!request.getFromDate().isBefore(request.getToDate())) {
+    LocalDateTime fromDate = Optional.ofNullable(request.getFromDate()).orElse(LocalDateTime.MIN);
+    LocalDateTime toDate = Optional.ofNullable(request.getToDate()).orElse(LocalDateTime.MAX);
+
+    if (!fromDate.isBefore(toDate)) {
       throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
@@ -155,9 +159,6 @@ public class PlanServiceImpl implements PlanService {
 
     Pageable pageable = PageRequest.of(0, request.getSize());
     String handledKeyword = request.getKeyword().trim().toLowerCase();
-
-    LocalDateTime fromDate = request.getFromDate();
-    LocalDateTime toDate = request.getToDate();
 
     List<Plan> plans;
     if (request.getCursor() != null && !request.getCursor().isEmpty()) {
