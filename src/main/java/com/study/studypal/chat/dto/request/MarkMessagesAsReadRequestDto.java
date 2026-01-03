@@ -1,4 +1,4 @@
-package com.study.studypal.chat.dto.message.request;
+package com.study.studypal.chat.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

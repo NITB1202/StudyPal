@@ -47,6 +47,9 @@ public class MessageAttachment {
   @Column(name = "type", nullable = false)
   private FileType type;
 
+  @Column(name = "size", nullable = false)
+  private Long size;
+
   @Column(name = "uploaded_at", nullable = false)
   private LocalDateTime uploadedAt;
 }

@@ -8,14 +8,16 @@ import org.springframework.http.HttpStatus;
 public enum ChatMessageAttachmentErrorCode implements ErrorCode {
   ATTACHMENT_UNSUPPORTED_TYPE(
       HttpStatus.BAD_REQUEST,
-      "ATTACH_001",
+      "CHATBOT_ATTACH_001",
       "Only text-based documents (pdf, docx, xlsx, pptx, txt) are allowed for AI processing."),
   ATTACHMENT_SIZE_EXCEEDED(
-      HttpStatus.BAD_REQUEST, "ATTACH_002", "Attachment size exceeds the allowed limit."),
+      HttpStatus.BAD_REQUEST, "CHATBOT_ATTACH_002", "Attachment size exceeds the allowed limit."),
   ATTACHMENT_TOTAL_SIZE_EXCEEDED(
-      HttpStatus.BAD_REQUEST, "ATTACH_003", "Total attachment size exceeds the allowed limit."),
+      HttpStatus.BAD_REQUEST,
+      "CHATBOT_ATTACH_003",
+      "Total attachment size exceeds the allowed limit."),
   ATTACHMENT_EXTRACTION_FAILED(
-      HttpStatus.BAD_REQUEST, "ATTACH_004", "Failed to extract document content: %s"),
+      HttpStatus.BAD_REQUEST, "CHATBOT_ATTACH_004", "Failed to extract document content: %s"),
   ;
   private final HttpStatus httpStatus;
   private final String code;

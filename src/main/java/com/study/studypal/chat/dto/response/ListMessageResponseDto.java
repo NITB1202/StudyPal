@@ -1,4 +1,4 @@
-package com.study.studypal.chat.dto.message.response;
+package com.study.studypal.chat.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;

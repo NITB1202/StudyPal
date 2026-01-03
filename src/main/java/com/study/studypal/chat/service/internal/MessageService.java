@@ -1,8 +1,8 @@
 package com.study.studypal.chat.service.internal;
 
-import com.study.studypal.chat.dto.message.request.MarkMessagesAsReadRequestDto;
-import com.study.studypal.chat.dto.message.request.SendMessageRequestDto;
-import com.study.studypal.chat.dto.message.request.UpdateMessageRequestDto;
+import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
+import com.study.studypal.chat.dto.request.SendMessageRequestDto;
+import com.study.studypal.chat.dto.request.UpdateMessageRequestDto;
 import com.study.studypal.chat.entity.Message;
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,6 +1,7 @@
-package com.study.studypal.chat.dto.message.response;
+package com.study.studypal.chat.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -32,9 +33,9 @@ public class MessageResponseDto {
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LocalDateTime updatedAt;
 
-  private String imageUrl;
+  private Boolean isDeleted;
+
+  private List<MessageAttachmentResponseDto> attachments;
 
   private List<String> readBy;
-
-  private Boolean isDeleted;
 }
