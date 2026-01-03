@@ -1,5 +1,6 @@
 package com.study.studypal.chat.service.api.impl;
 
+import com.study.studypal.chat.dto.internal.DeleteMessageEventData;
 import com.study.studypal.chat.dto.internal.EditMessageEventData;
 import com.study.studypal.chat.dto.request.EditMessageRequestDto;
 import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
@@ -108,7 +109,12 @@ public class ChatServiceImpl implements ChatService {
 
   @Override
   public ActionResponseDto deleteMessage(UUID userId, UUID messageId) {
-    return null;
+    Message message = messageService.deleteMessage(userId, messageId);
+
+    DeleteMessageEventData data = modelMapper.map(message, DeleteMessageEventData.class);
+    handler.sendMessageToOnlineMembers(message.getTeam().getId(), ChatEventType.DELETE, data);
+
+    return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
 
   private MessageResponseDto toMessageResponse(

@@ -19,5 +19,5 @@ public interface MessageService {
 
   void markMessagesAsRead(UUID userId, UUID teamId, MarkMessagesAsReadRequestDto request);
 
-  void deleteMessage(UUID userId, UUID messageId);
+  Message deleteMessage(UUID userId, UUID messageId);
 }

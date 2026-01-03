@@ -89,7 +89,19 @@ public class MessageServiceImpl implements MessageService {
   public void markMessagesAsRead(UUID userId, UUID teamId, MarkMessagesAsReadRequestDto request) {}
 
   @Override
-  public void deleteMessage(UUID userId, UUID messageId) {}
+  public Message deleteMessage(UUID userId, UUID messageId) {
+    Message message =
+        messageRepository
+            .findById(messageId)
+            .orElseThrow(() -> new BaseException(MessageErrorCode.MESSAGE_NOT_FOUND));
+
+    validateMessageOwnership(userId, message);
+
+    message.setIsDeleted(true);
+    message.setUpdatedAt(LocalDateTime.now());
+
+    return messageRepository.save(message);
+  }
 
   private void validateMessageOwnership(UUID userId, Message message) {
     if (!userId.equals(message.getUser().getId())) {
