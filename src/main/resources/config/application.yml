@@ -31,4 +31,4 @@ session:
 chat:
   max-file-size: 10MB
   max-total-size: 20MB
-  edit-time-limit-seconds: 10
+  edit-time-limit-seconds: 6000

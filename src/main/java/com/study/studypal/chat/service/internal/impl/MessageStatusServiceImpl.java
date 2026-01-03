@@ -26,6 +26,14 @@ public class MessageStatusServiceImpl implements MessageStatusService {
   }
 
   @Override
+  public MessageReadStatus markMessageAsRead(UUID userId, Message message) {
+    User user = entityManager.getReference(User.class, userId);
+    MessageReadStatus status =
+        MessageReadStatus.builder().message(message).user(user).readAt(LocalDateTime.now()).build();
+    return statusRepository.save(status);
+  }
+
+  @Override
   public void markMessagesAsRead(UUID userId, List<Message> messages) {
     LocalDateTime now = LocalDateTime.now();
     User user = entityManager.getReference(User.class, userId);

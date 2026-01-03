@@ -52,8 +52,10 @@ public class ChatServiceImpl implements ChatService {
     Message savedMessage = messageService.saveMessage(userId, teamId, request);
     List<MessageAttachment> savedAttachments =
         attachmentService.saveAttachments(savedMessage, attachments);
+    MessageReadStatus readStatus = messageStatusService.markMessageAsRead(userId, savedMessage);
 
-    MessageResponseDto chatMessage = toMessageResponse(savedMessage, savedAttachments, List.of());
+    MessageResponseDto chatMessage =
+        toMessageResponse(savedMessage, savedAttachments, List.of(readStatus));
     handler.sendMessageToOnlineMembers(teamId, ChatEventType.SEND, chatMessage);
 
     return ActionResponseDto.builder().success(true).message("Send successfully.").build();
