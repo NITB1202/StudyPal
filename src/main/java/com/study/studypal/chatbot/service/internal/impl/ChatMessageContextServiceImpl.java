@@ -1,11 +1,11 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.studypal.chatbot.enums.ContextType;
 import com.study.studypal.chatbot.exception.ChatMessageContextErrorCode;
 import com.study.studypal.chatbot.mapper.ChatMessageContextMapper;
 import com.study.studypal.chatbot.service.internal.ChatMessageContextService;
 import com.study.studypal.common.exception.BaseException;
+import com.study.studypal.common.util.JsonUtils;
 import com.study.studypal.plan.entity.Plan;
 import com.study.studypal.plan.entity.Task;
 import com.study.studypal.plan.exception.PlanErrorCode;
@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatMessageContextServiceImpl implements ChatMessageContextService {
   private final TaskRepository taskRepository;
   private final PlanRepository planRepository;
-  private final ObjectMapper objectMapper;
   private final ChatMessageContextMapper mapper;
   private final TeamMembershipInternalService memberService;
   private final TaskValidationService validationService;
@@ -60,11 +59,7 @@ public class ChatMessageContextServiceImpl implements ChatMessageContextService 
           }
         };
 
-    try {
-      return objectMapper.writeValueAsString(context);
-    } catch (Exception ex) {
-      throw new BaseException(ChatMessageContextErrorCode.SERIALIZE_CONTEXT_FAILED);
-    }
+    return JsonUtils.trySerialize(context).orElse("");
   }
 
   private Plan getPlanById(UUID planId) {

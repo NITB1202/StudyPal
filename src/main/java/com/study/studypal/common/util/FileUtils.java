@@ -41,6 +41,11 @@ public class FileUtils {
     return contentType != null && contentType.startsWith("image/");
   }
 
+  public static boolean isVideo(MultipartFile file) {
+    String contentType = file.getContentType();
+    return contentType != null && contentType.startsWith("video/");
+  }
+
   public static String normalizeText(String text) {
     if (StringUtils.isBlank(text)) return "";
 

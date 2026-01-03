@@ -27,3 +27,8 @@ session:
   default-break-time-in-seconds: 900
   default-total-time-in-seconds: 3600
   default-enable-bg-music: false
+
+chat:
+  max-file-size: 10MB
+  max-total-size: 20MB
+  edit-time-limit-seconds: 6000

@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -169,15 +170,15 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   public ListTaskResponseDto searchTasks(UUID userId, SearchTasksRequestDto request) {
-    if (!request.getFromDate().isBefore(request.getToDate())) {
+    LocalDateTime fromDate = Optional.ofNullable(request.getFromDate()).orElse(LocalDateTime.MIN);
+    LocalDateTime toDate = Optional.ofNullable(request.getToDate()).orElse(LocalDateTime.MAX);
+
+    if (!fromDate.isBefore(toDate)) {
       throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
     }
 
     Pageable pageable = PageRequest.of(0, request.getSize());
     String handledKeyword = request.getKeyword().trim().toLowerCase();
-
-    LocalDateTime fromDate = request.getFromDate();
-    LocalDateTime toDate = request.getToDate();
 
     List<Task> tasks;
     if (request.getCursor() != null && !request.getCursor().isEmpty()) {

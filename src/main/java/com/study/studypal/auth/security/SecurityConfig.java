@@ -30,7 +30,8 @@ public class SecurityConfig {
     "/swagger-resources/**",
     "/webjars/**",
     "/h2-console/**",
-    "/api/auth/**"
+    "/api/auth/**",
+    "/ws/**",
   };
 
   @Bean

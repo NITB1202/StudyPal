@@ -13,6 +13,10 @@ public enum CommonErrorCode implements ErrorCode {
   FIELD_BLANK(HttpStatus.BAD_REQUEST, "COMMON_006", "%s is blank."),
   FIELD_NULL(HttpStatus.BAD_REQUEST, "COMMON_007", "%s is null."),
   INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST, "COMMON_008", "Invalid time range."),
+  JSON_SERIALIZE_FAILED(
+      HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_009", "Failed to serialize object."),
+  JSON_DESERIALIZE_FAILED(
+      HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_010", "Failed to deserialize JSON string."),
   ;
 
   private final HttpStatus httpStatus;
