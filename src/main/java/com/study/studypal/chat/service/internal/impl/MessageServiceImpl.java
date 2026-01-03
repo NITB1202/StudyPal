@@ -70,6 +70,11 @@ public class MessageServiceImpl implements MessageService {
   }
 
   @Override
+  public List<Message> getMessagesBefore(LocalDateTime time) {
+    return messageRepository.findAllByCreatedAtBefore(time);
+  }
+
+  @Override
   public List<Message> getMessagesBefore(UUID teamId, LocalDateTime time) {
     return messageRepository.findMessagesBefore(teamId, time);
   }
@@ -109,6 +114,12 @@ public class MessageServiceImpl implements MessageService {
     message.setUpdatedAt(LocalDateTime.now());
 
     return messageRepository.save(message);
+  }
+
+  @Override
+  @Transactional
+  public void hardDeleteMessages(List<Message> messages) {
+    messageRepository.deleteAll(messages);
   }
 
   private void validateMessageOwnership(UUID userId, Message message) {

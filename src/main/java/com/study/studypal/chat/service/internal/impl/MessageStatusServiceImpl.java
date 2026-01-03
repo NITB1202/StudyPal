@@ -22,7 +22,7 @@ public class MessageStatusServiceImpl implements MessageStatusService {
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public List<MessageReadStatus> getByMessageId(UUID messageId) {
+  public List<MessageReadStatus> getMessageReadStatues(UUID messageId) {
     return statusRepository.findAllByMessageId(messageId);
   }
 

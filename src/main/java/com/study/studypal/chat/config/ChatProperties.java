@@ -14,4 +14,5 @@ public class ChatProperties {
   private DataSize maxFileSize;
   private DataSize maxTotalSize;
   private Long editTimeLimitSeconds;
+  private Integer messageCutoffDays;
 }

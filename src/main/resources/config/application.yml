@@ -32,3 +32,4 @@ chat:
   max-file-size: 10MB
   max-total-size: 20MB
   edit-time-limit-seconds: 6000
+  message-cutoff-days: 180

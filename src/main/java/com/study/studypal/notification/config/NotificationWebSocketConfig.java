@@ -1,7 +1,7 @@
 package com.study.studypal.notification.config;
 
 import com.study.studypal.auth.security.WebSocketAuthInterceptor;
-import com.study.studypal.notification.service.NotificationWebSocketHandler;
+import com.study.studypal.notification.service.internal.NotificationWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

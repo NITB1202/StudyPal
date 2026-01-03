@@ -1,7 +1,9 @@
 package com.study.studypal.chat.service.internal.impl;
 
 import static com.study.studypal.chat.constant.ChatConstant.CHAT_FOLDER;
+import static com.study.studypal.common.util.Constants.RESOURCE_TYPE_IMAGE;
 import static com.study.studypal.common.util.Constants.RESOURCE_TYPE_RAW;
+import static com.study.studypal.common.util.Constants.RESOURCE_TYPE_VIDEO;
 
 import com.study.studypal.chat.config.ChatProperties;
 import com.study.studypal.chat.entity.Message;
@@ -15,6 +17,7 @@ import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.FileService;
 import com.study.studypal.common.util.FileUtils;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,7 +61,12 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
         ids.add(id);
         attachments.add(attachment);
       } catch (IOException e) {
-        ids.forEach(id -> fileService.deleteFile(id.toString(), RESOURCE_TYPE_RAW));
+        ids.forEach(
+            id -> {
+              String extension = FileUtils.extractFileExtension(file);
+              String resourceType = fileService.getResourceType(extension);
+              fileService.deleteFile(id.toString(), resourceType);
+            });
         throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
       }
     }
@@ -67,8 +75,21 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
   }
 
   @Override
-  public List<MessageAttachment> getByMessageId(UUID messageId) {
+  public List<MessageAttachment> getAttachmentsByMessageId(UUID messageId) {
     return attachmentRepository.findAllByMessageId(messageId);
+  }
+
+  @Transactional
+  @Override
+  public void deleteAttachmentsByMessageId(UUID messageId) {
+    List<MessageAttachment> attachments = attachmentRepository.findAllByMessageId(messageId);
+
+    for (MessageAttachment attachment : attachments) {
+      String resourceType = getResourceType(attachment.getType());
+      fileService.deleteFile(attachment.getId().toString(), resourceType);
+    }
+
+    attachmentRepository.deleteAll(attachments);
   }
 
   private void validateFileSize(long fileSize, long totalFileSize) {
@@ -108,5 +129,13 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
     }
 
     return FileType.FILE;
+  }
+
+  private String getResourceType(FileType fileType) {
+    return switch (fileType) {
+      case IMAGE -> RESOURCE_TYPE_IMAGE;
+      case VIDEO -> RESOURCE_TYPE_VIDEO;
+      case FILE -> RESOURCE_TYPE_RAW;
+    };
   }
 }

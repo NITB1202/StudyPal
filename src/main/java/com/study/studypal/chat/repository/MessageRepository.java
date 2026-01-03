@@ -52,4 +52,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     ORDER BY m.createdAt DESC
     """)
   List<Message> findMessagesBefore(@Param("teamId") UUID teamId, @Param("time") LocalDateTime time);
+
+  List<Message> findAllByCreatedAtBefore(LocalDateTime time);
 }

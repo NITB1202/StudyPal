@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageStatusService {
-  List<MessageReadStatus> getByMessageId(UUID messageId);
+  List<MessageReadStatus> getMessageReadStatues(UUID messageId);
 
   MessageReadStatus markMessageAsRead(UUID userId, Message message);
 

@@ -16,9 +16,13 @@ public interface MessageService {
 
   Message getByIdWithTeam(UUID id);
 
+  List<Message> getMessagesBefore(LocalDateTime time);
+
   List<Message> getMessagesBefore(UUID teamId, LocalDateTime time);
 
   Message editMessage(UUID userId, UUID messageId, EditMessageRequestDto request);
 
   Message deleteMessage(UUID userId, UUID messageId);
+
+  void hardDeleteMessages(List<Message> messages);
 }

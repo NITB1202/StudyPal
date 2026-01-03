@@ -1,4 +1,4 @@
-package com.study.studypal.notification.service;
+package com.study.studypal.notification.service.internal;
 
 import static com.study.studypal.common.util.Constants.WS_USER_ID;
 
@@ -12,14 +12,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class NotificationWebSocketHandler extends TextWebSocketHandler {
   private final Map<WebSocketSession, UUID> sessionUserMap = new ConcurrentHashMap<>();
