@@ -1,16 +1,14 @@
 package com.study.studypal.chat.service.internal;
 
-import static com.study.studypal.chat.constant.ChatConstant.WS_TEAM_ID;
-import static com.study.studypal.common.exception.code.CommonErrorCode.WEBSOCKET_SEND_MESSAGE_FAILED;
+import static com.study.studypal.chat.constant.ChatConstant.WS_TEAM_ID_QUERY_PARAM;
 import static com.study.studypal.common.util.Constants.WS_USER_ID;
 
 import com.study.studypal.chat.dto.internal.ConnectedUser;
 import com.study.studypal.chat.dto.internal.WebSocketChatMessage;
 import com.study.studypal.chat.enums.ChatEventType;
-import com.study.studypal.common.exception.BaseException;
-import com.study.studypal.common.exception.code.CommonErrorCode;
 import com.study.studypal.common.util.JsonUtils;
 import com.study.studypal.common.util.WebsocketUtils;
+import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
@@ -29,24 +27,28 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 @Component
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
+  private final TeamMembershipInternalService memberService;
   private final Map<WebSocketSession, ConnectedUser> sessionUserMap = new ConcurrentHashMap<>();
 
   @Override
   public void afterConnectionEstablished(@NotNull WebSocketSession session) {
     UUID userId = (UUID) session.getAttributes().get(WS_USER_ID);
 
-    String teamIdStr = WebsocketUtils.extractFromQueryParam(session, WS_TEAM_ID);
+    String teamIdStr = WebsocketUtils.extractFromQueryParam(session, WS_TEAM_ID_QUERY_PARAM);
     UUID teamId = StringUtils.isNotBlank(teamIdStr) ? UUID.fromString(teamIdStr) : null;
 
-    if (userId != null && teamId != null) {
+    if (userId == null || teamId == null) {
+      log.error("Connection closed because userId or teamId is missing.");
+      WebsocketUtils.closeSession(session);
+    }
+
+    try {
+      memberService.validateUserBelongsToTeam(userId, teamId);
       sessionUserMap.put(session, new ConnectedUser(userId, teamId));
       log.info("User {} connected to team {}", userId, teamId);
-    } else {
-      try {
-        session.close(CloseStatus.BAD_DATA);
-      } catch (IOException e) {
-        throw new BaseException(CommonErrorCode.WEBSOCKET_CONNECT_FAILED, e.getMessage());
-      }
+    } catch (Exception ex) {
+      log.error("Connection closed with error: {}", ex.getMessage());
+      WebsocketUtils.closeSession(session);
     }
   }
 
@@ -73,7 +75,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             try {
               session.sendMessage(new TextMessage(payload));
             } catch (IOException e) {
-              throw new BaseException(WEBSOCKET_SEND_MESSAGE_FAILED, e.getMessage());
+              log.error("Send WebSocket message failed with error: {}", e.getMessage());
             }
           }
         });

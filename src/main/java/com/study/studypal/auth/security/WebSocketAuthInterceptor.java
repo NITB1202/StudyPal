@@ -1,6 +1,6 @@
 package com.study.studypal.auth.security;
 
-import static com.study.studypal.auth.constant.AuthConstant.WS_TOKEN_QUERY_PARAM;
+import static com.study.studypal.auth.constant.AuthConstant.WS_ACCESS_TOKEN_QUERY_PARAM;
 import static com.study.studypal.common.util.Constants.WS_USER_ID;
 
 import java.net.URI;
@@ -28,14 +28,17 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
       @NotNull WebSocketHandler wsHandler,
       @NotNull Map<String, Object> attributes) {
     URI uri = request.getURI();
-    String token =
-        UriComponentsBuilder.fromUri(uri).build().getQueryParams().getFirst(WS_TOKEN_QUERY_PARAM);
+    String accessToken =
+        UriComponentsBuilder.fromUri(uri)
+            .build()
+            .getQueryParams()
+            .getFirst(WS_ACCESS_TOKEN_QUERY_PARAM);
 
-    if (StringUtils.isBlank(token)) {
+    if (StringUtils.isBlank(accessToken)) {
       return false;
     }
 
-    UUID userId = jwtService.extractId(token);
+    UUID userId = jwtService.extractId(accessToken);
     if (userId == null) {
       return false;
     }

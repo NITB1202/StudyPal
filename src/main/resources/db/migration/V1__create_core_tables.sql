@@ -304,4 +304,40 @@ CREATE TABLE IF NOT EXISTS session_settings (
         REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS messages (
+    id UUID PRIMARY KEY,
+    team_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_messages_teams_team FOREIGN KEY (team_id)
+        REFERENCES teams(id) ON DELETE CASCADE,
+    CONSTRAINT fk_messages_users_user FOREIGN KEY (user_id)
+        REFERENCES users(id) ON DELETE CASCADE
+);
 
+CREATE TABLE IF NOT EXISTS message_attachments (
+    id UUID PRIMARY KEY,
+    message_id UUID NOT NULL,
+    url TEXT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    size BIGINT NOT NULL,
+    uploaded_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_message_attachments_messages_message FOREIGN KEY (message_id)
+        REFERENCES messages(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS message_read_status (
+    id UUID PRIMARY KEY,
+    message_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    read_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_message_read_status_message FOREIGN KEY (message_id)
+        REFERENCES messages(id) ON DELETE CASCADE,
+    CONSTRAINT fk_message_read_status_user FOREIGN KEY (user_id)
+        REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT uq_message_user_read UNIQUE (message_id, user_id)
+);

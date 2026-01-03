@@ -17,10 +17,6 @@ public enum CommonErrorCode implements ErrorCode {
       HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_009", "Failed to serialize object."),
   JSON_DESERIALIZE_FAILED(
       HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_010", "Failed to deserialize JSON string."),
-  WEBSOCKET_CONNECT_FAILED(
-      HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_011", "Error while connecting to websocket: %s"),
-  WEBSOCKET_SEND_MESSAGE_FAILED(
-      HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_012", "Failed to send websocket message: %s");
   ;
 
   private final HttpStatus httpStatus;

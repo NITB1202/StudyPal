@@ -22,10 +22,10 @@ public class MessageResponseDto {
 
   private String content;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updatedAt;
 
   private Boolean isDeleted;
