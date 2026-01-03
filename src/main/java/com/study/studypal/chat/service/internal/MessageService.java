@@ -1,8 +1,8 @@
 package com.study.studypal.chat.service.internal;
 
+import com.study.studypal.chat.dto.request.EditMessageRequestDto;
 import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
 import com.study.studypal.chat.dto.request.SendMessageRequestDto;
-import com.study.studypal.chat.dto.request.UpdateMessageRequestDto;
 import com.study.studypal.chat.entity.Message;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +15,7 @@ public interface MessageService {
 
   Long countMessages(UUID teamId);
 
-  Message updateMessage(UUID userId, UUID messageId, UpdateMessageRequestDto request);
+  Message editMessage(UUID userId, UUID messageId, EditMessageRequestDto request);
 
   void markMessagesAsRead(UUID userId, UUID teamId, MarkMessagesAsReadRequestDto request);
 

@@ -13,4 +13,5 @@ import org.springframework.util.unit.DataSize;
 public class ChatProperties {
   private DataSize maxFileSize;
   private DataSize maxTotalSize;
+  private Long editTimeLimitSeconds;
 }

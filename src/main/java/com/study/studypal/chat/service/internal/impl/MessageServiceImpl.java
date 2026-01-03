@@ -1,16 +1,20 @@
 package com.study.studypal.chat.service.internal.impl;
 
+import com.study.studypal.chat.config.ChatProperties;
+import com.study.studypal.chat.dto.request.EditMessageRequestDto;
 import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
 import com.study.studypal.chat.dto.request.SendMessageRequestDto;
-import com.study.studypal.chat.dto.request.UpdateMessageRequestDto;
 import com.study.studypal.chat.entity.Message;
+import com.study.studypal.chat.exception.MessageErrorCode;
 import com.study.studypal.chat.repository.MessageRepository;
 import com.study.studypal.chat.service.internal.MessageService;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.team.entity.Team;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
   private final MessageRepository messageRepository;
+  private final ChatProperties chatProperties;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
@@ -59,8 +64,25 @@ public class MessageServiceImpl implements MessageService {
   }
 
   @Override
-  public Message updateMessage(UUID userId, UUID messageId, UpdateMessageRequestDto request) {
-    return null;
+  public Message editMessage(UUID userId, UUID messageId, EditMessageRequestDto request) {
+    Message message =
+        messageRepository
+            .findById(messageId)
+            .orElseThrow(() -> new BaseException(MessageErrorCode.MESSAGE_NOT_FOUND));
+
+    validateMessageOwnership(userId, message);
+
+    LocalDateTime now = LocalDateTime.now();
+    Duration duration = Duration.between(message.getCreatedAt(), now);
+
+    if (duration.toSeconds() > chatProperties.getEditTimeLimitSeconds()) {
+      throw new BaseException(MessageErrorCode.MESSAGE_EDIT_TIME_EXPIRED);
+    }
+
+    message.setContent(request.getContent());
+    message.setUpdatedAt(now);
+
+    return messageRepository.save(message);
   }
 
   @Override
@@ -68,4 +90,10 @@ public class MessageServiceImpl implements MessageService {
 
   @Override
   public void deleteMessage(UUID userId, UUID messageId) {}
+
+  private void validateMessageOwnership(UUID userId, Message message) {
+    if (!userId.equals(message.getUser().getId())) {
+      throw new BaseException(MessageErrorCode.PERMISSION_MESSAGE_OWNER_DENIED);
+    }
+  }
 }

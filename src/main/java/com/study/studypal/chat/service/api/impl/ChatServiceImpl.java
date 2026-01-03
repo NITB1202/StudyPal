@@ -1,8 +1,9 @@
 package com.study.studypal.chat.service.api.impl;
 
+import com.study.studypal.chat.dto.internal.EditMessageEventData;
+import com.study.studypal.chat.dto.request.EditMessageRequestDto;
 import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
 import com.study.studypal.chat.dto.request.SendMessageRequestDto;
-import com.study.studypal.chat.dto.request.UpdateMessageRequestDto;
 import com.study.studypal.chat.dto.response.ListMessageResponseDto;
 import com.study.studypal.chat.dto.response.MessageAttachmentResponseDto;
 import com.study.studypal.chat.dto.response.MessageResponseDto;
@@ -85,14 +86,24 @@ public class ChatServiceImpl implements ChatService {
   }
 
   @Override
-  public ActionResponseDto updateMessage(UUID userId, UUID messageId, UpdateMessageRequestDto dto) {
-    return null;
+  public ActionResponseDto editMessage(UUID userId, UUID messageId, EditMessageRequestDto request) {
+    Message message = messageService.editMessage(userId, messageId, request);
+
+    EditMessageEventData data = modelMapper.map(message, EditMessageEventData.class);
+    handler.sendMessageToOnlineMembers(message.getTeam().getId(), ChatEventType.EDIT, data);
+
+    return ActionResponseDto.builder().success(true).message("Edit successfully.").build();
   }
 
   @Override
   public ActionResponseDto markMessagesAsRead(
-      UUID userId, UUID teamId, MarkMessagesAsReadRequestDto dto) {
-    return null;
+      UUID userId, UUID teamId, MarkMessagesAsReadRequestDto request) {
+    messageService.markMessagesAsRead(userId, teamId, request);
+
+    //    MarkMessagesEventData data = modelMapper.map();
+    //    handler.sendMessageToOnlineMembers(teamId, ChatEventType.MARK, data);
+
+    return ActionResponseDto.builder().success(true).message("Mark successfully.").build();
   }
 
   @Override
