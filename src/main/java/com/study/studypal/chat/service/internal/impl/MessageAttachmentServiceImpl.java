@@ -66,6 +66,11 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
     return attachmentRepository.saveAll(attachments);
   }
 
+  @Override
+  public List<MessageAttachment> getByMessageId(UUID messageId) {
+    return attachmentRepository.findAllByMessageId(messageId);
+  }
+
   private void validateFileSize(long fileSize, long totalFileSize) {
     if (fileSize > props.getMaxFileSize().toBytes()) {
       throw new BaseException(MessageAttachmentErrorCode.ATTACHMENT_SIZE_EXCEEDED);

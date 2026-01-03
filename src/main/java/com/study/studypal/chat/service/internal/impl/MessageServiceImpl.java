@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,13 +47,15 @@ public class MessageServiceImpl implements MessageService {
 
   @Override
   public List<Message> getMessages(UUID teamId, LocalDateTime cursor, int size) {
-
-    return List.of();
+    Pageable pageable = PageRequest.of(0, size);
+    return cursor == null
+        ? messageRepository.findByTeamId(teamId, pageable)
+        : messageRepository.findByTeamIdWithCursor(teamId, cursor, pageable);
   }
 
   @Override
   public Long countMessages(UUID teamId) {
-    return 0L;
+    return messageRepository.countByTeamId(teamId);
   }
 
   @Override

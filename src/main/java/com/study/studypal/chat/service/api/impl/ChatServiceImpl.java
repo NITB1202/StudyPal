@@ -9,11 +9,13 @@ import com.study.studypal.chat.dto.response.MessageResponseDto;
 import com.study.studypal.chat.dto.response.MessageUserResponseDto;
 import com.study.studypal.chat.entity.Message;
 import com.study.studypal.chat.entity.MessageAttachment;
+import com.study.studypal.chat.entity.MessageReadStatus;
 import com.study.studypal.chat.enums.ChatEventType;
 import com.study.studypal.chat.service.api.ChatService;
 import com.study.studypal.chat.service.internal.ChatWebSocketHandler;
 import com.study.studypal.chat.service.internal.MessageAttachmentService;
 import com.study.studypal.chat.service.internal.MessageService;
+import com.study.studypal.chat.service.internal.MessageStatusService;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import jakarta.transaction.Transactional;
@@ -32,6 +34,7 @@ public class ChatServiceImpl implements ChatService {
   private final MessageService messageService;
   private final MessageAttachmentService attachmentService;
   private final TeamMembershipInternalService memberService;
+  private final MessageStatusService messageStatusService;
   private final ChatWebSocketHandler handler;
   private final ModelMapper modelMapper;
 
@@ -45,7 +48,7 @@ public class ChatServiceImpl implements ChatService {
     List<MessageAttachment> savedAttachments =
         attachmentService.saveAttachments(savedMessage, attachments);
 
-    MessageResponseDto chatMessage = toMessageResponse(savedMessage, savedAttachments);
+    MessageResponseDto chatMessage = toMessageResponse(savedMessage, savedAttachments, List.of());
     handler.sendMessageToOnlineMembers(teamId, ChatEventType.SEND, chatMessage);
 
     return ActionResponseDto.builder().success(true).message("Send successfully.").build();
@@ -54,7 +57,31 @@ public class ChatServiceImpl implements ChatService {
   @Override
   public ListMessageResponseDto getMessages(
       UUID userId, UUID teamId, LocalDateTime cursor, int size) {
-    return null;
+    memberService.validateUserBelongsToTeam(userId, teamId);
+
+    List<Message> messages = messageService.getMessages(teamId, cursor, size);
+    List<MessageResponseDto> responseDto =
+        messages.stream()
+            .map(
+                message -> {
+                  List<MessageAttachment> attachments =
+                      attachmentService.getByMessageId(message.getId());
+                  List<MessageReadStatus> readStatuses =
+                      messageStatusService.getByMessageId(message.getId());
+                  return toMessageResponse(message, attachments, readStatuses);
+                })
+            .toList();
+
+    long total = messageService.countMessages(teamId);
+
+    LocalDateTime nextCursor =
+        messages.size() == size ? messages.get(messages.size() - 1).getCreatedAt() : null;
+
+    return ListMessageResponseDto.builder()
+        .messages(responseDto)
+        .total(total)
+        .nextCursor(nextCursor)
+        .build();
   }
 
   @Override
@@ -74,7 +101,7 @@ public class ChatServiceImpl implements ChatService {
   }
 
   private MessageResponseDto toMessageResponse(
-      Message message, List<MessageAttachment> attachments) {
+      Message message, List<MessageAttachment> attachments, List<MessageReadStatus> readStatuses) {
     MessageResponseDto response = modelMapper.map(message, MessageResponseDto.class);
 
     MessageUserResponseDto userResponse =
@@ -85,6 +112,14 @@ public class ChatServiceImpl implements ChatService {
         modelMapper.map(
             attachments, new TypeToken<List<MessageAttachmentResponseDto>>() {}.getType());
     response.setAttachments(attachmentsResponse);
+
+    List<MessageUserResponseDto> readBy =
+        readStatuses.stream()
+            .map(
+                messageReadStatus ->
+                    modelMapper.map(messageReadStatus.getUser(), MessageUserResponseDto.class))
+            .toList();
+    response.setReadBy(readBy);
 
     return response;
   }
