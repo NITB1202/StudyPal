@@ -4,6 +4,7 @@ import com.study.studypal.chat.event.MessageSentEvent;
 import com.study.studypal.chat.service.internal.ChatNotificationService;
 import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
 import com.study.studypal.notification.enums.LinkedSubject;
+import com.study.studypal.notification.service.NotificationWebSocketHandler;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
 import com.study.studypal.notification.service.internal.TeamNotificationSettingInternalService;
@@ -43,6 +44,7 @@ public class NotificationEventListener {
   private final TeamNotificationSettingInternalService settingService;
   private final PlanInternalService planService;
   private final ChatNotificationService chatService;
+  private final NotificationWebSocketHandler webSocketHandler;
 
   @Async
   @EventListener
@@ -401,6 +403,7 @@ public class NotificationEventListener {
   }
 
   private void processNotification(CreateNotificationRequest request) {
+    webSocketHandler.sendNotificationToOnlineUsers(request);
     notificationService.createNotification(request);
     notificationService.evictNotificationCache(request.getUserId());
     deviceTokenService.sendPushNotification(request);
