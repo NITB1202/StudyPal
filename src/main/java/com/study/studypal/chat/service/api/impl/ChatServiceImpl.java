@@ -2,8 +2,8 @@ package com.study.studypal.chat.service.api.impl;
 
 import com.study.studypal.chat.dto.internal.DeleteMessageEventData;
 import com.study.studypal.chat.dto.internal.EditMessageEventData;
+import com.study.studypal.chat.dto.internal.MarkMessageEventData;
 import com.study.studypal.chat.dto.request.EditMessageRequestDto;
-import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
 import com.study.studypal.chat.dto.request.SendMessageRequestDto;
 import com.study.studypal.chat.dto.response.ListMessageResponseDto;
 import com.study.studypal.chat.dto.response.MessageAttachmentResponseDto;
@@ -20,6 +20,8 @@ import com.study.studypal.chat.service.internal.MessageService;
 import com.study.studypal.chat.service.internal.MessageStatusService;
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
+import com.study.studypal.user.dto.internal.UserSummaryProfile;
+import com.study.studypal.user.service.internal.UserInternalService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,6 +39,7 @@ public class ChatServiceImpl implements ChatService {
   private final MessageAttachmentService attachmentService;
   private final TeamMembershipInternalService memberService;
   private final MessageStatusService messageStatusService;
+  private final UserInternalService userService;
   private final ChatWebSocketHandler handler;
   private final ModelMapper modelMapper;
 
@@ -97,13 +100,23 @@ public class ChatServiceImpl implements ChatService {
   }
 
   @Override
-  public ActionResponseDto markMessagesAsRead(
-      UUID userId, UUID teamId, MarkMessagesAsReadRequestDto request) {
-    messageService.markMessagesAsRead(userId, teamId, request);
+  public ActionResponseDto markMessageAsRead(UUID userId, UUID messageId) {
+    Message message = messageService.getByIdWithTeam(messageId);
 
-    //    MarkMessagesEventData data = modelMapper.map();
-    //    handler.sendMessageToOnlineMembers(teamId, ChatEventType.MARK, data);
+    UUID teamId = message.getTeam().getId();
+    memberService.validateUserBelongsToTeam(userId, teamId);
 
+    List<Message> messages = messageService.getMessagesBefore(teamId, message.getCreatedAt());
+    messages.add(0, message);
+
+    messageStatusService.markMessagesAsRead(userId, messages);
+
+    UserSummaryProfile userProfile = userService.getUserSummaryProfile(userId);
+    MarkMessageEventData data = modelMapper.map(userProfile, MarkMessageEventData.class);
+    data.setUserId(userId);
+    data.setMessageId(messageId);
+
+    handler.sendMessageToOnlineMembers(teamId, ChatEventType.MARK, data);
     return ActionResponseDto.builder().success(true).message("Mark successfully.").build();
   }
 

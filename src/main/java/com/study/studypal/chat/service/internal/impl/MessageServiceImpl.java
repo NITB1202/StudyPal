@@ -2,7 +2,6 @@ package com.study.studypal.chat.service.internal.impl;
 
 import com.study.studypal.chat.config.ChatProperties;
 import com.study.studypal.chat.dto.request.EditMessageRequestDto;
-import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
 import com.study.studypal.chat.dto.request.SendMessageRequestDto;
 import com.study.studypal.chat.entity.Message;
 import com.study.studypal.chat.exception.MessageErrorCode;
@@ -64,6 +63,18 @@ public class MessageServiceImpl implements MessageService {
   }
 
   @Override
+  public Message getByIdWithTeam(UUID id) {
+    return messageRepository
+        .findByIdWithTeam(id)
+        .orElseThrow(() -> new BaseException(MessageErrorCode.MESSAGE_NOT_FOUND));
+  }
+
+  @Override
+  public List<Message> getMessagesBefore(UUID teamId, LocalDateTime time) {
+    return messageRepository.findMessagesBefore(teamId, time);
+  }
+
+  @Override
   public Message editMessage(UUID userId, UUID messageId, EditMessageRequestDto request) {
     Message message =
         messageRepository
@@ -84,9 +95,6 @@ public class MessageServiceImpl implements MessageService {
 
     return messageRepository.save(message);
   }
-
-  @Override
-  public void markMessagesAsRead(UUID userId, UUID teamId, MarkMessagesAsReadRequestDto request) {}
 
   @Override
   public Message deleteMessage(UUID userId, UUID messageId) {

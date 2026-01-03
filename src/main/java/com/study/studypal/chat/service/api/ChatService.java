@@ -1,7 +1,6 @@
 package com.study.studypal.chat.service.api;
 
 import com.study.studypal.chat.dto.request.EditMessageRequestDto;
-import com.study.studypal.chat.dto.request.MarkMessagesAsReadRequestDto;
 import com.study.studypal.chat.dto.request.SendMessageRequestDto;
 import com.study.studypal.chat.dto.response.ListMessageResponseDto;
 import com.study.studypal.common.dto.ActionResponseDto;
@@ -18,8 +17,7 @@ public interface ChatService {
 
   ActionResponseDto editMessage(UUID userId, UUID messageId, EditMessageRequestDto request);
 
-  ActionResponseDto markMessagesAsRead(
-      UUID userId, UUID teamId, MarkMessagesAsReadRequestDto request);
+  ActionResponseDto markMessageAsRead(UUID userId, UUID messageId);
 
   ActionResponseDto deleteMessage(UUID userId, UUID messageId);
 }

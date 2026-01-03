@@ -3,6 +3,7 @@ package com.study.studypal.chat.repository;
 import com.study.studypal.chat.entity.Message;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,4 +34,22 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
       @Param("teamId") UUID teamId, @Param("cursor") LocalDateTime cursor, Pageable pageable);
 
   long countByTeamId(UUID teamId);
+
+  @Query("""
+    SELECT m
+    FROM Message m
+    JOIN FETCH m.team
+    WHERE m.id = :id
+    """)
+  Optional<Message> findByIdWithTeam(UUID id);
+
+  @Query(
+      """
+    SELECT m
+    FROM Message m
+    WHERE m.team.id = :teamId
+    AND m.createdAt < :time
+    ORDER BY m.createdAt DESC
+    """)
+  List<Message> findMessagesBefore(@Param("teamId") UUID teamId, @Param("time") LocalDateTime time);
 }
