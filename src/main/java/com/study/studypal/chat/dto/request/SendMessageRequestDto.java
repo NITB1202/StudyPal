@@ -1,6 +1,5 @@
 package com.study.studypal.chat.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class SendMessageRequestDto {
-  @NotBlank(message = "Content is required")
   private String content;
 }
