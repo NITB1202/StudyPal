@@ -7,6 +7,7 @@ import com.study.studypal.chat.service.internal.MessageStatusService;
 import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class MessageStatusServiceImpl implements MessageStatusService {
   }
 
   @Override
+  @Transactional
   public MessageReadStatus markMessageAsRead(UUID userId, Message message) {
     User user = entityManager.getReference(User.class, userId);
     MessageReadStatus status =

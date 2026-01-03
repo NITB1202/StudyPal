@@ -14,6 +14,7 @@ import com.study.studypal.chat.entity.MessageAttachment;
 import com.study.studypal.chat.entity.MessageReadStatus;
 import com.study.studypal.chat.enums.ChatEventType;
 import com.study.studypal.chat.service.api.ChatService;
+import com.study.studypal.chat.service.internal.ChatNotificationService;
 import com.study.studypal.chat.service.internal.ChatWebSocketHandler;
 import com.study.studypal.chat.service.internal.MessageAttachmentService;
 import com.study.studypal.chat.service.internal.MessageService;
@@ -40,6 +41,7 @@ public class ChatServiceImpl implements ChatService {
   private final TeamMembershipInternalService memberService;
   private final MessageStatusService messageStatusService;
   private final UserInternalService userService;
+  private final ChatNotificationService notificationService;
   private final ChatWebSocketHandler handler;
   private final ModelMapper modelMapper;
 
@@ -57,6 +59,8 @@ public class ChatServiceImpl implements ChatService {
     MessageResponseDto chatMessage =
         toMessageResponse(savedMessage, savedAttachments, List.of(readStatus));
     handler.sendMessageToOnlineMembers(teamId, ChatEventType.SEND, chatMessage);
+
+    notificationService.publishNewMessageNotification(savedMessage);
 
     return ActionResponseDto.builder().success(true).message("Send successfully.").build();
   }

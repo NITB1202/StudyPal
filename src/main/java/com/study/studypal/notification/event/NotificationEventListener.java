@@ -1,5 +1,7 @@
 package com.study.studypal.notification.event;
 
+import com.study.studypal.chat.event.MessageSentEvent;
+import com.study.studypal.chat.service.internal.ChatNotificationService;
 import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
 import com.study.studypal.notification.enums.LinkedSubject;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
@@ -40,6 +42,7 @@ public class NotificationEventListener {
   private final NotificationInternalService notificationService;
   private final TeamNotificationSettingInternalService settingService;
   private final PlanInternalService planService;
+  private final ChatNotificationService chatService;
 
   @Async
   @EventListener
@@ -361,6 +364,36 @@ public class NotificationEventListener {
               .content(content)
               .subject(LinkedSubject.PLAN)
               .subjectId(event.getPlanId())
+              .build();
+
+      processNotification(dto);
+    }
+  }
+
+  @Async
+  @EventListener
+  public void handleMessageSentEvent(MessageSentEvent event) {
+    UUID teamId = event.getTeamId();
+    String teamAvatarUrl = teamService.getTeamAvatarUrl(teamId);
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+
+    String title = teamService.getTeamName(teamId);
+    String content = String.format("%s sent new message.", user.getName());
+
+    List<UUID> relatedMemberIds = chatService.getOfflineMemberIds(teamId);
+    relatedMemberIds.remove(event.getUserId());
+
+    for (UUID memberId : relatedMemberIds) {
+      if (!settingService.getChatNotificationSetting(memberId, teamId)) continue;
+
+      CreateNotificationRequest dto =
+          CreateNotificationRequest.builder()
+              .userId(memberId)
+              .imageUrl(teamAvatarUrl)
+              .title(title)
+              .content(content)
+              .subject(LinkedSubject.TEAM)
+              .subjectId(event.getTeamId())
               .build();
 
       processNotification(dto);
