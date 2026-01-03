@@ -16,4 +16,6 @@ public final class AuthConstant {
   public static final String VERIFICATION_EMAIL_SUBJECT = "Verify Your Email Address";
   public static final String VERIFICATION_EMAIL_TEMPLATE_PATH = "verification_email";
   public static final String VERIFICATION_EMAIL_CODE_VARIABLE = "code";
+
+  public static final String WS_TOKEN_QUERY_PARAM = "token";
 }

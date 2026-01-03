@@ -39,4 +39,6 @@ public final class Constants {
 
   public static final String UNKNOW_FILE_NAME = "unknow";
   public static final String UNKNOW_FILE_EXTENSION = "";
+
+  public static final String WS_USER_ID = "userId";
 }

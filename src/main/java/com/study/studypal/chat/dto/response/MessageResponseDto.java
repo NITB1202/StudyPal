@@ -1,7 +1,6 @@
 package com.study.studypal.chat.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -19,11 +18,7 @@ import lombok.Setter;
 public class MessageResponseDto {
   private UUID id;
 
-  private UUID userId;
-
-  private String name;
-
-  private String avatarUrl;
+  private MessageUserResponseDto user;
 
   private String content;
 
@@ -37,5 +32,5 @@ public class MessageResponseDto {
 
   private List<MessageAttachmentResponseDto> attachments;
 
-  private List<String> readBy;
+  private List<MessageUserResponseDto> readBy;
 }
