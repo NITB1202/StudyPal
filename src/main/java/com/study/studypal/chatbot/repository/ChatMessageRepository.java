@@ -33,4 +33,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
       @Param("userId") UUID userId, @Param("cursor") LocalDateTime cursor, Pageable pageable);
 
   long countByUserId(UUID userId);
+
+  List<ChatMessage> findAllByCreatedAtBefore(LocalDateTime time);
 }

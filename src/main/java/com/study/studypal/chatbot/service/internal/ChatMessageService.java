@@ -15,4 +15,8 @@ public interface ChatMessageService {
   List<ChatMessage> getMessages(UUID userId, LocalDateTime cursor, int size);
 
   long countMessages(UUID userId);
+
+  List<ChatMessage> getMessagesBefore(LocalDateTime time);
+
+  void deleteMessages(List<ChatMessage> messages);
 }

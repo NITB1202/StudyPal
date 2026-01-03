@@ -10,3 +10,4 @@ quartz:
     reset-daily-quota: "0 0 0 * * ?"
     file-clean-up: "0 0 0 * * ?"
     message-clean-up: "0 0 0 * * ?"
+    chatbot-message-clean-up: "0 0 0 * * ?"

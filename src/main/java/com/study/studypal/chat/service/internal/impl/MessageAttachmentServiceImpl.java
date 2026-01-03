@@ -79,8 +79,8 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
     return attachmentRepository.findAllByMessageId(messageId);
   }
 
-  @Transactional
   @Override
+  @Transactional
   public void deleteAttachmentsByMessageId(UUID messageId) {
     List<MessageAttachment> attachments = attachmentRepository.findAllByMessageId(messageId);
 

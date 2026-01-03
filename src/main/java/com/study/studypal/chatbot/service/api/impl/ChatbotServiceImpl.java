@@ -172,7 +172,8 @@ public class ChatbotServiceImpl implements ChatbotService {
             .code(contextCode)
             .build();
 
-    List<ChatMessageAttachment> attachments = attachmentService.getByMessageId(message.getId());
+    List<ChatMessageAttachment> attachments =
+        attachmentService.getAttachmentsByMessageId(message.getId());
     List<ChatMessageAttachmentResponseDto> attachmentsResponseDto =
         modelMapper.map(
             attachments, new TypeToken<List<ChatMessageAttachmentResponseDto>>() {}.getType());

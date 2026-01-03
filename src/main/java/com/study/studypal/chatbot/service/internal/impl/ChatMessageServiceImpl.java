@@ -70,4 +70,15 @@ public class ChatMessageServiceImpl implements ChatMessageService {
   public long countMessages(UUID userId) {
     return chatMessageRepository.countByUserId(userId);
   }
+
+  @Override
+  public List<ChatMessage> getMessagesBefore(LocalDateTime time) {
+    return chatMessageRepository.findAllByCreatedAtBefore(time);
+  }
+
+  @Override
+  @Transactional
+  public void deleteMessages(List<ChatMessage> messages) {
+    chatMessageRepository.deleteAll(messages);
+  }
 }
