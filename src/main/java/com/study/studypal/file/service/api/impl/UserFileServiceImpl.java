@@ -128,7 +128,7 @@ public class UserFileServiceImpl implements UserFileService {
             ? fileRepository.getFiles(folderId, pageable)
             : fileRepository.getFilesWithCursor(folderId, cursor, pageable);
 
-    List<FileResponseDto> filesDTO =
+    List<FileResponseDto> filesResponseDto =
         modelMapper.map(files, new TypeToken<List<FileResponseDto>>() {}.getType());
 
     long total = fileRepository.countFiles(folderId);
@@ -137,7 +137,7 @@ public class UserFileServiceImpl implements UserFileService {
         files.size() == size ? files.get(files.size() - 1).getUpdatedAt() : null;
 
     return ListFileResponseDto.builder()
-        .files(filesDTO)
+        .files(filesResponseDto)
         .total(total)
         .nextCursor(nextCursor)
         .build();
@@ -190,7 +190,7 @@ public class UserFileServiceImpl implements UserFileService {
             : fileRepository.searchFilesByNameWithCursor(
                 folderId, handledKeyword, cursor, pageable);
 
-    List<FileResponseDto> filesDTO =
+    List<FileResponseDto> filesResponseDto =
         modelMapper.map(files, new TypeToken<List<FileResponseDto>>() {}.getType());
 
     long total = fileRepository.countByName(folderId, handledKeyword);
@@ -199,7 +199,7 @@ public class UserFileServiceImpl implements UserFileService {
         files.size() == size ? files.get(files.size() - 1).getUpdatedAt() : null;
 
     return ListFileResponseDto.builder()
-        .files(filesDTO)
+        .files(filesResponseDto)
         .total(total)
         .nextCursor(nextCursor)
         .build();

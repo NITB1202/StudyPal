@@ -64,7 +64,9 @@ public class FileValidationServiceImpl implements FileValidationService {
   @Override
   public void validateUpdateFilePermission(UUID userId, File file) {
     UUID creatorId = file.getCreatedBy().getId();
-    if (creatorId.equals(userId)) return;
+    if (creatorId.equals(userId)) {
+      return;
+    }
 
     Team team = file.getFolder().getTeam();
     if (team == null) {

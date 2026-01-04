@@ -19,8 +19,9 @@ public class TaskRecurrenceRuleInternalServiceImpl implements TaskRecurrenceRule
 
   @Override
   public void validateClonedTaskDuration(LocalDateTime startDate, LocalDateTime dueDate) {
-    if (!startDate.toLocalDate().equals(dueDate.toLocalDate()))
+    if (!startDate.toLocalDate().equals(dueDate.toLocalDate())) {
       throw new BaseException(TaskRecurrenceRuleErrorCode.RECURRING_TASK_DURATION_INVALID);
+    }
   }
 
   @Override
