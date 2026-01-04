@@ -79,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
     OAuthUserInfo userInfo = null;
 
     switch (request.getProvider()) {
-      case GOOGLE -> userInfo = getUserInfoWithGoogle(request.getAccessToken());
+      case GOOGLE, FACEBOOK -> userInfo = getUserInfoWithFirebase(request.getAccessToken());
     }
 
     if (userInfo == null) {
@@ -96,7 +96,7 @@ public class AuthServiceImpl implements AuthService {
     return saveUserSession(account);
   }
 
-  private OAuthUserInfo getUserInfoWithGoogle(String idToken) {
+  private OAuthUserInfo getUserInfoWithFirebase(String idToken) {
     try {
       FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
 
@@ -183,7 +183,6 @@ public class AuthServiceImpl implements AuthService {
           .message("A verification code has been sent to the registered email.")
           .build();
     } else {
-
       return ActionResponseDto.builder().success(false).message("Email is not registered.").build();
     }
   }
@@ -228,7 +227,6 @@ public class AuthServiceImpl implements AuthService {
           .message("Verify email successfully.")
           .build();
     } else {
-
       return ActionResponseDto.builder()
           .success(false)
           .message("Invalid verification code.")
@@ -241,7 +239,6 @@ public class AuthServiceImpl implements AuthService {
     if (resetPasswordCache.evictIfPresent(CacheKeyUtils.of(request.getEmail()))) {
       return accountService.resetPassword(request.getEmail(), request.getNewPassword());
     } else {
-
       return ActionResponseDto.builder()
           .success(false)
           .message("This email isn't verified.")

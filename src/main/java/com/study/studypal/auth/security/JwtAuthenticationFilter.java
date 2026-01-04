@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-@Order(1)
+@Order(0)
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
@@ -38,12 +38,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request,
+      @NotNull HttpServletRequest request,
       @NotNull HttpServletResponse response,
       @NotNull FilterChain filterChain)
       throws ServletException, IOException {
 
     try {
+      Cache cache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
+      if (cache == null) {
+        throw new JwtAuthenticationException(AuthErrorCode.TOKEN_CACHE_UNAVAILABLE);
+      }
+
       String authHeader = request.getHeader(AUTHORIZATION_HEADER);
 
       if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
@@ -53,12 +58,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         AccountRole role = jwtService.extractAccountRole(accessToken);
 
         if (!request.getRequestURI().startsWith(AUTH_PREFIX)) {
-          Cache cache = cacheManager.getCache(CacheNames.ACCESS_TOKENS);
-          if (cache == null) {
-            filterChain.doFilter(request, response);
-            return;
-          }
-
           String storedAccessToken = cache.get(CacheKeyUtils.of(userId), String.class);
 
           if (storedAccessToken == null) {

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-@Order(2)
+@Order(1)
 @Slf4j
 public class RequestLoggingFilter extends OncePerRequestFilter {
   @Override

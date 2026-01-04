@@ -8,6 +8,7 @@ public final class AuthConstant {
   public static final String AUTH_PREFIX = "/api/auth";
   public static final String BEARER_PREFIX = "Bearer ";
   public static final String ROLE_PREFIX = "ROLE_";
+  public static final String ROLE_CLAIM = "role";
 
   public static final String PASSWORD_RULE_MESSAGE =
       "Password must be at least 3 characters long and contain both letters and numbers.";
