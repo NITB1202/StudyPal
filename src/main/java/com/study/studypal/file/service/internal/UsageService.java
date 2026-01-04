@@ -6,9 +6,9 @@ import com.study.studypal.file.entity.UserUsage;
 import java.util.UUID;
 
 public interface UsageService {
-  void createUserUsage(UUID userId);
+  void initializeUserUsage(UUID userId);
 
-  void createTeamUsage(UUID teamId);
+  void initializeTeamUsage(UUID teamId);
 
   UserUsage getUserUsage(UUID userId);
 

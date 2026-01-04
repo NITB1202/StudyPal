@@ -112,7 +112,7 @@ public class TeamServiceImpl implements TeamService {
         teamMembershipService.createMembership(teamId, userId, TeamRole.OWNER);
         teamNotificationSettingService.createSettings(userId, teamId);
         taskCounterService.createTeamTaskCounter(teamId);
-        usageService.createTeamUsage(teamId);
+        usageService.initializeTeamUsage(teamId);
         folderService.createTeamDefaultFolder(userId, teamId);
 
         return modelMapper.map(team, TeamResponseDto.class);
@@ -287,7 +287,6 @@ public class TeamServiceImpl implements TeamService {
             .teamId(teamId)
             .teamName(team.getName())
             .updatedBy(userId)
-            .memberIds(teamMembershipService.getMemberIds(teamId))
             .shouldEvictCache(nameChanged || avatarChanged)
             .build();
 

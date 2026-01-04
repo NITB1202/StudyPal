@@ -104,7 +104,7 @@ public class FolderServiceImpl implements FolderService {
             ? getTeamFolders(teamId, cursor, pageable)
             : getPersonalFolders(userId, cursor, pageable);
 
-    List<FolderResponseDto> foldersDTO =
+    List<FolderResponseDto> foldersResponseDto =
         modelMapper.map(folders, new TypeToken<List<FolderResponseDto>>() {}.getType());
 
     long total =
@@ -116,7 +116,7 @@ public class FolderServiceImpl implements FolderService {
         folders.size() == size ? folders.get(folders.size() - 1).getUpdatedAt() : null;
 
     return ListFolderResponseDto.builder()
-        .folders(foldersDTO)
+        .folders(foldersResponseDto)
         .total(total)
         .nextCursor(nextCursor)
         .build();

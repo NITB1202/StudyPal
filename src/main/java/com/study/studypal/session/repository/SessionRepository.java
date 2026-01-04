@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface SessionRepository extends JpaRepository<Session, UUID> {
   List<Session> findAllByUserIdAndStudiedAtBetween(
       UUID userId, LocalDateTime fromDate, LocalDateTime toDate);
+
+  void deleteAllByStudiedAtBefore(LocalDateTime time);
 }

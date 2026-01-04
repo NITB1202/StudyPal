@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ConnectedUser {
+public class ConnectedMember {
   private UUID userId;
 
   private UUID teamId;

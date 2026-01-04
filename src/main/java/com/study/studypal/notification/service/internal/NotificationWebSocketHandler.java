@@ -4,8 +4,9 @@ import static com.study.studypal.common.util.Constants.WS_USER_ID;
 
 import com.study.studypal.common.util.JsonUtils;
 import com.study.studypal.common.util.WebsocketUtils;
-import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
+import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,11 +50,11 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     sessionUserMap.remove(session);
   }
 
-  public void sendNotificationToOnlineUsers(CreateNotificationRequest request) {
-    String notification = JsonUtils.serialize(request);
+  public void sendNotificationToOnlineUsers(List<UUID> recipients, NotificationTemplate template) {
+    String notification = JsonUtils.serialize(template);
     sessionUserMap.forEach(
         (session, user) -> {
-          if (user.equals(request.getUserId()) && session.isOpen()) {
+          if (recipients.contains(user) && session.isOpen()) {
             try {
               session.sendMessage(new TextMessage(notification));
             } catch (IOException e) {

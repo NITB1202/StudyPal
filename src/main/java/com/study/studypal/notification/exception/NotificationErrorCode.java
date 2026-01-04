@@ -13,7 +13,9 @@ public enum NotificationErrorCode implements ErrorCode {
   PERMISSION_DELETE_NOTIFICATION_DENIED(
       HttpStatus.FORBIDDEN,
       "N0TI_002",
-      "Some notifications could not be deleted because they do not belong to your account.");
+      "Some notifications could not be deleted because they do not belong to your account."),
+  SEND_BATCH_MESSAGE_FAILED(
+      HttpStatus.INTERNAL_SERVER_ERROR, "NOTI_003", "Failed to send batch FCM message: %s");
 
   private final HttpStatus httpStatus;
   private final String code;

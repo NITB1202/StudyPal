@@ -1,13 +1,14 @@
 package com.study.studypal.notification.service.internal;
 
-import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
+import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public interface NotificationInternalService {
-  void createNotification(CreateNotificationRequest request);
+  void createNotification(List<UUID> userIds, NotificationTemplate template);
 
   void deleteNotificationBefore(LocalDateTime time);
 
-  void evictNotificationCache(UUID userId);
+  void evictNotificationCaches(List<UUID> userIds);
 }

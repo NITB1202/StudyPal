@@ -28,7 +28,7 @@ public class UsageServiceImpl implements UsageService {
 
   @Override
   @Transactional
-  public void createUserUsage(UUID userId) {
+  public void initializeUserUsage(UUID userId) {
     User user = entityManager.getReference(User.class, userId);
 
     UserUsage userUsage =
@@ -43,7 +43,7 @@ public class UsageServiceImpl implements UsageService {
 
   @Override
   @Transactional
-  public void createTeamUsage(UUID teamId) {
+  public void initializeTeamUsage(UUID teamId) {
     Team team = entityManager.getReference(Team.class, teamId);
 
     TeamUsage teamUsage =

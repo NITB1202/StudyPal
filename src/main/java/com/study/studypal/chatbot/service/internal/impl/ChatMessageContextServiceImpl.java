@@ -41,9 +41,13 @@ public class ChatMessageContextServiceImpl implements ChatMessageContextService 
   @Override
   @Transactional
   public String validateAndSerializeContext(UUID userId, UUID contextId, ContextType contextType) {
-    if (contextId == null) return "";
-    if (contextType == null)
+    if (contextId == null) {
+      return "";
+    }
+
+    if (contextType == null) {
       throw new BaseException(ChatMessageContextErrorCode.CONTEXT_TYPE_REQUIRED);
+    }
 
     Object context =
         switch (contextType) {

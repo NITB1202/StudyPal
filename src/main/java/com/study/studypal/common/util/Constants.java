@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 public final class Constants {
   public static final String IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
   public static final String AUTHORIZATION_HEADER = "Authorization";
+  public static final String TRACE_ID_HEADER = "X-Trace-Id";
+  public static final String PUBLIC_ID_HEADER = "X-Subject-Id";
+
   public static final String DEFAULT_PAGE_SIZE = "10";
 
   public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";

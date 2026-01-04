@@ -146,7 +146,7 @@ public class AccountServiceImpl implements AccountService {
           .build();
     }
 
-    if (!validatePassword(password)) {
+    if (isInvalidPassword(password)) {
       return ActionResponseDto.builder().success(false).message(PASSWORD_RULE_MESSAGE).build();
     }
 
@@ -159,7 +159,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public ActionResponseDto resetPassword(String email, String newPassword) {
-    if (!validatePassword(newPassword)) {
+    if (isInvalidPassword(newPassword)) {
       return ActionResponseDto.builder().success(false).message(PASSWORD_RULE_MESSAGE).build();
     }
 
@@ -176,15 +176,16 @@ public class AccountServiceImpl implements AccountService {
         .build();
   }
 
-  private boolean validatePassword(String password) {
+  private boolean isInvalidPassword(String password) {
     // Must be at least 3 characters long and contain both letters and numbers.
     String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d).{3,}$";
-    return password.matches(passwordRegex);
+    return !password.matches(passwordRegex);
   }
 
   private AuthProvider toAuthProvider(ExternalAuthProvider provider) {
     return switch (provider) {
       case GOOGLE -> AuthProvider.GOOGLE;
+      case FACEBOOK -> AuthProvider.FACEBOOK;
     };
   }
 }

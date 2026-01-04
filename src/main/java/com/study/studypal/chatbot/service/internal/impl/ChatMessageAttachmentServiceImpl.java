@@ -1,7 +1,6 @@
 package com.study.studypal.chatbot.service.internal.impl;
 
 import static com.study.studypal.chatbot.constant.ChatbotConstant.CHATBOT_FOLDER;
-import static com.study.studypal.common.util.Constants.RESOURCE_TYPE_RAW;
 
 import com.study.studypal.chatbot.config.ChatbotProperties;
 import com.study.studypal.chatbot.dto.external.ExtractedFile;
@@ -109,7 +108,13 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
         ids.add(id);
         attachments.add(attachment);
       } catch (IOException e) {
-        ids.forEach(id -> fileService.deleteFile(id.toString(), RESOURCE_TYPE_RAW));
+        ids.forEach(
+            id -> {
+              String extension = FileUtils.extractFileExtension(file);
+              String resourceType = fileService.getResourceType(extension);
+              fileService.deleteFile(id.toString(), resourceType);
+            });
+
         throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
       }
     }
@@ -121,9 +126,13 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
   @Transactional
   public void deleteAttachmentsByMessageId(UUID messageId) {
     List<ChatMessageAttachment> attachments = attachmentRepository.findByMessageId(messageId);
+
     for (ChatMessageAttachment attachment : attachments) {
-      fileService.deleteFile(attachment.getId().toString(), RESOURCE_TYPE_RAW);
+      String extension = FileUtils.extractFileExtension(attachment.getName());
+      String resourceType = fileService.getResourceType(extension);
+      fileService.deleteFile(attachment.getId().toString(), resourceType);
     }
+
     attachmentRepository.deleteAll(attachments);
   }
 }

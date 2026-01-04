@@ -24,6 +24,7 @@ import com.study.studypal.user.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -82,9 +83,8 @@ public class PlanTaskServiceImpl implements PlanTaskService {
     validationService.validateUpdateTaskRequest(task, updateTaskInfo);
 
     LocalDateTime newStartDate =
-        request.getStartDate() != null ? request.getStartDate() : task.getStartDate();
-    LocalDateTime newDueDate =
-        request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
+        Optional.ofNullable(request.getStartDate()).orElse(task.getStartDate());
+    LocalDateTime newDueDate = Optional.ofNullable(request.getDueDate()).orElse(task.getDueDate());
 
     reminderService.rescheduleDueDateReminder(newDueDate, task);
     reminderService.deleteInvalidReminders(taskId, newStartDate, newDueDate);
@@ -120,7 +120,9 @@ public class PlanTaskServiceImpl implements PlanTaskService {
             .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-    if (task.getDeletedAt() != null) throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+    if (task.getDeletedAt() != null) {
+      throw new BaseException(TaskErrorCode.TASK_ALREADY_DELETED);
+    }
 
     Plan plan = task.getPlan();
     UUID planId = plan.getId();
@@ -156,7 +158,9 @@ public class PlanTaskServiceImpl implements PlanTaskService {
             .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-    if (task.getDeletedAt() == null) throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+    if (task.getDeletedAt() == null) {
+      throw new BaseException(TaskErrorCode.TASK_NOT_DELETED);
+    }
 
     Plan plan = task.getPlan();
     UUID planId = plan.getId();

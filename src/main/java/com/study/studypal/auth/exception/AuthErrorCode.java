@@ -21,7 +21,10 @@ public enum AuthErrorCode implements ErrorCode {
   REGISTRATION_INFO_NOT_FOUND(
       HttpStatus.NOT_FOUND, "AUTH_009", "Registration information not found in cache."),
   OAUTH_USER_INFO_NOT_FOUND(
-      HttpStatus.BAD_GATEWAY, "AUTH_010", "Cannot retrieve user info from provider.");
+      HttpStatus.BAD_GATEWAY, "AUTH_010", "Cannot retrieve user info from provider."),
+  TOKEN_CACHE_UNAVAILABLE(
+      HttpStatus.INTERNAL_SERVER_ERROR, "AUTH_011", "Token cache is temporarily unavailable."),
+  ;
 
   private final HttpStatus httpStatus;
   private final String code;

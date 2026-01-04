@@ -57,8 +57,9 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
     ActionResponseDto successResponse =
         ActionResponseDto.builder().success(true).message("Update successfully.").build();
 
-    if (currentType.equals(RecurrenceType.NONE) && changeType.equals(RecurrenceType.NONE))
+    if (currentType.equals(RecurrenceType.NONE) && changeType.equals(RecurrenceType.NONE)) {
       return successResponse;
+    }
 
     if (!currentType.equals(RecurrenceType.NONE) && changeType.equals(RecurrenceType.NONE)) {
       deleteActiveClonedTasksExcludeCurrent(task);
@@ -87,8 +88,9 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
 
     Optional<TaskRecurrenceRule> rule = getRecurrenceRule(task);
 
-    if (rule.isEmpty())
+    if (rule.isEmpty()) {
       return TaskRecurrenceRuleResponseDto.builder().recurrenceType(RecurrenceType.NONE).build();
+    }
 
     TaskRecurrenceRuleResponseDto response =
         modelMapper.map(rule.get(), TaskRecurrenceRuleResponseDto.class);
@@ -113,32 +115,37 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
     LocalDate taskDueDate = task.getDueDate().toLocalDate();
 
     LocalDate startDate =
-        request.getRecurrenceStartDate() != null
-            ? request.getRecurrenceStartDate()
-            : taskStartDate.plusDays(1);
+        Optional.ofNullable(request.getRecurrenceStartDate()).orElse(taskStartDate.plusDays(1));
     LocalDate endDate = request.getRecurrenceEndDate();
 
-    if (!taskStartDate.equals(taskDueDate))
+    if (!taskStartDate.equals(taskDueDate)) {
       throw new BaseException(TaskRecurrenceRuleErrorCode.RECURRING_TASK_DURATION_INVALID);
+    }
 
-    if (endDate == null) throw new BaseException(CommonErrorCode.FIELD_NULL, "End date");
+    if (endDate == null) {
+      throw new BaseException(CommonErrorCode.FIELD_NULL, "End date");
+    }
 
-    if (startDate.isAfter(endDate)) throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
+    if (startDate.isAfter(endDate)) {
+      throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
+    }
 
-    if (!startDate.isAfter(taskDueDate))
+    if (!startDate.isAfter(taskDueDate)) {
       throw new BaseException(TaskRecurrenceRuleErrorCode.START_DATE_AFTER_DUE_DATE);
+    }
 
     if (request.getType().equals(RecurrenceType.WEEKLY)
-        && CollectionUtils.isEmpty(request.getWeekDays()))
+        && CollectionUtils.isEmpty(request.getWeekDays())) {
       throw new BaseException(TaskRecurrenceRuleErrorCode.INVALID_WEEKLY_RECURRENCE);
+    }
   }
 
   private TaskRecurrenceRule updateRecurrenceRule(
       UpdateTaskRecurrenceRuleRequestDto request, Task task, TaskRecurrenceRule rule) {
     LocalDate startDate =
-        request.getRecurrenceStartDate() != null
-            ? request.getRecurrenceStartDate()
-            : task.getStartDate().toLocalDate().plusDays(1);
+        Optional.ofNullable(request.getRecurrenceStartDate())
+            .orElse(task.getStartDate().toLocalDate().plusDays(1));
+
     LocalDate endDate = request.getRecurrenceEndDate();
 
     String weekDaysStr =
@@ -146,7 +153,7 @@ public class TaskRecurrenceRuleServiceImpl implements TaskRecurrenceRuleService 
             ? request.getWeekDays().stream().map(DayOfWeek::name).collect(Collectors.joining(","))
             : null;
 
-    rule = rule != null ? rule : new TaskRecurrenceRule();
+    rule = Optional.ofNullable(rule).orElse(new TaskRecurrenceRule());
 
     rule.setTask(task);
     rule.setRecurrenceType(request.getType());

@@ -110,8 +110,8 @@ public class TaskServiceImpl implements TaskService {
   @Override
   public List<String> getDatesWithTaskDueDateInMonth(UUID userId, Integer month, Integer year) {
     LocalDate now = LocalDate.now();
-    int handledMonth = month == null ? now.getMonthValue() : month;
-    int handledYear = year == null ? now.getYear() : year;
+    int handledMonth = Optional.ofNullable(month).orElse(now.getMonthValue());
+    int handledYear = Optional.ofNullable(year).orElse(now.getYear());
 
     if (handledMonth < 1 || handledMonth > 12) {
       throw new BaseException(CommonErrorCode.INVALID_M0NTH);
@@ -140,7 +140,7 @@ public class TaskServiceImpl implements TaskService {
             ? getTeamDeletedTasks(teamId, cursor, pageable)
             : getPersonalDeletedTasks(userId, cursor, pageable);
 
-    List<DeletedTaskSummaryResponseDto> tasksDTO =
+    List<DeletedTaskSummaryResponseDto> tasksResponseDto =
         tasks.stream()
             .map(
                 task -> {
@@ -162,7 +162,7 @@ public class TaskServiceImpl implements TaskService {
         tasks.size() == size ? tasks.get(tasks.size() - 1).getDeletedAt() : null;
 
     return ListDeletedTaskResponseDto.builder()
-        .tasks(tasksDTO)
+        .tasks(tasksResponseDto)
         .total(total)
         .nextCursor(nextCursor)
         .build();
@@ -233,8 +233,11 @@ public class TaskServiceImpl implements TaskService {
     UpdateTaskInfo updateTaskInfo = modelMapper.map(request, UpdateTaskInfo.class);
     validationService.validateUpdateTaskRequest(task, updateTaskInfo);
 
-    if (ruleService.isRootOrClonedTask(task)) updateClonedTask(applyScope, task, request);
-    else updatePersonalTask(task, request);
+    if (ruleService.isRootOrClonedTask(task)) {
+      updateClonedTask(applyScope, task, request);
+    } else {
+      updatePersonalTask(task, request);
+    }
 
     return modelMapper.map(task, UpdateTaskResponseDto.class);
   }
@@ -248,11 +251,13 @@ public class TaskServiceImpl implements TaskService {
 
     validationService.validateTaskNotDeleted(task);
 
-    if (task.getCompletedAt() != null)
+    if (task.getCompletedAt() != null) {
       throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
+    }
 
-    if (!task.getAssignee().getId().equals(userId))
+    if (!task.getAssignee().getId().equals(userId)) {
       throw new BaseException(TaskErrorCode.TASK_ASSIGNEE_ONLY);
+    }
 
     task.setCompletedAt(LocalDateTime.now());
     taskRepository.save(task);
@@ -279,8 +284,11 @@ public class TaskServiceImpl implements TaskService {
     validationService.validateTaskOwnership(userId, task);
     validationService.validateTaskNotDeleted(task);
 
-    if (ruleService.isRootOrClonedTask(task)) deleteClonedTask(task, applyScope);
-    else deletePersonalTask(task);
+    if (ruleService.isRootOrClonedTask(task)) {
+      deleteClonedTask(task, applyScope);
+    } else {
+      deletePersonalTask(task);
+    }
 
     return ActionResponseDto.builder().success(true).message("Delete successfully.").build();
   }
@@ -296,8 +304,11 @@ public class TaskServiceImpl implements TaskService {
     validationService.validateTaskOwnership(userId, task);
     validationService.validateTaskDeleted(task);
 
-    if (ruleService.isRootOrClonedTask(task)) recoverClonedTask(task, applyScope);
-    else recoverPersonalTask(task);
+    if (ruleService.isRootOrClonedTask(task)) {
+      recoverClonedTask(task, applyScope);
+    } else {
+      recoverPersonalTask(task);
+    }
 
     return ActionResponseDto.builder().success(true).message("Recover successfully.").build();
   }
@@ -317,9 +328,13 @@ public class TaskServiceImpl implements TaskService {
   }
 
   private List<Task> getClonedTasks(Task task, ApplyScope applyScope) {
-    if (applyScope == null) throw new BaseException(TaskErrorCode.TASK_SCOPE_REQUIRED);
+    if (applyScope == null) {
+      throw new BaseException(TaskErrorCode.TASK_SCOPE_REQUIRED);
+    }
 
-    if (applyScope.equals(ApplyScope.CURRENT_ONLY)) return List.of(task);
+    if (applyScope.equals(ApplyScope.CURRENT_ONLY)) {
+      return List.of(task);
+    }
 
     return task.getDeletedAt() != null
         ? findAllDeletedClonedTasks(task)
@@ -335,9 +350,8 @@ public class TaskServiceImpl implements TaskService {
 
   private void updatePersonalTask(Task task, UpdateTaskRequestDto request) {
     LocalDateTime newStartDate =
-        request.getStartDate() != null ? request.getStartDate() : task.getStartDate();
-    LocalDateTime newDueDate =
-        request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
+        Optional.ofNullable(request.getStartDate()).orElse(task.getStartDate());
+    LocalDateTime newDueDate = Optional.ofNullable(request.getDueDate()).orElse(task.getDueDate());
 
     reminderService.rescheduleDueDateReminder(newDueDate, task);
     reminderService.deleteInvalidReminders(task.getId(), newStartDate, newDueDate);
@@ -348,9 +362,8 @@ public class TaskServiceImpl implements TaskService {
 
   private void updateClonedTask(ApplyScope applyScope, Task task, UpdateTaskRequestDto request) {
     LocalDateTime newStartDate =
-        request.getStartDate() != null ? request.getStartDate() : task.getStartDate();
-    LocalDateTime newDueDate =
-        request.getDueDate() != null ? request.getDueDate() : task.getDueDate();
+        Optional.ofNullable(request.getStartDate()).orElse(task.getStartDate());
+    LocalDateTime newDueDate = Optional.ofNullable(request.getDueDate()).orElse(task.getDueDate());
 
     ruleService.validateClonedTaskDuration(newStartDate, newDueDate);
 
@@ -409,8 +422,14 @@ public class TaskServiceImpl implements TaskService {
   }
 
   private TaskType getTaskType(Task task) {
-    if (task.getPlan() != null) return TaskType.TEAM;
-    if (ruleService.isRootOrClonedTask(task)) return TaskType.CLONED;
+    if (task.getPlan() != null) {
+      return TaskType.TEAM;
+    }
+
+    if (ruleService.isRootOrClonedTask(task)) {
+      return TaskType.CLONED;
+    }
+
     return TaskType.PERSONAL;
   }
 

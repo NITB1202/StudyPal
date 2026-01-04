@@ -13,9 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateNotificationRequest {
-  private UUID userId;
-
+public class NotificationTemplate {
   private String imageUrl;
 
   private String title;
