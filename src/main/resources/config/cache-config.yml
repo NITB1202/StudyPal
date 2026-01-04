@@ -34,3 +34,6 @@ app:
       notifications:
         ttl: PT10M
         maxSize: 1000
+      sessions:
+        ttl: PT10M
+        maxSize: 1000
