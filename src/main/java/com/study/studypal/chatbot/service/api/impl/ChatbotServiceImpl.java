@@ -1,5 +1,6 @@
 package com.study.studypal.chatbot.service.api.impl;
 
+import com.study.studypal.auth.exception.AuthErrorCode;
 import com.study.studypal.chatbot.client.AIClient;
 import com.study.studypal.chatbot.dto.external.AIRequestDto;
 import com.study.studypal.chatbot.dto.external.AIResponseDto;
@@ -55,10 +56,11 @@ public class ChatbotServiceImpl implements ChatbotService {
   @Override
   public Flux<ServerSentEvent<ChatResponseDto>> sendMessage(
       UUID userId, ChatRequestDto request, List<MultipartFile> attachments, String idempotencyKey) {
-    // Save user send time
-    LocalDateTime userSentAt = LocalDateTime.now();
+    if (userId == null) {
+      throw new BaseException(AuthErrorCode.INVALID_ACCESS_TOKEN);
+    }
 
-    // Try to acquire idempotency record
+    LocalDateTime userSentAt = LocalDateTime.now();
     ChatIdempotencyResult acquireResult = idempotencyService.tryAcquire(userId, idempotencyKey);
 
     if (acquireResult.isDone()) {
@@ -71,7 +73,6 @@ public class ChatbotServiceImpl implements ChatbotService {
       throw new BaseException(ChatIdempotencyErrorCode.CHAT_IDEMPOTENCY_REQUEST_IN_PROGRESS);
     }
 
-    // FAILED or ACQUIRED -> continue to prepare request
     AIRequestDto aiRequest;
     try {
       String context =
@@ -88,7 +89,6 @@ public class ChatbotServiceImpl implements ChatbotService {
       throw e;
     }
 
-    // Call AI service
     long start = System.currentTimeMillis();
     StringBuilder messageBuilder = new StringBuilder();
     AtomicLong inputTokens = new AtomicLong(0);
@@ -107,12 +107,9 @@ public class ChatbotServiceImpl implements ChatbotService {
         .map(ServerSentEvent::data)
         .filter(Objects::nonNull)
         .map(chunk -> ServerSentEvent.builder(mapper.toChatResponseDto(chunk)).build())
-
-        // When the stream complete -> persist result
         .doOnComplete(
             () -> {
               long duration = System.currentTimeMillis() - start;
-
               try {
                 AIResponseDto finalResponse =
                     mapper.toAIResponseDto(
