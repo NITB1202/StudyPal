@@ -3,7 +3,7 @@ package com.study.studypal.chat.service.internal;
 import static com.study.studypal.chat.constant.ChatConstant.WS_TEAM_ID_QUERY_PARAM;
 import static com.study.studypal.common.util.Constants.WS_USER_ID;
 
-import com.study.studypal.chat.dto.internal.ConnectedUser;
+import com.study.studypal.chat.dto.internal.ConnectedMember;
 import com.study.studypal.chat.dto.internal.WebSocketChatMessage;
 import com.study.studypal.chat.enums.ChatEventType;
 import com.study.studypal.common.util.JsonUtils;
@@ -28,7 +28,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
   private final TeamMembershipInternalService memberService;
-  private final Map<WebSocketSession, ConnectedUser> sessionUserMap = new ConcurrentHashMap<>();
+  private final Map<WebSocketSession, ConnectedMember> sessionMap = new ConcurrentHashMap<>();
 
   @Override
   public void afterConnectionEstablished(@NotNull WebSocketSession session) {
@@ -44,7 +44,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     try {
       memberService.validateUserBelongsToTeam(userId, teamId);
-      sessionUserMap.put(session, new ConnectedUser(userId, teamId));
+      sessionMap.put(session, new ConnectedMember(userId, teamId));
       log.info("User {} connected to team {}", userId, teamId);
     } catch (Exception ex) {
       log.error("Connection closed with error: {}", ex.getMessage());
@@ -60,16 +60,18 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
   @Override
   public void afterConnectionClosed(
       @NotNull WebSocketSession session, @NotNull CloseStatus status) {
-    ConnectedUser connectedUser = sessionUserMap.get(session);
+    ConnectedMember connectedMember = sessionMap.get(session);
     log.info(
-        "User {} disconnected from team {}", connectedUser.getUserId(), connectedUser.getTeamId());
-    sessionUserMap.remove(session);
+        "User {} disconnected from team {}",
+        connectedMember.getUserId(),
+        connectedMember.getTeamId());
+    sessionMap.remove(session);
   }
 
   public void sendMessageToOnlineMembers(UUID teamId, ChatEventType type, Object data) {
     WebSocketChatMessage message = new WebSocketChatMessage(type, data);
     String payload = JsonUtils.serialize(message);
-    sessionUserMap.forEach(
+    sessionMap.forEach(
         (session, user) -> {
           if (user.getTeamId().equals(teamId) && session.isOpen()) {
             try {
@@ -82,7 +84,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
   }
 
   public boolean isUserInTeam(UUID userId, UUID teamId) {
-    return sessionUserMap.values().stream()
+    return sessionMap.values().stream()
         .anyMatch(u -> u.getUserId().equals(userId) && u.getTeamId().equals(teamId));
   }
 }

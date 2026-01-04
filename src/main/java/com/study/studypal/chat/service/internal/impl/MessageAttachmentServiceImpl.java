@@ -37,7 +37,9 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
 
   @Override
   public List<MessageAttachment> saveAttachments(Message message, List<MultipartFile> files) {
-    if (CollectionUtils.isEmpty(files)) return List.of();
+    if (CollectionUtils.isEmpty(files)) {
+      return List.of();
+    }
 
     List<UUID> ids = new ArrayList<>();
     List<MessageAttachment> attachments = new ArrayList<>();
@@ -67,6 +69,7 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
               String resourceType = fileService.getResourceType(extension);
               fileService.deleteFile(id.toString(), resourceType);
             });
+
         throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
       }
     }

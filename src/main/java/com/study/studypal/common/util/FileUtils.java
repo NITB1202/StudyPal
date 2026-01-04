@@ -8,6 +8,7 @@ import static com.study.studypal.common.util.Constants.UNKNOW_FILE_NAME;
 import static com.study.studypal.common.util.Constants.VIDEO_EXTENSIONS;
 
 import java.text.Normalizer;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -69,11 +70,11 @@ public class FileUtils {
   }
 
   public static String extractFileName(MultipartFile file) {
-    if (file == null || file.getOriginalFilename() == null) {
+    String originalName = Optional.ofNullable(file.getOriginalFilename()).orElse("").trim();
+    if (StringUtils.isBlank(originalName)) {
       return UNKNOW_FILE_NAME;
     }
 
-    String originalName = file.getOriginalFilename().trim();
     originalName =
         originalName
             .substring(originalName.lastIndexOf('/') + 1)
@@ -88,11 +89,11 @@ public class FileUtils {
   }
 
   public static String extractFileExtension(MultipartFile file) {
-    if (file == null || file.getOriginalFilename() == null) {
+    String originalName = Optional.ofNullable(file.getOriginalFilename()).orElse("").trim();
+    if (StringUtils.isBlank(originalName)) {
       return UNKNOW_FILE_EXTENSION;
     }
 
-    String originalName = file.getOriginalFilename().trim();
     originalName =
         originalName
             .substring(originalName.lastIndexOf('/') + 1)
@@ -104,6 +105,19 @@ public class FileUtils {
     }
 
     return originalName.substring(dotIndex + 1).toLowerCase();
+  }
+
+  public static String extractFileExtension(String fileName) {
+    if (StringUtils.isBlank(fileName)) {
+      return "";
+    }
+
+    int lastDotIndex = fileName.lastIndexOf('.');
+    if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
+      return "";
+    }
+
+    return fileName.substring(lastDotIndex + 1).toLowerCase();
   }
 
   public static boolean isImage(String fileExtension) {
