@@ -51,9 +51,9 @@ public class CodeServiceImpl implements CodeService {
         }
       }
 
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ImageIO.write(bufferedImage, "png", baos);
-      byte[] imageBytes = baos.toByteArray();
+      ByteArrayOutputStream stream = new ByteArrayOutputStream();
+      ImageIO.write(bufferedImage, "png", stream);
+      byte[] imageBytes = stream.toByteArray();
 
       return Base64.getEncoder().encodeToString(imageBytes);
     } catch (WriterException | IOException e) {

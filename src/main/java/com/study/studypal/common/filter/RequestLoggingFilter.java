@@ -1,5 +1,8 @@
 package com.study.studypal.common.filter;
 
+import static com.study.studypal.common.util.Constants.PUBLIC_ID_HEADER;
+import static com.study.studypal.common.util.Constants.TRACE_ID_HEADER;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
@@ -20,19 +24,21 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class RequestLoggingFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      HttpServletRequest request,
+      @NotNull HttpServletResponse response,
+      @NotNull FilterChain filterChain)
       throws ServletException, IOException {
     long startTime = System.currentTimeMillis();
     String method = request.getMethod();
     String uri = request.getRequestURI();
 
     try {
-      String traceId = request.getHeader("X-Trace-Id");
+      String traceId = request.getHeader(TRACE_ID_HEADER);
       if (traceId == null || traceId.isBlank()) {
         traceId = UUID.randomUUID().toString();
       }
 
-      String subjectId = request.getHeader("X-Subject-Id");
+      String subjectId = request.getHeader(PUBLIC_ID_HEADER);
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
       if (authentication != null && authentication.isAuthenticated()) {
         subjectId = authentication.getName();
