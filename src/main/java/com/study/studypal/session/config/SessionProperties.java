@@ -14,4 +14,5 @@ public class SessionProperties {
   private Long defaultBreakTimeInSeconds;
   private Long defaultTotalTimeInSeconds;
   private Boolean defaultEnableBgMusic;
+  private Integer sessionCutoffDays;
 }

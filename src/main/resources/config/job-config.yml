@@ -1,7 +1,7 @@
 quartz:
   job-packages: com.study.studypal.team.job, com.study.studypal.notification.job,
     com.study.studypal.plan.job, com.study.studypal.chatbot.job, com.study.studypal.file.job,
-    com.study.studypal.chat.job
+    com.study.studypal.chat.job, com.study.studypal.session.job
   jobs:
     invitation-clean-up: "0 0 0 * * ?"
     device-token-clean-up: " 0 0 0 * * ?"
@@ -11,3 +11,4 @@ quartz:
     file-clean-up: "0 0 0 * * ?"
     message-clean-up: "0 0 0 * * ?"
     chatbot-message-clean-up: "0 0 0 * * ?"
+    session-clean-up: "0 0 0 * * ?"
