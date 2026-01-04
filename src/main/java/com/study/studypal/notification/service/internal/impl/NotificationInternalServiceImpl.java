@@ -2,7 +2,7 @@ package com.study.studypal.notification.service.internal.impl;
 
 import com.study.studypal.common.cache.CacheNames;
 import com.study.studypal.common.util.CacheKeyUtils;
-import com.study.studypal.notification.dto.internal.CreateNotificationRequest;
+import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import com.study.studypal.notification.entity.Notification;
 import com.study.studypal.notification.repository.NotificationRepository;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
@@ -11,9 +11,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
@@ -23,26 +25,26 @@ import org.springframework.stereotype.Service;
 public class NotificationInternalServiceImpl implements NotificationInternalService {
   private final NotificationRepository notificationRepository;
   private final CacheManager cacheManager;
-
+  private final ModelMapper modelMapper;
   @PersistenceContext private final EntityManager entityManager;
 
   @Override
-  public void createNotification(CreateNotificationRequest request) {
-    User user = entityManager.getReference(User.class, request.getUserId());
+  public void createNotification(List<UUID> userIds, NotificationTemplate template) {
+    LocalDateTime now = LocalDateTime.now();
+    List<Notification> notifications = new ArrayList<>();
 
-    Notification notification =
-        Notification.builder()
-            .user(user)
-            .imageUrl(request.getImageUrl())
-            .title(request.getTitle())
-            .content(request.getContent())
-            .createdAt(LocalDateTime.now())
-            .isRead(false)
-            .subject(request.getSubject())
-            .subjectId(request.getSubjectId())
-            .build();
+    for (UUID userId : userIds) {
+      Notification notification = modelMapper.map(template, Notification.class);
+      User user = entityManager.getReference(User.class, userId);
 
-    notificationRepository.save(notification);
+      notification.setCreatedAt(now);
+      notification.setUser(user);
+      notification.setIsRead(false);
+
+      notifications.add(notification);
+    }
+
+    notificationRepository.saveAll(notifications);
   }
 
   @Override
@@ -52,8 +54,14 @@ public class NotificationInternalServiceImpl implements NotificationInternalServ
   }
 
   @Override
-  public void evictNotificationCache(UUID userId) {
+  public void evictNotificationCaches(List<UUID> userIds) {
     Cache cache = cacheManager.getCache(CacheNames.NOTIFICATIONS);
-    Objects.requireNonNull(cache).evictIfPresent(CacheKeyUtils.of(userId));
+    if (cache == null) {
+      return;
+    }
+
+    for (UUID userId : userIds) {
+      cache.evictIfPresent(CacheKeyUtils.of(userId));
+    }
   }
 }

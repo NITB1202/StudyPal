@@ -139,11 +139,7 @@ public class InvitationServiceImpl implements InvitationService {
       teamNotificationSettingService.createSettings(userId, teamId);
 
       UserJoinedTeamEvent event =
-          UserJoinedTeamEvent.builder()
-              .userId(userId)
-              .teamId(teamId)
-              .memberIds(teamMembershipService.getMemberIds(teamId))
-              .build();
+          UserJoinedTeamEvent.builder().userId(userId).teamId(teamId).build();
 
       eventPublisher.publishEvent(event);
     }

@@ -1,6 +1,5 @@
 package com.study.studypal.team.event.team;
 
-import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +9,6 @@ import lombok.Getter;
 public class UserLeftTeamEvent {
   private UUID userId;
   private UUID teamId;
-  private List<UUID> memberIds;
 }
 
 // Message: User01 left Team01.

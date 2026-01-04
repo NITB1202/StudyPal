@@ -287,7 +287,6 @@ public class TeamServiceImpl implements TeamService {
             .teamId(teamId)
             .teamName(team.getName())
             .updatedBy(userId)
-            .memberIds(teamMembershipService.getMemberIds(teamId))
             .shouldEvictCache(nameChanged || avatarChanged)
             .build();
 

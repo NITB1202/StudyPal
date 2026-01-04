@@ -67,12 +67,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
     teamService.increaseMember(teamId);
     teamNotificationSettingService.createSettings(userId, teamId);
 
-    UserJoinedTeamEvent event =
-        UserJoinedTeamEvent.builder()
-            .userId(userId)
-            .teamId(teamId)
-            .memberIds(internalService.getMemberIds(teamId))
-            .build();
+    UserJoinedTeamEvent event = UserJoinedTeamEvent.builder().userId(userId).teamId(teamId).build();
 
     eventPublisher.publishEvent(event);
 
@@ -301,12 +296,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     teamService.decreaseMember(teamId);
 
-    UserLeftTeamEvent event =
-        UserLeftTeamEvent.builder()
-            .userId(memberId)
-            .teamId(teamId)
-            .memberIds(internalService.getMemberIds(teamId))
-            .build();
+    UserLeftTeamEvent event = UserLeftTeamEvent.builder().userId(memberId).teamId(teamId).build();
 
     eventPublisher.publishEvent(event);
 
@@ -340,12 +330,7 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
 
     teamService.decreaseMember(teamId);
 
-    UserLeftTeamEvent event =
-        UserLeftTeamEvent.builder()
-            .userId(userId)
-            .teamId(teamId)
-            .memberIds(internalService.getMemberIds(teamId))
-            .build();
+    UserLeftTeamEvent event = UserLeftTeamEvent.builder().userId(userId).teamId(teamId).build();
 
     eventPublisher.publishEvent(event);
 
