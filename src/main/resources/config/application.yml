@@ -15,6 +15,7 @@ chatbot:
   char-per-token: 3
   max-file-size: 10MB
   max-total-size: 20MB
+  message-cutoff-days: 180
 
 file:
   user-usage-limit: 2147483648
@@ -32,3 +33,4 @@ chat:
   max-file-size: 10MB
   max-total-size: 20MB
   edit-time-limit-seconds: 6000
+  message-cutoff-days: 180

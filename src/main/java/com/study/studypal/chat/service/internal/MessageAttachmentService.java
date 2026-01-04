@@ -9,5 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface MessageAttachmentService {
   List<MessageAttachment> saveAttachments(Message message, List<MultipartFile> files);
 
-  List<MessageAttachment> getByMessageId(UUID messageId);
+  List<MessageAttachment> getAttachmentsByMessageId(UUID messageId);
+
+  void deleteAttachmentsByMessageId(UUID messageId);
 }

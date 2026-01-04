@@ -36,7 +36,7 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
   private final FileService fileService;
 
   @Override
-  public List<ChatMessageAttachment> getByMessageId(UUID messageId) {
+  public List<ChatMessageAttachment> getAttachmentsByMessageId(UUID messageId) {
     return attachmentRepository.findByMessageId(messageId);
   }
 
@@ -115,5 +115,15 @@ public class ChatMessageAttachmentServiceImpl implements ChatMessageAttachmentSe
     }
 
     attachmentRepository.saveAll(attachments);
+  }
+
+  @Override
+  @Transactional
+  public void deleteAttachmentsByMessageId(UUID messageId) {
+    List<ChatMessageAttachment> attachments = attachmentRepository.findByMessageId(messageId);
+    for (ChatMessageAttachment attachment : attachments) {
+      fileService.deleteFile(attachment.getId().toString(), RESOURCE_TYPE_RAW);
+    }
+    attachmentRepository.deleteAll(attachments);
   }
 }

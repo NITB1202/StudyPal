@@ -23,7 +23,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,12 +31,11 @@ import reactor.core.publisher.Flux;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/chatbot")
 public class ChatbotController {
   private final ChatbotService chatbotService;
 
   @PostMapping(
-      value = "/messages",
+      value = "/api/sse/chatbot/messages",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
       produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   @Operation(summary = "Send a message to the chatbot and receive streamed response.")
@@ -51,7 +49,7 @@ public class ChatbotController {
     return chatbotService.sendMessage(userId, request, files, idempotencyKey);
   }
 
-  @GetMapping("/messages")
+  @GetMapping("/api/chatbot/messages")
   @Operation(summary = "Get a list of messages.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<ListChatMessageResponseDto> getMessages(
@@ -61,7 +59,7 @@ public class ChatbotController {
     return ResponseEntity.ok(chatbotService.getMessages(userId, cursor, size));
   }
 
-  @GetMapping("/usage")
+  @GetMapping("/api/chatbot/usage")
   @Operation(summary = "Get user quota usage.")
   @ApiResponse(responseCode = "200", description = "Get successfully.")
   public ResponseEntity<UserQuotaUsageResponseDto> getUsage(@AuthenticationPrincipal UUID userId) {

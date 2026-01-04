@@ -76,9 +76,9 @@ public class ChatServiceImpl implements ChatService {
             .map(
                 message -> {
                   List<MessageAttachment> attachments =
-                      attachmentService.getByMessageId(message.getId());
+                      attachmentService.getAttachmentsByMessageId(message.getId());
                   List<MessageReadStatus> readStatuses =
-                      messageStatusService.getByMessageId(message.getId());
+                      messageStatusService.getMessageReadStatues(message.getId());
                   return toMessageResponse(message, attachments, readStatuses);
                 })
             .toList();

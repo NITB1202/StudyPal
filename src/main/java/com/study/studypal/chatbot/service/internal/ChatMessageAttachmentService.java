@@ -8,9 +8,11 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ChatMessageAttachmentService {
-  List<ChatMessageAttachment> getByMessageId(UUID messageId);
+  List<ChatMessageAttachment> getAttachmentsByMessageId(UUID messageId);
 
   List<ExtractedFile> validateAndExtractAttachments(List<MultipartFile> files);
 
   void saveAttachments(ChatMessage message, List<MultipartFile> files);
+
+  void deleteAttachmentsByMessageId(UUID messageId);
 }

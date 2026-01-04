@@ -16,4 +16,5 @@ public class ChatbotProperties {
   private Integer charPerToken;
   private DataSize maxFileSize;
   private DataSize maxTotalSize;
+  private Integer messageCutoffDays;
 }
