@@ -22,11 +22,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserInternalServiceImpl implements UserInternalService {
   private final UserRepository userRepository;
-  private final ModelMapper modelMapper;
   private final TaskCounterService taskCounterService;
   private final UserQuotaService quotaUsageService;
   private final UsageService usageService;
   private final SessionSettingInternalService sessionService;
+  private final ModelMapper modelMapper;
 
   @Override
   public UUID createDefaultProfile(String name) {
@@ -34,9 +34,9 @@ public class UserInternalServiceImpl implements UserInternalService {
     UUID userId = userRepository.save(user).getId();
 
     taskCounterService.createUserTaskCounter(userId);
-    quotaUsageService.initializeUsage(userId);
-    usageService.createUserUsage(userId);
     sessionService.createDefaultSetting(userId);
+    quotaUsageService.initializeUsage(userId);
+    usageService.initializeUserUsage(userId);
 
     return userId;
   }
@@ -47,9 +47,9 @@ public class UserInternalServiceImpl implements UserInternalService {
     UUID userId = userRepository.save(user).getId();
 
     taskCounterService.createUserTaskCounter(userId);
-    quotaUsageService.initializeUsage(userId);
-    usageService.createUserUsage(userId);
     sessionService.createDefaultSetting(userId);
+    quotaUsageService.initializeUsage(userId);
+    usageService.initializeUserUsage(userId);
 
     return userId;
   }
