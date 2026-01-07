@@ -226,6 +226,7 @@ public class TaskServiceImpl implements TaskService {
             .findById(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
+    validationService.validateTaskIsIncomplete(task);
     validationService.validatePersonalTask(task);
     validationService.validateTaskOwnership(userId, task);
     validationService.validateTaskNotDeleted(task);
@@ -250,10 +251,7 @@ public class TaskServiceImpl implements TaskService {
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
     validationService.validateTaskNotDeleted(task);
-
-    if (task.getCompletedAt() != null) {
-      throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
-    }
+    validationService.validateTaskIsIncomplete(task);
 
     if (!task.getAssignee().getId().equals(userId)) {
       throw new BaseException(TaskErrorCode.TASK_ASSIGNEE_ONLY);
