@@ -9,6 +9,7 @@ import com.study.studypal.common.exception.annotation.UnauthorizedApiResponse;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
 import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
@@ -75,6 +76,15 @@ public class TeamController {
       @RequestParam @Positive int width,
       @RequestParam @Positive int height) {
     return ResponseEntity.ok(teamService.getTeamQRCode(userId, teamId, width, height));
+  }
+
+  @PostMapping(value = "/qr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(summary = "Decode a team QR code from an uploaded image")
+  @ApiResponse(responseCode = "200", description = "Decode successfully.")
+  @BadRequestApiResponse
+  public ResponseEntity<TeamCodeResponseDto> decodeTeamQRCode(
+      @RequestPart("file") MultipartFile file) {
+    return ResponseEntity.ok(teamService.decodeTeamQRCode(file));
   }
 
   @GetMapping("/{teamCode}/preview")

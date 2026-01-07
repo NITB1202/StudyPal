@@ -13,7 +13,9 @@ public enum TeamErrorCode implements ErrorCode {
   TEAM_NAME_UNCHANGED(
       HttpStatus.BAD_REQUEST, "TEAM_004", "The new team name is the same as the current name."),
   TEAM_OWNER_LIMIT_REACHED(
-      HttpStatus.BAD_REQUEST, "TEAM_005", "You already own the maximum number of teams allowed.");
+      HttpStatus.BAD_REQUEST, "TEAM_005", "You already own the maximum number of teams allowed."),
+  INVALID_TEAM_QR_CODE(HttpStatus.BAD_REQUEST, "TEAM_006", "The team QR code format is invalid."),
+  ;
 
   private final HttpStatus httpStatus;
   private final String code;

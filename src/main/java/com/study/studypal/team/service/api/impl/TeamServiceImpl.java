@@ -19,6 +19,7 @@ import com.study.studypal.team.config.TeamProperties;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
 import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
@@ -48,6 +49,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -154,6 +156,20 @@ public class TeamServiceImpl implements TeamService {
     String qrCode = codeService.generateQRCodeBase64(team.getTeamCode(), width, height);
 
     return TeamQRCodeResponseDto.builder().qrCode(qrCode).build();
+  }
+
+  @Override
+  public TeamCodeResponseDto decodeTeamQRCode(MultipartFile file) {
+    if (!FileUtils.isImage(file)) {
+      throw new BaseException(FileErrorCode.INVALID_IMAGE_FILE);
+    }
+
+    String decodedCode = codeService.decodeQRCode(file);
+    if (!isValidTeamCode(decodedCode)) {
+      throw new BaseException(TeamErrorCode.INVALID_TEAM_QR_CODE);
+    }
+
+    return TeamCodeResponseDto.builder().teamCode(decodedCode).build();
   }
 
   @Override
@@ -358,5 +374,13 @@ public class TeamServiceImpl implements TeamService {
 
   private String generateTeamCode() {
     return codeService.generateRandomCode(TEAM_CODE_LENGTH);
+  }
+
+  private boolean isValidTeamCode(String teamCode) {
+    if (StringUtils.isBlank(teamCode)) {
+      return false;
+    }
+
+    return teamCode.length() == TEAM_CODE_LENGTH && teamCode.matches("^[A-Za-z0-9]+$");
   }
 }

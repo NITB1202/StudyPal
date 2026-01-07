@@ -4,6 +4,7 @@ import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.team.dto.team.request.CreateTeamRequestDto;
 import com.study.studypal.team.dto.team.request.UpdateTeamRequestDto;
 import com.study.studypal.team.dto.team.response.ListTeamResponseDto;
+import com.study.studypal.team.dto.team.response.TeamCodeResponseDto;
 import com.study.studypal.team.dto.team.response.TeamDashboardResponseDto;
 import com.study.studypal.team.dto.team.response.TeamPreviewResponseDto;
 import com.study.studypal.team.dto.team.response.TeamQRCodeResponseDto;
@@ -19,6 +20,8 @@ public interface TeamService {
   TeamDashboardResponseDto getTeamDashboard(UUID userId, UUID teamId);
 
   TeamQRCodeResponseDto getTeamQRCode(UUID userId, UUID teamId, int width, int height);
+
+  TeamCodeResponseDto decodeTeamQRCode(MultipartFile file);
 
   TeamPreviewResponseDto getTeamPreview(String teamCode);
 
