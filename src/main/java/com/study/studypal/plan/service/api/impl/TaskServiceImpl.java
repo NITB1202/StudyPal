@@ -146,6 +146,7 @@ public class TaskServiceImpl implements TaskService {
                 task -> {
                   DeletedTaskSummaryResponseDto taskDto =
                       modelMapper.map(task, DeletedTaskSummaryResponseDto.class);
+                  taskDto.setTaskType(getTaskType(task));
                   if (teamId != null) {
                     taskDto.setPlanCode(task.getPlan().getPlanCode());
                   }
