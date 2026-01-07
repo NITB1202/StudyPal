@@ -20,4 +20,6 @@ public interface TaskValidationService {
   void validateTaskDeleted(Task task);
 
   void validateTaskNotDeleted(Task task);
+
+  void validateTaskIsIncomplete(Task task);
 }

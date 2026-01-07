@@ -76,6 +76,7 @@ public class PlanTaskServiceImpl implements PlanTaskService {
             .findByIdForUpdate(taskId)
             .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
+    validationService.validateTaskIsIncomplete(task);
     validationService.validateTeamTask(task);
     validationService.validateUpdateTaskPermission(userId, task);
 

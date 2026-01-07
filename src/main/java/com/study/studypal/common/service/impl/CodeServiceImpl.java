@@ -1,12 +1,20 @@
 package com.study.studypal.common.service.impl;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
 import com.google.zxing.EncodeHintType;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
 import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.CodeErrorCode;
+import com.study.studypal.common.exception.code.FileErrorCode;
 import com.study.studypal.common.service.CodeService;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -16,8 +24,11 @@ import java.util.EnumMap;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CodeServiceImpl implements CodeService {
@@ -58,6 +69,27 @@ public class CodeServiceImpl implements CodeService {
       return Base64.getEncoder().encodeToString(imageBytes);
     } catch (WriterException | IOException e) {
       throw new BaseException(CodeErrorCode.GENERATE_QR_CODE_FAILED, e.getMessage());
+    }
+  }
+
+  @Override
+  public String decodeQRCode(MultipartFile file) {
+    try {
+      BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+
+      LuminanceSource source = new BufferedImageLuminanceSource(bufferedImage);
+      BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+      Result result = new MultiFormatReader().decode(bitmap);
+      return result.getText();
+
+    } catch (IOException ex) {
+      log.error("Error reading file: {}", ex.getMessage(), ex);
+      throw new BaseException(FileErrorCode.INVALID_FILE_CONTENT);
+
+    } catch (NotFoundException ex) {
+      log.error("QR code not found: {}", ex.getMessage(), ex);
+      throw new BaseException(CodeErrorCode.QR_CODE_NOT_FOUND);
     }
   }
 }

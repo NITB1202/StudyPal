@@ -81,6 +81,13 @@ public class TaskValidationServiceImpl implements TaskValidationService {
   }
 
   @Override
+  public void validateTaskIsIncomplete(Task task) {
+    if (task.getCompletedAt() != null) {
+      throw new BaseException(TaskErrorCode.TASK_ALREADY_COMPLETED);
+    }
+  }
+
+  @Override
   public void validateUpdateTaskPermission(UUID userId, Task task) {
     Plan plan = task.getPlan();
     if (plan != null) {

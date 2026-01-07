@@ -18,7 +18,6 @@ CREATE INDEX idx_invitations_invitee_invited_at
 CREATE INDEX idx_device_tokens_user_last_updated
     ON device_tokens (user_id, last_updated DESC);
 
-
 CREATE INDEX idx_notifications_user_created_at
     ON notifications (user_id, created_at);
 
