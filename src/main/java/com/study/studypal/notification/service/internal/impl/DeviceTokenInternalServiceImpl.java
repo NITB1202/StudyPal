@@ -1,8 +1,6 @@
 package com.study.studypal.notification.service.internal.impl;
 
 import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_ID;
-import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_MESSAGE;
-import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_TITLE;
 import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_TYPE;
 
 import com.google.firebase.ErrorCode;
@@ -10,6 +8,7 @@ import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.Notification;
 import com.google.firebase.messaging.SendResponse;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
@@ -65,15 +64,24 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
 
   private MulticastMessage buildMulticastMessage(
       List<String> tokens, NotificationTemplate template) {
+    Notification notification =
+        Notification.builder()
+            .setTitle(template.getTitle())
+            .setBody(template.getBody())
+            .setImage(template.getImageUrl())
+            .build();
+
     String id = template.getSubjectId() != null ? template.getSubjectId().toString() : "";
 
     Map<String, String> data = new HashMap<>();
-    data.put(FCM_DATA_KEY_TITLE, template.getTitle());
-    data.put(FCM_DATA_KEY_MESSAGE, template.getContent());
     data.put(FCM_DATA_KEY_TYPE, template.getSubject().toString());
     data.put(FCM_DATA_KEY_ID, id);
 
-    return MulticastMessage.builder().putAllData(data).addAllTokens(tokens).build();
+    return MulticastMessage.builder()
+        .setNotification(notification)
+        .putAllData(data)
+        .addAllTokens(tokens)
+        .build();
   }
 
   private void handleResponse(List<DeviceToken> tokens, BatchResponse batchResponse) {

@@ -42,7 +42,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(inviter.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.INVITATION)
         .subjectId(event.getInvitationId())
         .build();
@@ -58,7 +58,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(deletedBy.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TEAM)
         .subjectId(null)
         .build();
@@ -76,7 +76,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(updatedBy.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TEAM)
         .subjectId(event.getTeamId())
         .build();
@@ -93,7 +93,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(user.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TEAM)
         .subjectId(event.getTeamId())
         .build();
@@ -110,7 +110,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(user.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TEAM)
         .subjectId(event.getTeamId())
         .build();
@@ -127,7 +127,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(assigner.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TASK)
         .subjectId(event.getTaskId())
         .build();
@@ -155,7 +155,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(imageUrl)
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TASK)
         .subjectId(event.getTaskId())
         .build();
@@ -171,7 +171,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(user.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TASK)
         .subjectId(event.getTaskId())
         .build();
@@ -185,7 +185,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(event.getTeamAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.PLAN)
         .subjectId(event.getPlanId())
         .build();
@@ -201,7 +201,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(user.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TASK)
         .subjectId(event.getTaskId())
         .build();
@@ -217,7 +217,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(user.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.PLAN)
         .subjectId(event.getPlanId())
         .build();
@@ -233,7 +233,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(user.getAvatarUrl())
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.PLAN)
         .subjectId(event.getPlanId())
         .build();
@@ -251,7 +251,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(teamAvatarUrl)
         .title(title)
-        .content(content)
+        .body(content)
         .subject(LinkedSubject.TEAM)
         .subjectId(event.getTeamId())
         .build();
