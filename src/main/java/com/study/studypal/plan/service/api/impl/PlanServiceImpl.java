@@ -2,6 +2,8 @@ package com.study.studypal.plan.service.api.impl;
 
 import static com.study.studypal.plan.constant.PlanConstant.CODE_NUMBER_FORMAT;
 import static com.study.studypal.plan.constant.PlanConstant.PLAN_CODE_PREFIX;
+import static com.study.studypal.plan.constant.PlanConstant.SAFE_MAX_DATE_TIME;
+import static com.study.studypal.plan.constant.PlanConstant.SAFE_MIN_DATE_TIME;
 
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
@@ -148,8 +150,8 @@ public class PlanServiceImpl implements PlanService {
 
   @Override
   public ListPlanResponseDto searchPlans(UUID userId, UUID teamId, SearchPlanRequestDto request) {
-    LocalDateTime fromDate = Optional.ofNullable(request.getFromDate()).orElse(LocalDateTime.MIN);
-    LocalDateTime toDate = Optional.ofNullable(request.getToDate()).orElse(LocalDateTime.MAX);
+    LocalDateTime fromDate = Optional.ofNullable(request.getFromDate()).orElse(SAFE_MIN_DATE_TIME);
+    LocalDateTime toDate = Optional.ofNullable(request.getToDate()).orElse(SAFE_MAX_DATE_TIME);
 
     if (!fromDate.isBefore(toDate)) {
       throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);

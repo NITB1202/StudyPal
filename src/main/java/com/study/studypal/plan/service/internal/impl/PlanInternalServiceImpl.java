@@ -43,8 +43,13 @@ public class PlanInternalServiceImpl implements PlanInternalService {
     LocalDateTime dueDate = LocalDateTime.MIN;
 
     for (Task task : tasks) {
-      if (task.getStartDate().isBefore(startDate)) startDate = task.getStartDate();
-      if (task.getDueDate().isAfter(dueDate)) dueDate = task.getDueDate();
+      if (task.getStartDate().isBefore(startDate)) {
+        startDate = task.getStartDate();
+      }
+
+      if (task.getDueDate().isAfter(dueDate)) {
+        dueDate = task.getDueDate();
+      }
     }
 
     float progress = totalTasks != 0 ? (float) completedTasks / totalTasks : 0f;

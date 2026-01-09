@@ -1,5 +1,8 @@
 package com.study.studypal.plan.service.api.impl;
 
+import static com.study.studypal.plan.constant.PlanConstant.SAFE_MAX_DATE_TIME;
+import static com.study.studypal.plan.constant.PlanConstant.SAFE_MIN_DATE_TIME;
+
 import com.study.studypal.common.dto.ActionResponseDto;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.common.exception.code.CommonErrorCode;
@@ -171,8 +174,8 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   public ListTaskResponseDto searchTasks(UUID userId, SearchTasksRequestDto request) {
-    LocalDateTime fromDate = Optional.ofNullable(request.getFromDate()).orElse(LocalDateTime.MIN);
-    LocalDateTime toDate = Optional.ofNullable(request.getToDate()).orElse(LocalDateTime.MAX);
+    LocalDateTime fromDate = Optional.ofNullable(request.getFromDate()).orElse(SAFE_MIN_DATE_TIME);
+    LocalDateTime toDate = Optional.ofNullable(request.getToDate()).orElse(SAFE_MAX_DATE_TIME);
 
     if (!fromDate.isBefore(toDate)) {
       throw new BaseException(CommonErrorCode.INVALID_TIME_RANGE);
