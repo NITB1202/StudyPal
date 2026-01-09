@@ -1,8 +1,19 @@
 package com.study.studypal.notification.service.internal.impl;
 
+import static com.study.studypal.notification.constant.NotificationConstant.DATA_KEY_DATE;
+import static com.study.studypal.notification.constant.NotificationConstant.DATA_KEY_RESOURCE;
+import static com.study.studypal.notification.constant.NotificationConstant.DATA_KEY_SUBJECT;
+import static com.study.studypal.notification.constant.NotificationConstant.DATA_KEY_TIME;
+import static com.study.studypal.notification.constant.NotificationConstant.DATE_FORMAT;
+import static com.study.studypal.notification.constant.NotificationConstant.TIME_FORMAT;
+
 import com.study.studypal.chat.event.MessageSentEvent;
+import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
-import com.study.studypal.notification.enums.LinkedSubject;
+import com.study.studypal.notification.entity.NotificationDefinition;
+import com.study.studypal.notification.enums.NotificationDefinitionCode;
+import com.study.studypal.notification.exception.NotificationErrorCode;
+import com.study.studypal.notification.repository.NotificationDefinitionRepository;
 import com.study.studypal.notification.service.internal.NotificationTemplateFactory;
 import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.plan.PlanDeletedEvent;
@@ -21,6 +32,8 @@ import com.study.studypal.user.dto.internal.UserSummaryProfile;
 import com.study.studypal.user.service.internal.UserInternalService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +41,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class NotificationTemplateFactoryImpl implements NotificationTemplateFactory {
+  private final NotificationDefinitionRepository definitionRepository;
   private final UserInternalService userService;
   private final TeamInternalService teamService;
 
@@ -36,50 +50,42 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     UserSummaryProfile inviter = userService.getUserSummaryProfile(event.getInviterId());
     String teamName = teamService.getTeamName(event.getTeamId());
 
-    String title = "Team invitation";
-    String content = String.format("%s invited you to join %s.", inviter.getName(), teamName);
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, inviter.getName());
+    params.put(DATA_KEY_RESOURCE, teamName);
 
-    return NotificationTemplate.builder()
-        .imageUrl(inviter.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.INVITATION)
-        .subjectId(event.getInvitationId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.INVITATION_CREATED,
+        params,
+        inviter.getAvatarUrl(),
+        event.getInvitationId());
   }
 
   @Override
   public NotificationTemplate getTeamDeletedTemplate(TeamDeletedEvent event) {
     UserSummaryProfile deletedBy = userService.getUserSummaryProfile(event.getDeletedBy());
 
-    String title = "Team deleted";
-    String content = String.format("%s deleted %s.", deletedBy.getName(), event.getTeamName());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, deletedBy.getName());
+    params.put(DATA_KEY_RESOURCE, event.getTeamName());
 
-    return NotificationTemplate.builder()
-        .imageUrl(deletedBy.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TEAM)
-        .subjectId(null)
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TEAM_DELETED, params, deletedBy.getAvatarUrl(), null);
   }
 
   @Override
   public NotificationTemplate getTeamUpdatedTemplate(TeamUpdatedEvent event) {
     UserSummaryProfile updatedBy = userService.getUserSummaryProfile(event.getUpdatedBy());
 
-    String title = "Team updated";
-    String content =
-        String.format(
-            "%s updated the general information of %s", updatedBy.getName(), event.getTeamName());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, updatedBy.getName());
+    params.put(DATA_KEY_RESOURCE, event.getTeamName());
 
-    return NotificationTemplate.builder()
-        .imageUrl(updatedBy.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TEAM)
-        .subjectId(event.getTeamId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TEAM_UPDATED,
+        params,
+        updatedBy.getAvatarUrl(),
+        event.getTeamId());
   }
 
   @Override
@@ -87,16 +93,12 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
     String teamName = teamService.getTeamName(event.getTeamId());
 
-    String title = "New team member";
-    String content = String.format("%s joined %s.", user.getName(), teamName);
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, teamName);
 
-    return NotificationTemplate.builder()
-        .imageUrl(user.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TEAM)
-        .subjectId(event.getTeamId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TEAM_JOINED, params, user.getAvatarUrl(), event.getTeamId());
   }
 
   @Override
@@ -104,156 +106,156 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
     String teamName = teamService.getTeamName(event.getTeamId());
 
-    String title = "Member left";
-    String content = String.format("%s left %s.", user.getName(), teamName);
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, teamName);
 
-    return NotificationTemplate.builder()
-        .imageUrl(user.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TEAM)
-        .subjectId(event.getTeamId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TEAM_LEFT, params, user.getAvatarUrl(), event.getTeamId());
   }
 
   @Override
   public NotificationTemplate getTaskAssignedTemplate(TaskAssignedEvent event) {
     UserSummaryProfile assigner = userService.getUserSummaryProfile(event.getAssignerId());
 
-    String title = "New task assigned";
-    String content =
-        String.format("%s assigned task [%s] to you.", assigner.getName(), event.getTaskCode());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, assigner.getName());
+    params.put(DATA_KEY_RESOURCE, event.getTaskCode());
 
-    return NotificationTemplate.builder()
-        .imageUrl(assigner.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TASK)
-        .subjectId(event.getTaskId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TASK_ASSIGNED,
+        params,
+        assigner.getAvatarUrl(),
+        event.getTaskId());
   }
 
   @Override
   public NotificationTemplate getTaskRemindedTemplate(TaskRemindedEvent event) {
     boolean isOverDueTask = event.getDueDate().isBefore(LocalDateTime.now());
-    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(TIME_FORMAT);
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
     UUID teamId = event.getTeamId();
     String imageUrl = teamId != null ? teamService.getTeamAvatarUrl(teamId) : null;
 
-    String title = isOverDueTask ? "Expired task" : "Task reminded";
-    String content =
+    NotificationDefinitionCode code =
         isOverDueTask
-            ? String.format("Task [%s] is overdue.", event.getTaskCode())
-            : String.format(
-                "Task [%s] will expire at %s on %s.",
-                event.getTaskCode(),
-                event.getDueDate().format(timeFormatter),
-                event.getDueDate().format(dateFormatter));
+            ? NotificationDefinitionCode.TASK_EXPIRED
+            : NotificationDefinitionCode.TASK_REMINDED;
 
-    return NotificationTemplate.builder()
-        .imageUrl(imageUrl)
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TASK)
-        .subjectId(event.getTaskId())
-        .build();
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, event.getTaskCode());
+
+    if (!isOverDueTask) {
+      params.put(DATA_KEY_TIME, event.getDueDate().format(timeFormatter));
+      params.put(DATA_KEY_DATE, event.getDueDate().format(dateFormatter));
+    }
+
+    return buildNotificationTemplate(code, params, imageUrl, event.getTaskId());
   }
 
   @Override
   public NotificationTemplate getTaskUpdatedTemplate(TaskUpdatedEvent event) {
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
 
-    String title = "Task updated";
-    String content = String.format("%s updated task [%s].", user.getName(), event.getTaskCode());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, event.getTaskCode());
 
-    return NotificationTemplate.builder()
-        .imageUrl(user.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TASK)
-        .subjectId(event.getTaskId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TASK_UPDATED, params, user.getAvatarUrl(), event.getTaskId());
   }
 
   @Override
   public NotificationTemplate getPlanCompletedTemplate(PlanCompletedEvent event) {
-    String title = "Plan completed";
-    String content = String.format("Plan [%s] is completed.", event.getPlanCode());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, event.getPlanCode());
 
-    return NotificationTemplate.builder()
-        .imageUrl(event.getTeamAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.PLAN)
-        .subjectId(event.getPlanId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.PLAN_COMPLETED,
+        params,
+        event.getTeamAvatarUrl(),
+        event.getPlanId());
   }
 
   @Override
   public NotificationTemplate getTaskDeletedTemplate(TaskDeletedEvent event) {
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
 
-    String title = "Task deleted";
-    String content = String.format("%s deleted task [%s].", user.getName(), event.getTaskCode());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, event.getTaskCode());
 
-    return NotificationTemplate.builder()
-        .imageUrl(user.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TASK)
-        .subjectId(event.getTaskId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TASK_DELETED, params, user.getAvatarUrl(), event.getTaskId());
   }
 
   @Override
   public NotificationTemplate getPlanDeletedTemplate(PlanDeletedEvent event) {
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
 
-    String title = "Plan deleted";
-    String content = String.format("%s deleted plan [%s].", user.getName(), event.getPlanCode());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, event.getPlanCode());
 
-    return NotificationTemplate.builder()
-        .imageUrl(user.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.PLAN)
-        .subjectId(event.getPlanId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.PLAN_DELETED, params, user.getAvatarUrl(), event.getPlanId());
   }
 
   @Override
   public NotificationTemplate getPlanUpdatedTemplate(PlanUpdatedEvent event) {
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
 
-    String title = "Plan updated";
-    String content = String.format("%s updated plan [%s].", user.getName(), event.getPlanCode());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, event.getPlanCode());
 
-    return NotificationTemplate.builder()
-        .imageUrl(user.getAvatarUrl())
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.PLAN)
-        .subjectId(event.getPlanId())
-        .build();
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.PLAN_UPDATED, params, user.getAvatarUrl(), event.getPlanId());
   }
 
   @Override
   public NotificationTemplate getMessageSentTemplate(MessageSentEvent event) {
-    UUID teamId = event.getTeamId();
-    String teamAvatarUrl = teamService.getTeamAvatarUrl(teamId);
     UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+    String teamName = teamService.getTeamName(event.getTeamId());
 
-    String title = teamService.getTeamName(teamId);
-    String content = String.format("%s sent new message.", user.getName());
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, teamName);
+
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.MESSAGE_SENT, params, user.getAvatarUrl(), event.getTeamId());
+  }
+
+  private NotificationDefinition getByCode(NotificationDefinitionCode code) {
+    return definitionRepository
+        .findByCode(code.name())
+        .orElseThrow(
+            () -> new BaseException(NotificationErrorCode.NOTIFICATION_DEFINITION_NOT_FOUND, code));
+  }
+
+  private String fillBody(String body, Map<String, String> values) {
+    String result = body;
+    for (Map.Entry<String, String> entry : values.entrySet()) {
+      result = result.replace(entry.getKey(), entry.getValue());
+    }
+    return result;
+  }
+
+  private NotificationTemplate buildNotificationTemplate(
+      NotificationDefinitionCode code,
+      Map<String, String> params,
+      String imageUrl,
+      UUID subjectId) {
+    NotificationDefinition definition = getByCode(code);
+    String body = fillBody(definition.getBody(), params);
 
     return NotificationTemplate.builder()
-        .imageUrl(teamAvatarUrl)
-        .title(title)
-        .body(content)
-        .subject(LinkedSubject.TEAM)
-        .subjectId(event.getTeamId())
+        .imageUrl(imageUrl)
+        .title(definition.getTitle())
+        .body(body)
+        .subject(definition.getSubject())
+        .subjectId(subjectId)
         .build();
   }
 }

@@ -341,3 +341,11 @@ CREATE TABLE IF NOT EXISTS message_read_status (
         REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT uq_message_user_read UNIQUE (message_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS notification_definitions (
+    id UUID PRIMARY KEY,
+    code VARCHAR(255) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    subject VARCHAR(20)
+);
