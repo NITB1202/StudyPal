@@ -159,3 +159,20 @@ VALUES
     ('041c77e0-ae77-4005-b745-ea12dca9bec6', 2700, 900, 3600, TRUE),
     ('618c10ee-923f-4323-b32b-086caa534b46', 2700, 900, 3600, TRUE),
     ('9f5d79f2-83a2-411d-bb66-caeb640a62b0', 2700, 900, 3600, TRUE);
+
+INSERT INTO notification_definitions (id, code, title, body, subject)
+VALUES
+    ('21ffb647-9281-4aaa-b88c-c50ac95203c9', 'INVITATION_CREATED', 'Team invitation', '{subject} invited you to join {resource}.', 'INVITATION'),
+    ('919f9e22-dfd4-4c75-830d-0955a2de7b4e', 'TEAM_DELETED', 'Team deleted', '{subject} deleted {resource}.', 'TEAM'),
+    ('8a110168-ea6e-4d83-8415-fbe1b9edbccc', 'TEAM_UPDATED', 'Team updated', '{subject} updated the general information of {resource}.', 'TEAM'),
+    ('6a451e20-1cb9-4814-b527-c15a2090803f', 'TEAM_JOINED', 'New team member', '{subject} joined {resource}.', 'TEAM'),
+    ('61ac0373-5899-432d-b972-0b920fbb64e3', 'TEAM_LEFT', 'Member left', '{subject} left {resource}.', 'TEAM'),
+    ('74e2e030-accf-4456-84c5-415ebb055586', 'TASK_ASSIGNED', 'New task assigned', '{subject} assigned task [{resource}] to you.', 'TASK'),
+    ('a70e8f3c-cbc6-4001-a994-8823dcf31ab3', 'TASK_REMINDED', 'Task reminded', 'Task [{subject}] will expire at {time} on {date}.', 'TASK'),
+    ('0915e05d-4fec-439d-a2fa-528f8ea1c31a', 'TASK_EXPIRED', 'Expired task', 'Task [{subject}] is overdue.', 'TASK'),
+    ('16dfb81d-b491-4696-883a-34920655aa72', 'TASK_UPDATED', 'Task updated', '{subject} updated task [{resource}].', 'TASK'),
+    ('9b3a27f0-571e-4c7c-aa76-dc059571f310', 'PLAN_COMPLETED', 'Plan completed', 'Plan [{subject}] is completed.', 'PLAN'),
+    ('3825b3fa-7097-4d85-a048-4e6a49e72a4b', 'TASK_DELETED', 'Task deleted', '{subject} deleted task [{resource}].', 'TASK'),
+    ('2aa35ef8-3f61-4f27-935e-eff082bac361', 'PLAN_DELETED', 'Plan deleted', '{subject} deleted plan [{resource}].', 'PLAN'),
+    ('adae23f7-c91a-4ee2-aa6f-ff586956c998', 'PLAN_UPDATED', 'Plan updated', '{subject} updated plan [{resource}].', 'PLAN'),
+    ('69a2e10d-f820-4922-9f27-7f505b7c8624', 'MESSAGE_SENT', 'New message', '{subject} sent a message in {resource}', 'CHAT');

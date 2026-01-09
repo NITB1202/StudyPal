@@ -1,0 +1,18 @@
+package com.study.studypal.notification.enums;
+
+public enum NotificationDefinitionCode {
+  INVITATION_CREATED,
+  TEAM_DELETED,
+  TEAM_UPDATED,
+  TEAM_JOINED,
+  TEAM_LEFT,
+  TASK_ASSIGNED,
+  TASK_REMINDED,
+  TASK_EXPIRED,
+  TASK_UPDATED,
+  PLAN_COMPLETED,
+  TASK_DELETED,
+  PLAN_DELETED,
+  PLAN_UPDATED,
+  MESSAGE_SENT
+}
