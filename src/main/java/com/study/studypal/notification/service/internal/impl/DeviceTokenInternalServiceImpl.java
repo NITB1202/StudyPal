@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalService {
   private final DeviceTokenRepository deviceTokenRepository;
-  private final ModelMapper modelMapper;
 
   @Override
   @Transactional
@@ -66,7 +64,12 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
 
   private MulticastMessage buildMulticastMessage(
       List<String> tokens, NotificationTemplate template) {
-    Notification notification = modelMapper.map(template, Notification.class);
+    Notification notification =
+        Notification.builder()
+            .setTitle(template.getTitle())
+            .setBody(template.getBody())
+            .setImage(template.getImageUrl())
+            .build();
 
     String id = template.getSubjectId() != null ? template.getSubjectId().toString() : "";
 
