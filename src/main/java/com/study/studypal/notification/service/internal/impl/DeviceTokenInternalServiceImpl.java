@@ -41,21 +41,21 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
 
   @Override
   public void sendPushNotification(List<UUID> recipients, NotificationTemplate template) {
-    List<DeviceToken> tokens = new ArrayList<>();
+    List<DeviceToken> deviceTokens = new ArrayList<>();
     for (UUID recipient : recipients) {
-      DeviceToken token = deviceTokenRepository.findFirstByUserIdOrderByLastUpdatedDesc(recipient);
-      if (token != null) {
-        tokens.add(token);
+      List<DeviceToken> recipientDeviceTokens = deviceTokenRepository.findAllByUserId(recipient);
+      if (!recipientDeviceTokens.isEmpty()) {
+        deviceTokens.addAll(recipientDeviceTokens);
       }
     }
 
-    List<String> fcmTokens = tokens.stream().map(DeviceToken::getToken).toList();
+    List<String> fcmTokens = deviceTokens.stream().map(DeviceToken::getToken).toList();
     MulticastMessage multicastMessage = buildMulticastMessage(fcmTokens, template);
 
     try {
       BatchResponse batchResponse =
           FirebaseMessaging.getInstance().sendEachForMulticast(multicastMessage);
-      handleResponse(tokens, batchResponse);
+      handleResponse(deviceTokens, batchResponse);
     } catch (FirebaseMessagingException ex) {
       log.error("Failed to send FCM messages: {}", ex.getMessage(), ex);
       throw new BaseException(NotificationErrorCode.SEND_BATCH_MESSAGE_FAILED, ex.getMessage());
