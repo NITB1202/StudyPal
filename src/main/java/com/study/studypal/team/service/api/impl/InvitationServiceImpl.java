@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -105,7 +104,24 @@ public class InvitationServiceImpl implements InvitationService {
             : invitationRepository.findByInviteeIdOrderByInvitedAtDesc(userId, pageable);
 
     List<InvitationResponseDto> dto =
-        modelMapper.map(invitations, new TypeToken<List<InvitationResponseDto>>() {}.getType());
+        invitations.stream()
+            .map(
+                invitation -> {
+                  User inviter = invitation.getInviter();
+                  Team team = invitation.getTeam();
+
+                  return InvitationResponseDto.builder()
+                      .id(invitation.getId())
+                      .inviteeId(inviter.getId())
+                      .inviterName(inviter.getName())
+                      .inviterAvatarUrl(inviter.getAvatarUrl())
+                      .teamId(team.getId())
+                      .teamName(team.getName())
+                      .invitedAt(invitation.getInvitedAt())
+                      .build();
+                })
+            .toList();
+
     long total = invitationRepository.countByInviteeId(userId);
     LocalDateTime nextCursor = dto.size() == size ? dto.get(dto.size() - 1).getInvitedAt() : null;
 

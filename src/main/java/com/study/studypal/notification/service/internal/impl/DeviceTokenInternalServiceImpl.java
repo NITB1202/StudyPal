@@ -1,8 +1,6 @@
 package com.study.studypal.notification.service.internal.impl;
 
 import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_ID;
-import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_MESSAGE;
-import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_TITLE;
 import static com.study.studypal.notification.constant.NotificationConstant.FCM_DATA_KEY_TYPE;
 
 import com.google.firebase.ErrorCode;
@@ -10,6 +8,7 @@ import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.Notification;
 import com.google.firebase.messaging.SendResponse;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
@@ -26,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalService {
   private final DeviceTokenRepository deviceTokenRepository;
+  private final ModelMapper modelMapper;
 
   @Override
   @Transactional
@@ -65,15 +66,19 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
 
   private MulticastMessage buildMulticastMessage(
       List<String> tokens, NotificationTemplate template) {
+    Notification notification = modelMapper.map(template, Notification.class);
+
     String id = template.getSubjectId() != null ? template.getSubjectId().toString() : "";
 
     Map<String, String> data = new HashMap<>();
-    data.put(FCM_DATA_KEY_TITLE, template.getTitle());
-    data.put(FCM_DATA_KEY_MESSAGE, template.getContent());
     data.put(FCM_DATA_KEY_TYPE, template.getSubject().toString());
     data.put(FCM_DATA_KEY_ID, id);
 
-    return MulticastMessage.builder().putAllData(data).addAllTokens(tokens).build();
+    return MulticastMessage.builder()
+        .setNotification(notification)
+        .putAllData(data)
+        .addAllTokens(tokens)
+        .build();
   }
 
   private void handleResponse(List<DeviceToken> tokens, BatchResponse batchResponse) {
