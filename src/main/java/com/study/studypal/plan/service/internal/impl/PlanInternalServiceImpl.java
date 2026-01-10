@@ -50,6 +50,10 @@ public class PlanInternalServiceImpl implements PlanInternalService {
       if (task.getDueDate().isAfter(dueDate)) {
         dueDate = task.getDueDate();
       }
+
+      if (task.getCompletedAt() != null) {
+        completedTasks++;
+      }
     }
 
     float progress = totalTasks != 0 ? (float) completedTasks / totalTasks : 0f;
