@@ -37,8 +37,8 @@ public class NotificationInternalServiceImpl implements NotificationInternalServ
       Notification notification = modelMapper.map(template, Notification.class);
       User user = entityManager.getReference(User.class, userId);
 
-      notification.setCreatedAt(now);
       notification.setUser(user);
+      notification.setCreatedAt(now);
       notification.setIsRead(false);
 
       notifications.add(notification);

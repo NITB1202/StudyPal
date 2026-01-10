@@ -64,7 +64,7 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
     Notification notification =
         Notification.builder()
             .setTitle(template.getTitle())
-            .setBody(template.getBody())
+            .setBody(template.getContent())
             .setImage(template.getImageUrl())
             .build();
 

@@ -27,7 +27,7 @@ public class NotificationResponseDto {
 
   private String content;
 
-  private boolean isRead;
+  private Boolean isRead;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LinkedSubject subject;
