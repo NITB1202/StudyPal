@@ -14,10 +14,8 @@ public enum NotificationErrorCode implements ErrorCode {
       HttpStatus.FORBIDDEN,
       "N0TI_002",
       "Some notifications could not be deleted because they do not belong to your account."),
-  SEND_BATCH_MESSAGE_FAILED(
-      HttpStatus.INTERNAL_SERVER_ERROR, "NOTI_003", "Failed to send batch FCM message: %s"),
   NOTIFICATION_DEFINITION_NOT_FOUND(
-      HttpStatus.INTERNAL_SERVER_ERROR, "NOTI_004", "Notification definition not found: %s"),
+      HttpStatus.INTERNAL_SERVER_ERROR, "NOTI_003", "Notification definition not found: %s"),
   ;
 
   private final HttpStatus httpStatus;

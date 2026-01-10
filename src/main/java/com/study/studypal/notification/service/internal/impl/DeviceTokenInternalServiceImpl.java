@@ -10,10 +10,8 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.google.firebase.messaging.SendResponse;
-import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import com.study.studypal.notification.entity.DeviceToken;
-import com.study.studypal.notification.exception.NotificationErrorCode;
 import com.study.studypal.notification.repository.DeviceTokenRepository;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
 import jakarta.transaction.Transactional;
@@ -58,7 +56,6 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
       handleResponse(deviceTokens, batchResponse);
     } catch (FirebaseMessagingException ex) {
       log.error("Failed to send FCM messages: {}", ex.getMessage(), ex);
-      throw new BaseException(NotificationErrorCode.SEND_BATCH_MESSAGE_FAILED, ex.getMessage());
     }
   }
 
