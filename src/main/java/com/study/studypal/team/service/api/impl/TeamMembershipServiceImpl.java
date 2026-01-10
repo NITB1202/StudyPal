@@ -252,6 +252,10 @@ public class TeamMembershipServiceImpl implements TeamMembershipService {
       throw new BaseException(TeamMembershipErrorCode.CANNOT_REMOVE_SELF);
     }
 
+    if (taskService.hasRemainingTasksInTeam(memberId, teamId)) {
+      throw new BaseException(TeamMembershipErrorCode.CANNOT_REMOVE_MEMBER_WITH_REMAINING_TASKS);
+    }
+
     // Lock user performing action
     TeamUser userInfo =
         teamUserRepository

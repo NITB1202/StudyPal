@@ -46,8 +46,10 @@ public enum TeamMembershipErrorCode implements ErrorCode {
       HttpStatus.FORBIDDEN,
       "TEAM_MEM_015",
       "You must complete or reassign your tasks before leaving the team."),
+  CANNOT_REMOVE_MEMBER_WITH_REMAINING_TASKS(
+      HttpStatus.FORBIDDEN, "TEAM_MEM_016", "Cannot remove member who still has assigned tasks."),
   PERMISSION_UPDATE_FOLDER_DENIED(
-      HttpStatus.FORBIDDEN, "TEAM_MEM_016", "Only the owner or an admin can update team's folder."),
+      HttpStatus.FORBIDDEN, "TEAM_MEM_017", "Only the owner or an admin can update team's folder."),
   ;
 
   private final HttpStatus httpStatus;

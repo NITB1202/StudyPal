@@ -431,6 +431,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       AND t.completedAt IS NULL
       AND t.assignee.id = :userId
       AND p.team.id = :teamId
+      AND p.dueDate >= CURRENT_TIMESTAMP
     """)
   boolean existsRemainingTasksInTeam(UUID userId, UUID teamId);
 
