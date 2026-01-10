@@ -18,7 +18,7 @@ public class NotificationTemplate {
 
   private String title;
 
-  private String body;
+  private String content;
 
   private LinkedSubject subject;
 

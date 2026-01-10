@@ -253,7 +253,7 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
     return NotificationTemplate.builder()
         .imageUrl(imageUrl)
         .title(definition.getTitle())
-        .body(body)
+        .content(body)
         .subject(definition.getSubject())
         .subjectId(subjectId)
         .build();
