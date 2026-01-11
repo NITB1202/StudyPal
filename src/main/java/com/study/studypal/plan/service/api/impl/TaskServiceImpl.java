@@ -268,8 +268,12 @@ public class TaskServiceImpl implements TaskService {
 
     if (plan != null) {
       planService.syncPlanFromTasks(plan);
-      if (plan.getProgress() >= 1.0f) notificationService.publishPlanCompletedNotification(plan);
       historyService.logCompleteTask(userId, plan.getId(), task.getTaskCode());
+      if (plan.getProgress() >= 1.0f) {
+        notificationService.publishPlanCompletedNotification(plan);
+      } else {
+        notificationService.publishTaskCompletedNotification(userId, task);
+      }
     }
 
     return ActionResponseDto.builder().success(true).message("Mark successfully.").build();

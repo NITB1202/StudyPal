@@ -17,6 +17,8 @@ import lombok.Setter;
 public class DeletedFileResponseDto {
   private UUID id;
 
+  private String folderName;
+
   private String name;
 
   private String extension;
