@@ -1,6 +1,7 @@
 package com.study.studypal.notification.event;
 
 import com.study.studypal.chat.event.MessageSentEvent;
+import com.study.studypal.chat.event.UserMentionedEvent;
 import com.study.studypal.chat.service.internal.ChatWebSocketHandler;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
@@ -203,6 +204,17 @@ public class NotificationEventListener {
     Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
     List<UUID> recipients =
         getTeamPlanNotificationEnabledRecipients(teamId, event.getUserId(), relatedMemberIds);
+
+    processNotification(recipients, template);
+  }
+
+  @Async
+  @EventListener
+  public void handleUserMentionedEvent(UserMentionedEvent event) {
+    NotificationTemplate template = templateFactory.getUserMentionedTemplate(event);
+    List<UUID> recipients =
+        getTeamChatNotificationEnabledRecipients(
+            event.getTeamId(), event.getUserId(), event.getMemberIds());
 
     processNotification(recipients, template);
   }

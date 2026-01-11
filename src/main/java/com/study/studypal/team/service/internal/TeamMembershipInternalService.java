@@ -33,4 +33,6 @@ public interface TeamMembershipInternalService {
   long countMembers(UUID teamId);
 
   long countMembersByName(UUID teamId, String keyword);
+
+  boolean isUserInTeam(UUID userId, UUID teamId);
 }

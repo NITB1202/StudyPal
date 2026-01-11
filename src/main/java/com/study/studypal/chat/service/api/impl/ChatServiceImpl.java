@@ -13,6 +13,7 @@ import com.study.studypal.chat.entity.Message;
 import com.study.studypal.chat.entity.MessageAttachment;
 import com.study.studypal.chat.entity.MessageReadStatus;
 import com.study.studypal.chat.enums.ChatEventType;
+import com.study.studypal.chat.enums.MentionType;
 import com.study.studypal.chat.service.api.ChatService;
 import com.study.studypal.chat.service.internal.ChatNotificationService;
 import com.study.studypal.chat.service.internal.ChatWebSocketHandler;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.stereotype.Service;
@@ -61,6 +63,23 @@ public class ChatServiceImpl implements ChatService {
     handler.sendMessageToOnlineMembers(teamId, ChatEventType.SEND, chatMessage);
 
     notificationService.publishNewMessageNotification(savedMessage);
+
+    MentionType mentionType = request.getMentionType();
+
+    if (mentionType != null) {
+      List<UUID> memberIds =
+          switch (mentionType) {
+            case ALL -> memberService.getMemberIds(teamId);
+            case CUSTOM ->
+                request.getMemberIds().stream()
+                    .filter(memberId -> memberService.isUserInTeam(memberId, teamId))
+                    .toList();
+          };
+
+      if (CollectionUtils.isNotEmpty(memberIds)) {
+        notificationService.publishUserMentionedNotification(userId, teamId, memberIds);
+      }
+    }
 
     return ActionResponseDto.builder().success(true).message("Send successfully.").build();
   }

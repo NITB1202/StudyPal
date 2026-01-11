@@ -1,6 +1,7 @@
 package com.study.studypal.notification.service.internal;
 
 import com.study.studypal.chat.event.MessageSentEvent;
+import com.study.studypal.chat.event.UserMentionedEvent;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.plan.PlanDeletedEvent;
@@ -44,4 +45,6 @@ public interface NotificationTemplateFactory {
   NotificationTemplate getMessageSentTemplate(MessageSentEvent event);
 
   NotificationTemplate getTaskCompletedTemplate(TaskCompletedEvent event);
+
+  NotificationTemplate getUserMentionedTemplate(UserMentionedEvent event);
 }

@@ -8,6 +8,7 @@ import static com.study.studypal.notification.constant.NotificationConstant.DATE
 import static com.study.studypal.notification.constant.NotificationConstant.TIME_FORMAT;
 
 import com.study.studypal.chat.event.MessageSentEvent;
+import com.study.studypal.chat.event.UserMentionedEvent;
 import com.study.studypal.common.exception.BaseException;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import com.study.studypal.notification.entity.NotificationDefinition;
@@ -238,6 +239,19 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
 
     return buildNotificationTemplate(
         NotificationDefinitionCode.TASK_COMPLETED, params, user.getAvatarUrl(), event.getTaskId());
+  }
+
+  @Override
+  public NotificationTemplate getUserMentionedTemplate(UserMentionedEvent event) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+    String teamName = teamService.getTeamName(event.getTeamId());
+
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, teamName);
+
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.USER_MENTIONED, params, user.getAvatarUrl(), event.getTeamId());
   }
 
   private NotificationDefinition getByCode(NotificationDefinitionCode code) {
