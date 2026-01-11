@@ -1,7 +1,7 @@
 package com.study.studypal.notification.event;
 
 import com.study.studypal.chat.event.MessageSentEvent;
-import com.study.studypal.chat.service.internal.ChatNotificationService;
+import com.study.studypal.chat.service.internal.ChatWebSocketHandler;
 import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import com.study.studypal.notification.service.internal.DeviceTokenInternalService;
 import com.study.studypal.notification.service.internal.NotificationInternalService;
@@ -38,8 +38,8 @@ public class NotificationEventListener {
   private final NotificationInternalService notificationService;
   private final TeamNotificationSettingInternalService settingService;
   private final PlanInternalService planService;
-  private final ChatNotificationService chatService;
-  private final NotificationWebSocketHandler webSocketHandler;
+  private final ChatWebSocketHandler chatWebSocketHandler;
+  private final NotificationWebSocketHandler notificationWebSocketHandler;
   private final NotificationTemplateFactory templateFactory;
   private final TeamMembershipInternalService memberService;
 
@@ -48,7 +48,7 @@ public class NotificationEventListener {
   public void handleInvitationCreatedEvent(InvitationCreatedEvent event) {
     NotificationTemplate template = templateFactory.getInvitationCreatedTemplate(event);
     List<UUID> recipients = List.of(event.getInviteeId());
-    webSocketHandler.sendNotificationToOnlineUsers(recipients, template);
+    notificationWebSocketHandler.sendNotificationToOnlineUsers(recipients, template);
     deviceTokenService.sendPushNotification(recipients, template);
   }
 
@@ -187,7 +187,7 @@ public class NotificationEventListener {
     NotificationTemplate template = templateFactory.getMessageSentTemplate(event);
 
     UUID teamId = event.getTeamId();
-    List<UUID> relatedMemberIds = chatService.getOfflineMemberIds(teamId);
+    List<UUID> relatedMemberIds = chatWebSocketHandler.getOfflineMemberIds(teamId);
     List<UUID> recipients =
         getTeamChatNotificationEnabledRecipients(teamId, event.getUserId(), relatedMemberIds);
 
@@ -232,7 +232,7 @@ public class NotificationEventListener {
   }
 
   private void processNotification(List<UUID> recipients, NotificationTemplate template) {
-    webSocketHandler.sendNotificationToOnlineUsers(recipients, template);
+    notificationWebSocketHandler.sendNotificationToOnlineUsers(recipients, template);
     notificationService.createNotification(recipients, template);
     notificationService.evictNotificationCaches(recipients);
     deviceTokenService.sendPushNotification(recipients, template);

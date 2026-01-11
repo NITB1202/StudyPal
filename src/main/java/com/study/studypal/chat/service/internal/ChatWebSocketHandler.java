@@ -10,6 +10,8 @@ import com.study.studypal.common.util.JsonUtils;
 import com.study.studypal.common.util.WebsocketUtils;
 import com.study.studypal.team.service.internal.TeamMembershipInternalService;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,7 +85,20 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         });
   }
 
-  public boolean isUserInTeam(UUID userId, UUID teamId) {
+  public List<UUID> getOfflineMemberIds(UUID teamId) {
+    List<UUID> memberIds = memberService.getMemberIds(teamId);
+    List<UUID> offlineMemberIds = new ArrayList<>();
+
+    for (UUID memberId : memberIds) {
+      if (!isUserInTeam(memberId, teamId)) {
+        offlineMemberIds.add(memberId);
+      }
+    }
+
+    return offlineMemberIds;
+  }
+
+  private boolean isUserInTeam(UUID userId, UUID teamId) {
     return sessionMap.values().stream()
         .anyMatch(u -> u.getUserId().equals(userId) && u.getTeamId().equals(teamId));
   }
