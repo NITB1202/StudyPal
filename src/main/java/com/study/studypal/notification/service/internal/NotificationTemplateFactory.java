@@ -6,6 +6,7 @@ import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.plan.PlanDeletedEvent;
 import com.study.studypal.plan.event.plan.PlanUpdatedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
+import com.study.studypal.plan.event.task.TaskCompletedEvent;
 import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
 import com.study.studypal.plan.event.task.TaskUpdatedEvent;
@@ -41,4 +42,6 @@ public interface NotificationTemplateFactory {
   NotificationTemplate getPlanUpdatedTemplate(PlanUpdatedEvent event);
 
   NotificationTemplate getMessageSentTemplate(MessageSentEvent event);
+
+  NotificationTemplate getTaskCompletedTemplate(TaskCompletedEvent event);
 }

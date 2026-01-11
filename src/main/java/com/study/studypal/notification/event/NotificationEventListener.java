@@ -12,6 +12,7 @@ import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.plan.PlanDeletedEvent;
 import com.study.studypal.plan.event.plan.PlanUpdatedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
+import com.study.studypal.plan.event.task.TaskCompletedEvent;
 import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
 import com.study.studypal.plan.event.task.TaskUpdatedEvent;
@@ -189,6 +190,19 @@ public class NotificationEventListener {
     List<UUID> relatedMemberIds = chatService.getOfflineMemberIds(teamId);
     List<UUID> recipients =
         getTeamChatNotificationEnabledRecipients(teamId, event.getUserId(), relatedMemberIds);
+
+    processNotification(recipients, template);
+  }
+
+  @Async
+  @EventListener
+  public void handleTaskCompletedEvent(TaskCompletedEvent event) {
+    NotificationTemplate template = templateFactory.getTaskCompletedTemplate(event);
+
+    UUID teamId = planService.getTeamIdById(event.getPlanId());
+    Set<UUID> relatedMemberIds = planService.getPlanRelatedMemberIds(event.getPlanId());
+    List<UUID> recipients =
+        getTeamPlanNotificationEnabledRecipients(teamId, event.getUserId(), relatedMemberIds);
 
     processNotification(recipients, template);
   }

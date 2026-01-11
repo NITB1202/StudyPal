@@ -175,4 +175,5 @@ VALUES
     ('3825b3fa-7097-4d85-a048-4e6a49e72a4b', 'TASK_DELETED', 'Task deleted', '{subject} deleted task [{resource}].', 'TASK'),
     ('2aa35ef8-3f61-4f27-935e-eff082bac361', 'PLAN_DELETED', 'Plan deleted', '{subject} deleted plan [{resource}].', 'PLAN'),
     ('adae23f7-c91a-4ee2-aa6f-ff586956c998', 'PLAN_UPDATED', 'Plan updated', '{subject} updated plan [{resource}].', 'PLAN'),
-    ('69a2e10d-f820-4922-9f27-7f505b7c8624', 'MESSAGE_SENT', 'New message', '{subject} sent a message in {resource}', 'CHAT');
+    ('69a2e10d-f820-4922-9f27-7f505b7c8624', 'MESSAGE_SENT', 'New message', '{subject} sent a message in {resource}', 'CHAT'),
+    ('b20d5714-b696-4e0c-aee2-e846f2415f8f', 'TASK_COMPLETED', 'Task completed', '{subject} completed task [{resource}].', 'TASK');

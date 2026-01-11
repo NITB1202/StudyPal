@@ -158,7 +158,15 @@ public class UserFileServiceImpl implements UserFileService {
             : getPersonalDeletedFiles(userId, cursor, pageable);
 
     List<DeletedFileResponseDto> filesDTO =
-        modelMapper.map(files, new TypeToken<List<DeletedFileResponseDto>>() {}.getType());
+        files.stream()
+            .map(
+                file -> {
+                  DeletedFileResponseDto deletedFile =
+                      modelMapper.map(file, DeletedFileResponseDto.class);
+                  deletedFile.setFolderName(file.getFolder().getName());
+                  return deletedFile;
+                })
+            .toList();
 
     long total =
         teamId != null

@@ -6,6 +6,7 @@ import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.plan.PlanDeletedEvent;
 import com.study.studypal.plan.event.plan.PlanUpdatedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
+import com.study.studypal.plan.event.task.TaskCompletedEvent;
 import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
 import com.study.studypal.plan.event.task.TaskUpdatedEvent;
@@ -113,6 +114,19 @@ public class TaskNotificationServiceImpl implements TaskNotificationService {
             .userId(userId)
             .planId(plan.getId())
             .planCode(plan.getPlanCode())
+            .build();
+
+    eventPublisher.publishEvent(event);
+  }
+
+  @Override
+  public void publishTaskCompletedNotification(UUID userId, Task task) {
+    TaskCompletedEvent event =
+        TaskCompletedEvent.builder()
+            .userId(userId)
+            .planId(task.getPlan().getId())
+            .taskId(task.getId())
+            .taskCode(task.getTaskCode())
             .build();
 
     eventPublisher.publishEvent(event);

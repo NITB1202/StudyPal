@@ -19,4 +19,6 @@ public interface TaskNotificationService {
   void publishPlanDeletedNotification(UUID userId, Plan plan, Set<UUID> relatedMemberIds);
 
   void publishPlanUpdatedNotification(UUID userId, Plan plan);
+
+  void publishTaskCompletedNotification(UUID userId, Task task);
 }

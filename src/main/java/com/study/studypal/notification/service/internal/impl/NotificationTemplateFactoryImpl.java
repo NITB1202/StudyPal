@@ -19,6 +19,7 @@ import com.study.studypal.plan.event.plan.PlanCompletedEvent;
 import com.study.studypal.plan.event.plan.PlanDeletedEvent;
 import com.study.studypal.plan.event.plan.PlanUpdatedEvent;
 import com.study.studypal.plan.event.task.TaskAssignedEvent;
+import com.study.studypal.plan.event.task.TaskCompletedEvent;
 import com.study.studypal.plan.event.task.TaskDeletedEvent;
 import com.study.studypal.plan.event.task.TaskRemindedEvent;
 import com.study.studypal.plan.event.task.TaskUpdatedEvent;
@@ -225,6 +226,18 @@ public class NotificationTemplateFactoryImpl implements NotificationTemplateFact
 
     return buildNotificationTemplate(
         NotificationDefinitionCode.MESSAGE_SENT, params, user.getAvatarUrl(), event.getTeamId());
+  }
+
+  @Override
+  public NotificationTemplate getTaskCompletedTemplate(TaskCompletedEvent event) {
+    UserSummaryProfile user = userService.getUserSummaryProfile(event.getUserId());
+
+    Map<String, String> params = new HashMap<>();
+    params.put(DATA_KEY_SUBJECT, user.getName());
+    params.put(DATA_KEY_RESOURCE, event.getTaskCode());
+
+    return buildNotificationTemplate(
+        NotificationDefinitionCode.TASK_COMPLETED, params, user.getAvatarUrl(), event.getTaskId());
   }
 
   private NotificationDefinition getByCode(NotificationDefinitionCode code) {
