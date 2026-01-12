@@ -49,7 +49,7 @@ public class NotificationEventListener {
   public void handleInvitationCreatedEvent(InvitationCreatedEvent event) {
     NotificationTemplate template = templateFactory.getInvitationCreatedTemplate(event);
     List<UUID> recipients = List.of(event.getInviteeId());
-    notificationWebSocketHandler.sendNotificationToOnlineUsers(recipients, template);
+    notificationWebSocketHandler.sendNotificationToOnlineUsers(recipients);
     deviceTokenService.sendPushNotification(recipients, template);
   }
 
@@ -244,9 +244,9 @@ public class NotificationEventListener {
   }
 
   private void processNotification(List<UUID> recipients, NotificationTemplate template) {
-    notificationWebSocketHandler.sendNotificationToOnlineUsers(recipients, template);
     notificationService.createNotification(recipients, template);
     notificationService.evictNotificationCaches(recipients);
+    notificationWebSocketHandler.sendNotificationToOnlineUsers(recipients);
     deviceTokenService.sendPushNotification(recipients, template);
   }
 }
