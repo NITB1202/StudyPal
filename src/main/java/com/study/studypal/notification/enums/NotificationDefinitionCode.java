@@ -16,5 +16,6 @@ public enum NotificationDefinitionCode {
   PLAN_UPDATED,
   MESSAGE_SENT,
   TASK_COMPLETED,
+  USER_MENTIONED,
   ;
 }

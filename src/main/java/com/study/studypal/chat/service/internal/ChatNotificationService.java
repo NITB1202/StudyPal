@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChatNotificationService {
-  List<UUID> getOfflineMemberIds(UUID teamId);
-
   void publishNewMessageNotification(Message message);
+
+  void publishUserMentionedNotification(UUID userId, UUID teamId, List<UUID> memberIds);
 }

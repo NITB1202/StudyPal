@@ -12,6 +12,7 @@ import com.study.studypal.notification.entity.Notification;
 import com.study.studypal.notification.exception.NotificationErrorCode;
 import com.study.studypal.notification.repository.NotificationRepository;
 import com.study.studypal.notification.service.api.NotificationService;
+import com.study.studypal.team.service.internal.InvitationInternalService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
   private final NotificationRepository notificationRepository;
+  private final InvitationInternalService invitationService;
   private final ModelMapper modelMapper;
 
   @Override
@@ -62,8 +64,12 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Override
   public UnreadNotificationCountResponseDto getUnreadNotificationCount(UUID userId) {
-    long count = notificationRepository.countByUserIdAndIsReadFalse(userId);
-    return UnreadNotificationCountResponseDto.builder().count(count).build();
+    long notificationCount = notificationRepository.countByUserIdAndIsReadFalse(userId);
+    long invitationCount = invitationService.countByUserId(userId);
+
+    return UnreadNotificationCountResponseDto.builder()
+        .count(notificationCount + invitationCount)
+        .build();
   }
 
   @Override

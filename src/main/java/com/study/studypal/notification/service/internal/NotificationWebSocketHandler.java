@@ -2,9 +2,7 @@ package com.study.studypal.notification.service.internal;
 
 import static com.study.studypal.common.util.Constants.WS_USER_ID;
 
-import com.study.studypal.common.util.JsonUtils;
 import com.study.studypal.common.util.WebsocketUtils;
-import com.study.studypal.notification.dto.internal.NotificationTemplate;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -50,13 +48,12 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     sessionUserMap.remove(session);
   }
 
-  public void sendNotificationToOnlineUsers(List<UUID> recipients, NotificationTemplate template) {
-    String notification = JsonUtils.serialize(template);
+  public void sendNotificationToOnlineUsers(List<UUID> recipients) {
     sessionUserMap.forEach(
         (session, user) -> {
           if (recipients.contains(user) && session.isOpen()) {
             try {
-              session.sendMessage(new TextMessage(notification));
+              session.sendMessage(new TextMessage("New notification"));
             } catch (IOException e) {
               log.error("Send WebSocket message failed with error: {}", e.getMessage());
             }

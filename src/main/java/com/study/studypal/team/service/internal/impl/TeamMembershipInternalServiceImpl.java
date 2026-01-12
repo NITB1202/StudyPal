@@ -129,4 +129,9 @@ public class TeamMembershipInternalServiceImpl implements TeamMembershipInternal
   public long countMembersByName(UUID teamId, String keyword) {
     return teamUserRepository.countTeamMembersByName(teamId, keyword);
   }
+
+  @Override
+  public boolean isUserInTeam(UUID userId, UUID teamId) {
+    return teamUserRepository.existsByUserIdAndTeamId(userId, teamId);
+  }
 }
