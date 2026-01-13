@@ -296,6 +296,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     FROM Task t
     JOIN t.plan p
     WHERE p.team.id = :teamId
+    AND t.assignee.id = :userId
     AND t.deletedAt IS NULL
     AND t.dueDate >= :fromDate
     AND t.startDate <= :toDate
