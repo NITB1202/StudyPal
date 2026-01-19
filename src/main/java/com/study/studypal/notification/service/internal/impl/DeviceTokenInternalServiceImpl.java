@@ -62,11 +62,7 @@ public class DeviceTokenInternalServiceImpl implements DeviceTokenInternalServic
   private MulticastMessage buildMulticastMessage(
       List<String> tokens, NotificationTemplate template) {
     Notification notification =
-        Notification.builder()
-            .setTitle(template.getTitle())
-            .setBody(template.getContent())
-            .setImage(template.getImageUrl())
-            .build();
+        Notification.builder().setTitle(template.getTitle()).setBody(template.getContent()).build();
 
     String id = template.getSubjectId() != null ? template.getSubjectId().toString() : "";
 
